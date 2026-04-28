@@ -1,0 +1,139 @@
+/* ══════════════════════════════════════════════════════
+   NÚT THANH TOÁN - CHECKOUT BUTTON
+   ═════════════════════════════════════════════════════ */
+
+.checkout-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #d63031 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.checkout-btn:hover {
+  background: linear-gradient(135deg, #ff5252 0%, #c92a2a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.checkout-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+}
+
+/* Modal xác nhận thanh toán */
+.checkout-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.checkout-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.checkout-modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 32px 24px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.checkout-modal-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.checkout-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.checkout-modal-text {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.checkout-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.checkout-modal-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkout-modal-btn.cancel {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+
+.checkout-modal-btn.cancel:hover {
+  background: #d5dbdb;
+}
+
+.checkout-modal-btn.confirm {
+  background: #27ae60;
+  color: white;
+}
+
+.checkout-modal-btn.confirm:hover {
+  background: #229954;
+}
+
+/* Loading state */
+.checkout-btn.loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkout-btn.loading::after {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

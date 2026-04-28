@@ -1,0 +1,9 @@
+Options -Indexes
+RewriteEngine On
+
+# Nếu file/thư mục thật sự tồn tại thì phục vụ trực tiếp
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Chuyển tất cả request về index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
