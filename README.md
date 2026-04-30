@@ -4,6 +4,16 @@ Website quản lý nhà hàng buffet chay viết bằng PHP thuần theo mô hì
 
 ## Công nghệ sử dụng
 
+=======
+
+# Buffet Chay An Lac
+
+Website quản lý nhà hàng buffet chay viết bằng PHP thuần theo mô hình MVC đơn giản. Dự án hỗ trợ khách đặt bàn, gọi món bằng mã bàn/mã đặt bàn, nhân viên phục vụ theo đơn và quản trị dữ liệu nhà hàng.
+
+## Công nghệ sử dụng
+
+> > > > > > > 2832576be967a21904ff34f78ea70d6e16486221
+
 - PHP thuần, tương thích kiểu code PHP 5.x
 - MySQL/MariaDB
 - HTML, CSS, JavaScript thuần
