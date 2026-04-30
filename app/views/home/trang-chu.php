@@ -7,7 +7,7 @@
     <title><?php echo APP_NAME ?> — Tinh Tuý Ẩm Thực Chay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/trang-chu.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/base/trang-chu.css">
 </head>
 
 <body>
@@ -175,15 +175,15 @@
             <div id="reservationConfirmation" class="reservation-confirmation" style="display:none">
                 <div class="confirmation-title">Đặt bàn thành công!</div>
                 <div class="confirmation-text">Cảm ơn quý khách, thông tin đặt bàn đã được ghi nhận.</div>
-                <div class="confirmation-row"><strong>Mã đặt bàn:</strong> <span id="confirmCode"></span></div>
+                <div class="confirmation-row"><strong>Tên người đặt:</strong> <span id="confirmName"></span></div>
+                <div class="confirmation-row"><strong>Số điện thoại:</strong> <span id="confirmPhone"></span></div>
                 <div class="confirmation-row"><strong>Ngày:</strong> <span id="confirmDate"></span></div>
                 <div class="confirmation-row"><strong>Giờ:</strong> <span id="confirmTime"></span></div>
                 <div class="confirmation-row"><strong>Người lớn:</strong> <span id="confirmAdults"></span></div>
                 <div class="confirmation-row"><strong>Trẻ em:</strong> <span id="confirmChildren"></span></div>
                 <div class="confirmation-row"><strong>Tổng tiền:</strong> <span id="confirmTotal"></span></div>
                 <div class="confirmation-row"><strong>Ghi chú:</strong> <span id="confirmNotes"></span></div>
-                <div class="confirmation-note">Vui lòng lưu lại mã đặt bàn để gọi món hoặc tra cứu thông tin sau này.</div>
-                <button type="button" class="btn-gold" style="width:100%;justify-content:center" onclick="closeModal()">Đóng</button>
+                <div class="confirmation-note">Vui lòng đọc tên/số điện thoại của bạn khi tới quán.</div> <button type="button" class="btn-gold" style="width:100%;justify-content:center" onclick="closeModal()">Đóng</button>
             </div>
             <form id="resForm">
                 <div class="form-row">
@@ -292,7 +292,8 @@
 
         function showReservationConfirmation(data, form) {
             var box = document.getElementById('reservationConfirmation');
-            document.getElementById('confirmCode').textContent = data.ma_dat_ban || data.access_code || '';
+            document.getElementById('confirmName').textContent = form.querySelector('[name=customer_name]').value || '';
+            document.getElementById('confirmPhone').textContent = form.querySelector('[name=customer_phone]').value || '';
             document.getElementById('confirmDate').textContent = form.querySelector('[name=reservation_date]').value;
             document.getElementById('confirmTime').textContent = form.querySelector('[name=reservation_time]').value;
             document.getElementById('confirmAdults').textContent = form.querySelector('[name=adult_count]').value;

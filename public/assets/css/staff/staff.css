@@ -1,0 +1,80 @@
+.staff-container {
+  padding: 20px;
+}
+
+.staff-header {
+  margin-bottom: 18px;
+}
+
+.staff-header h1 {
+  margin: 0;
+  color: #17211c;
+  font-size: 22px;
+}
+
+.staff-layout,
+.layout {
+  display: flex;
+  gap: 18px;
+}
+
+.tables-panel,
+.orders-panel {
+  flex: 1;
+  border: 1px solid #e0e5dc;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(23, 33, 28, 0.06);
+}
+
+#tables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.table {
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.table.empty {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.table.active {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.table:hover {
+  box-shadow: 0 0 0 3px rgba(47, 107, 79, 0.1);
+  transform: translateY(-1px);
+}
+
+.table.selected {
+  border: 2px solid #17211c;
+}
+
+.order-card {
+  margin-bottom: 10px;
+  border: 1px solid #e0e5dc;
+  border-left: 4px solid #b7791f;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.orders-panel h3,
+.tables-panel h3 {
+  margin-bottom: 10px;
+}

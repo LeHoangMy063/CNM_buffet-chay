@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhập Mã Gọi Món - Dặt Bàn</title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/base/style.css">
     <style>
         * {
             margin: 0;

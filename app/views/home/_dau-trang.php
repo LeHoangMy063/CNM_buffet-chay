@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title><?php echo isset($pageTitle) ? $pageTitle : 'Admin' ?> - <?php echo APP_NAME ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/base/style.css">
 </head>
 
 <body class="page-admin">

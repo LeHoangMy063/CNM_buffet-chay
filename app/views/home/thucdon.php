@@ -27,7 +27,7 @@ if (!empty($items)) {
     <title>Thực Đơn - <?php echo APP_NAME ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/trang-chu.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/base/trang-chu.css">
     <style>
         .page-header {
             background: var(--ink);

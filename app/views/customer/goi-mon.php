@@ -9,8 +9,8 @@ $tableNumber = isset($table['table_number'])
 $accessCode = isset($table['access_code'])
     ? $table['access_code']
     : (isset($table['ma_truy_cap']) ? $table['ma_truy_cap'] : (isset($ma) ? $ma : ''));
-$orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/order.css');
-$checkoutCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/checkout.css');
+$orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/order.css');
+$checkoutCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/checkout.css');
 $orderJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/order.js');
 $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/checkout.js');
 ?>
@@ -23,8 +23,8 @@ $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/c
     <title>Gọi Món — Bàn <?php echo htmlspecialchars($tableNumber) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/order.css?v=<?php echo $orderCssVersion ?>">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/checkout.css?v=<?php echo $checkoutCssVersion ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/customer/order.css?v=<?php echo $orderCssVersion ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/customer/checkout.css?v=<?php echo $checkoutCssVersion ?>">
 </head>
 
 <body>

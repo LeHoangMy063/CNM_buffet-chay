@@ -69,15 +69,20 @@ class MoHinhBan extends MoHinhCo
         $sql = "
         SELECT
             b.id, b.so_ban, b.suc_chua, b.ma_truy_cap,
+            b.trang_thai AS trang_thai_goc,
+            IFNULL(dm.so_don_cho, 0) AS so_don_cho,
             CASE
-                WHEN EXISTS (
-                    SELECT 1 FROM don_mon d
-                    WHERE d.ban_id = b.id AND d.trang_thai = 'cho_phuc_vu'
-                )
+                WHEN IFNULL(dm.so_don_cho, 0) > 0
                 THEN 'dang_dung'
-                ELSE 'trong'
+                ELSE b.trang_thai
             END AS trang_thai
         FROM ban b
+        LEFT JOIN (
+            SELECT ban_id, COUNT(*) AS so_don_cho
+            FROM don_mon
+            WHERE trang_thai = 'cho_phuc_vu'
+            GROUP BY ban_id
+        ) dm ON dm.ban_id = b.id
         ORDER BY b.so_ban
         ";
         return $this->db->query($sql);
@@ -107,12 +112,13 @@ class MoHinhBan extends MoHinhCo
     {
         $this->damBaoBangGanBan();
 
+        $sessionSeconds = defined('BUFFET_SESSION_MINUTES') ? BUFFET_SESSION_MINUTES * 60 : 5400;
         $sql = "
         SELECT b.* FROM ban b
         WHERE b.id NOT IN (
             SELECT db2.ban_id FROM dat_ban db2
             WHERE db2.ngay_dat = ?
-              AND db2.gio_dat  = ?
+              AND ABS(TIME_TO_SEC(db2.gio_dat) - TIME_TO_SEC(?)) < ?
               AND db2.trang_thai IN ('cho_xac_nhan','da_xac_nhan')
               AND db2.ban_id IS NOT NULL
         )
@@ -120,12 +126,12 @@ class MoHinhBan extends MoHinhCo
             SELECT dbb.ban_id FROM chitiet_datban dbb
             JOIN dat_ban db2 ON db2.id = dbb.dat_ban_id
             WHERE db2.ngay_dat = ?
-              AND db2.gio_dat  = ?
+              AND ABS(TIME_TO_SEC(db2.gio_dat) - TIME_TO_SEC(?)) < ?
               AND db2.trang_thai IN ('cho_xac_nhan','da_xac_nhan')
         )
         ORDER BY b.so_ban
         ";
-        return $this->db->query($sql, array($ngay, $gio, $ngay, $gio));
+        return $this->db->query($sql, array($ngay, $gio, $sessionSeconds, $ngay, $gio, $sessionSeconds));
     }
 
     // Tim ban nho nhat phu hop voi so khach, chua bi dat trong phien 90 phut
@@ -656,6 +662,15 @@ class MoHinhMonAn extends MoHinhCo
 // ================= MO HINH DAT BAN =================
 class MoHinhDatBan extends MoHinhCo
 {
+    private function damBaoTrangThaiDatBan()
+    {
+        $this->db->query("
+            ALTER TABLE dat_ban
+            MODIFY trang_thai enum('cho_xac_nhan','da_xac_nhan','da_huy','cancelled','expired','hoan_thanh')
+            DEFAULT 'cho_xac_nhan'
+        ");
+    }
+
     private function damBaoBangGanBan()
     {
         $this->db->query("
@@ -688,6 +703,23 @@ class MoHinhDatBan extends MoHinhCo
                 SELECT dat_ban_id, ban_id FROM dat_ban_ban
             ");
         }
+
+        $this->dongBoBanDaiDien();
+    }
+
+    private function dongBoBanDaiDien()
+    {
+        $this->db->query("
+        UPDATE dat_ban db
+        LEFT JOIN (
+            SELECT dat_ban_id, MIN(ban_id) AS ban_id
+            FROM chitiet_datban
+            GROUP BY dat_ban_id
+        ) ct ON ct.dat_ban_id = db.id
+        SET db.ban_id = ct.ban_id
+        WHERE ct.ban_id IS NOT NULL
+          AND (db.ban_id IS NULL OR db.ban_id <> ct.ban_id)
+        ");
     }
 
     private function selectDatBanVoiBan()
@@ -695,21 +727,21 @@ class MoHinhDatBan extends MoHinhCo
         return "
         SELECT r.*,
                CASE
-                   WHEN r.trang_thai IN ('da_huy', 'hoan_thanh') THEN NULL
+                   WHEN r.trang_thai IN ('da_huy', 'cancelled', 'expired', 'hoan_thanh') THEN NULL
                    ELSE COALESCE(
                        GROUP_CONCAT(DISTINCT bm.so_ban ORDER BY bm.so_ban SEPARATOR ', '),
                        bo.so_ban
                    )
                END AS so_ban,
                CASE
-                   WHEN r.trang_thai IN ('da_huy', 'hoan_thanh') THEN NULL
+                   WHEN r.trang_thai IN ('da_huy', 'cancelled', 'expired', 'hoan_thanh') THEN NULL
                    ELSE COALESCE(
                        GROUP_CONCAT(DISTINCT bm.id ORDER BY bm.so_ban SEPARATOR ','),
                        r.ban_id
                    )
                END AS ban_ids,
                CASE
-                   WHEN r.trang_thai IN ('da_huy', 'hoan_thanh') THEN 0
+                   WHEN r.trang_thai IN ('da_huy', 'cancelled', 'expired', 'hoan_thanh') THEN 0
                    WHEN r.ban_xac_nhan = 1 THEN 1
                    ELSE 0
                END AS ban_da_xac_nhan
@@ -836,6 +868,105 @@ class MoHinhDatBan extends MoHinhCo
         return !empty($rows) ? (int)$rows[0]['tong_khach'] : 0;
     }
 
+    public function tongKhachDaXacNhanTrungLich($ngay_dat, $gio_dat, $bo_qua_id)
+    {
+        $sessionSeconds = defined('BUFFET_SESSION_MINUTES') ? BUFFET_SESSION_MINUTES * 60 : 5400;
+        $sql = "
+        SELECT COALESCE(SUM(so_nguoi_lon + so_tre_em), 0) AS tong_khach
+        FROM dat_ban
+        WHERE ngay_dat = ?
+          AND ABS(TIME_TO_SEC(gio_dat) - TIME_TO_SEC(?)) < ?
+          AND id <> ?
+          AND trang_thai = 'da_xac_nhan'
+        ";
+        $rows = $this->db->query($sql, array($ngay_dat, $gio_dat, $sessionSeconds, (int)$bo_qua_id));
+        return !empty($rows) ? (int)$rows[0]['tong_khach'] : 0;
+    }
+
+    public function khachDaXacNhanTrungLich($sdt_khach, $ngay_dat, $gio_dat, $bo_qua_id)
+    {
+        $sessionSeconds = defined('BUFFET_SESSION_MINUTES') ? BUFFET_SESSION_MINUTES * 60 : 5400;
+        $sql = "
+        SELECT COUNT(*) AS tong
+        FROM dat_ban
+        WHERE sdt_khach = ?
+          AND ngay_dat = ?
+          AND ABS(TIME_TO_SEC(gio_dat) - TIME_TO_SEC(?)) < ?
+          AND id <> ?
+          AND trang_thai = 'da_xac_nhan'
+        ";
+        $rows = $this->db->query($sql, array(
+            $sdt_khach,
+            $ngay_dat,
+            $gio_dat,
+            $sessionSeconds,
+            (int)$bo_qua_id
+        ));
+        return !empty($rows) && (int)$rows[0]['tong'] > 0;
+    }
+
+    public function khachBiTrungLich($sdt_khach, $ngay_dat, $gio_dat, $bo_qua_id)
+    {
+        $sessionSeconds = defined('BUFFET_SESSION_MINUTES') ? BUFFET_SESSION_MINUTES * 60 : 5400;
+        $sql = "
+        SELECT COUNT(*) AS tong
+        FROM dat_ban
+        WHERE sdt_khach = ?
+          AND ngay_dat = ?
+          AND ABS(TIME_TO_SEC(gio_dat) - TIME_TO_SEC(?)) < ?
+          AND id <> ?
+          AND trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')
+        ";
+        $rows = $this->db->query($sql, array(
+            $sdt_khach,
+            $ngay_dat,
+            $gio_dat,
+            $sessionSeconds,
+            (int)$bo_qua_id
+        ));
+        return !empty($rows) && (int)$rows[0]['tong'] > 0;
+    }
+
+    public function banDaXacNhanTrungLich($ban_id, $ngay_dat, $gio_dat, $bo_qua_id)
+    {
+        $this->damBaoBangGanBan();
+
+        $sessionSeconds = defined('BUFFET_SESSION_MINUTES') ? BUFFET_SESSION_MINUTES * 60 : 5400;
+        $sql = "
+        SELECT COUNT(*) AS tong FROM (
+            SELECT db.id
+            FROM dat_ban db
+            WHERE db.ban_id = ?
+              AND db.ngay_dat = ?
+              AND ABS(TIME_TO_SEC(db.gio_dat) - TIME_TO_SEC(?)) < ?
+              AND db.id <> ?
+              AND db.trang_thai = 'da_xac_nhan'
+            UNION
+            SELECT db.id
+            FROM chitiet_datban dbb
+            JOIN dat_ban db ON db.id = dbb.dat_ban_id
+            WHERE dbb.ban_id = ?
+              AND db.ngay_dat = ?
+              AND ABS(TIME_TO_SEC(db.gio_dat) - TIME_TO_SEC(?)) < ?
+              AND db.id <> ?
+              AND db.trang_thai = 'da_xac_nhan'
+        ) x
+        ";
+        $rows = $this->db->query($sql, array(
+            (int)$ban_id,
+            $ngay_dat,
+            $gio_dat,
+            $sessionSeconds,
+            (int)$bo_qua_id,
+            (int)$ban_id,
+            $ngay_dat,
+            $gio_dat,
+            $sessionSeconds,
+            (int)$bo_qua_id
+        ));
+        return !empty($rows) && (int)$rows[0]['tong'] > 0;
+    }
+
     public function layGanDay($gioi_han)
     {
         $this->damBaoBangGanBan();
@@ -855,7 +986,8 @@ class MoHinhDatBan extends MoHinhCo
             COUNT(*) AS tong,
             SUM(CASE WHEN trang_thai = 'da_xac_nhan'  THEN 1 ELSE 0 END) AS da_xac_nhan,
             SUM(CASE WHEN trang_thai = 'cho_xac_nhan' THEN 1 ELSE 0 END) AS cho_xac_nhan,
-            SUM(CASE WHEN trang_thai = 'da_huy'       THEN 1 ELSE 0 END) AS da_huy,
+            SUM(CASE WHEN trang_thai IN ('da_huy', 'cancelled') THEN 1 ELSE 0 END) AS da_huy,
+            SUM(CASE WHEN trang_thai = 'expired'      THEN 1 ELSE 0 END) AS expired,
             SUM(CASE WHEN trang_thai = 'hoan_thanh'   THEN 1 ELSE 0 END) AS hoan_thanh,
             COALESCE(SUM(tong_tien), 0) AS doanh_thu
         FROM dat_ban
@@ -901,12 +1033,16 @@ class MoHinhDatBan extends MoHinhCo
 
     public function capNhatTrangThai($id, $trang_thai)
     {
-        if ($trang_thai === 'da_huy' || $trang_thai === 'hoan_thanh') {
+        $this->damBaoTrangThaiDatBan();
+
+        $sql = "UPDATE dat_ban SET trang_thai = ? WHERE id = ?";
+        $ok = $this->db->query($sql, array($trang_thai, (int)$id));
+
+        if ($ok && ($trang_thai === 'da_huy' || $trang_thai === 'cancelled' || $trang_thai === 'expired' || $trang_thai === 'hoan_thanh')) {
             $this->capNhatNhieuBan($id, array());
         }
 
-        $sql = "UPDATE dat_ban SET trang_thai = ? WHERE id = ?";
-        return $this->db->query($sql, array($trang_thai, (int)$id));
+        return $ok;
     }
 
     public function capNhatBan($id, $ban_id)
@@ -975,7 +1111,9 @@ class MoHinhDatBan extends MoHinhCo
     // Nhan vien xac nhan ban duoc gan tu dong la phu hop
     public function xacNhanGanBan($id)
     {
-        $sql = "UPDATE dat_ban SET ban_xac_nhan = 1 WHERE id = ?";
+        $this->damBaoTrangThaiDatBan();
+
+        $sql = "UPDATE dat_ban SET ban_xac_nhan = 1, trang_thai = 'da_xac_nhan' WHERE id = ?";
         return $this->db->query($sql, array((int)$id));
     }
 
@@ -1001,7 +1139,7 @@ class MoHinhDatBan extends MoHinhCo
     }
 
     // Lay dat ban theo trang_thai va tu_khoa voi bien da loc doi tuong
-    public function layDanhSachLocNang($trang_thai, $tu_khoa, $chi_chua_xac_nhan_ban)
+    public function layDanhSachLocNang($trang_thai, $tu_khoa, $chi_chua_xac_nhan_ban, $ngay_dat)
     {
         $this->damBaoBangGanBan();
 
@@ -1009,8 +1147,14 @@ class MoHinhDatBan extends MoHinhCo
         $params = array();
 
         if ($trang_thai !== '') {
-            $where[] = 'r.trang_thai = ?';
-            $params[] = $trang_thai;
+            if ($trang_thai === 'cancelled' || $trang_thai === 'da_huy') {
+                $where[] = "r.trang_thai IN ('cancelled', 'expired', 'da_huy')";
+            } else {
+                $where[] = 'r.trang_thai = ?';
+                $params[] = $trang_thai;
+            }
+        } else {
+            $where[] = "r.trang_thai NOT IN ('cancelled', 'expired', 'da_huy')";
         }
 
         if ($tu_khoa !== '') {
@@ -1021,19 +1165,34 @@ class MoHinhDatBan extends MoHinhCo
             $params[] = $k;
         }
 
+        if ($ngay_dat !== '' && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $ngay_dat)) {
+            $where[] = 'r.ngay_dat = ?';
+            $params[] = $ngay_dat;
+        }
+
         if ($chi_chua_xac_nhan_ban) {
-            $where[] = 'r.ban_xac_nhan = 0';
-            $where[] = 'r.ban_id IS NOT NULL';
-            $where[] = "r.trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')";
+            $where[] = "r.trang_thai = 'cho_xac_nhan'";
         }
 
         $sql = $this->selectDatBanVoiBan();
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
-        $sql .= ' GROUP BY r.id ORDER BY r.ngay_dat DESC, r.gio_dat DESC';
+        $sql .= ' GROUP BY r.id ORDER BY r.ngay_tao ASC, r.id ASC';
 
         return $this->db->query($sql, $params);
+    }
+
+    public function layThongKeNgayTrongThang($thang)
+    {
+        $sql = "
+        SELECT ngay_dat, COUNT(*) AS tong
+        FROM dat_ban
+        WHERE DATE_FORMAT(ngay_dat, '%Y-%m') = ?
+        GROUP BY ngay_dat
+        ORDER BY ngay_dat ASC
+        ";
+        return $this->db->query($sql, array($thang));
     }
 
     // Lay dat ban theo ma (khach goi mon sau khi dat ban)

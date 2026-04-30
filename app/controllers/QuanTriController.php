@@ -163,7 +163,7 @@ class QuanTriController extends BoieuKhienCo
         $id         = intval($this->post('id', 0));
         $trang_thai = $this->post('trang_thai', '');
 
-        $hop_le = array('cho_xac_nhan', 'da_xac_nhan', 'da_huy', 'hoan_thanh');
+        $hop_le = array('cho_xac_nhan', 'da_xac_nhan', 'da_huy', 'cancelled', 'expired', 'hoan_thanh');
         if (!in_array($trang_thai, $hop_le)) {
             $this->json(array('success' => false, 'thong_bao' => 'Trang thai khong hop le'));
         }

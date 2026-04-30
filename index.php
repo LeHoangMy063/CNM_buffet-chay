@@ -106,8 +106,10 @@ $routes = array(
     array('GET', '/nhan-vien/xem-don',   'NhanVienController', 'xemDon'),
 
     array('GET',  '/nhan-vien/danh-sach-ban', 'NhanVienController', 'layDanhSachBan'),
+    array('POST', '/nhan-vien/cap-nhat-trang-thai-ban', 'NhanVienController', 'capNhatTrangThaiBan'),
     array('GET',  '/nhan-vien/don-theo-ban',  'NhanVienController', 'layDonTheoBan'),
     array('GET',  '/nhan-vien/dat-ban/danh-sach', 'NhanVienController', 'layDanhSachDatBan'),
+    array('GET',  '/nhan-vien/dat-ban/lich', 'NhanVienController', 'layLichDatBan'),
     array('POST', '/nhan-vien/xac-nhan-mon',  'NhanVienController', 'xacNhanMon'),
     array('POST', '/nhan-vien/xac-nhan-tat-ca', 'NhanVienController', 'xacNhanTatCa'),
     array('POST', '/nhan-vien/xac-nhan-ban',  'NhanVienController', 'xacNhanBanTrong'),

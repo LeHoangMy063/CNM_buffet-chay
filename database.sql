@@ -48,6 +48,8 @@ CREATE TABLE `danh_gia` (
 
 CREATE TABLE `dat_ban` (
   `id` int(11) NOT NULL auto_increment,
+  -- Cot phu giu ban dau tien de tuong thich code cu.
+  -- Nguon gan ban chinh la bang chitiet_datban.
   `ban_id` int(11) default NULL,
   `ten_khach` varchar(100) default NULL,
   `sdt_khach` varchar(20) default NULL,
@@ -57,7 +59,7 @@ CREATE TABLE `dat_ban` (
   `ngay_dat` date default NULL,
   `gio_dat` time default NULL,
   `ghi_chu` text,
-  `trang_thai` enum('cho_xac_nhan','da_xac_nhan','da_huy','hoan_thanh') default 'cho_xac_nhan',
+  `trang_thai` enum('cho_xac_nhan','da_xac_nhan','da_huy','cancelled','expired','hoan_thanh') default 'cho_xac_nhan',
   `ma_dat_ban` varchar(20) default NULL,
   `ban_xac_nhan` tinyint(1) NOT NULL default '0',
   `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,

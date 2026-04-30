@@ -55,11 +55,39 @@ class NhanVienController extends BoieuKhienCo
 
         $banId = isset($_GET['ban_id']) ? intval($_GET['ban_id']) : 0;
         if ($banId <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'ID ban khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'ID bàn không hợp lệ'));
         }
 
         $danhSachDon = $this->moHinhDon->layDonTheoBan($banId);
         $this->json(array('success' => true, 'du_lieu' => $danhSachDon));
+    }
+
+    public function capNhatTrangThaiBan()
+    {
+        $this->yeuCauAdminHoacNhanVien();
+
+        if (!$this->isPost()) {
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
+        }
+
+        $banId     = intval($this->post('ban_id', 0));
+        $trangThai = $this->post('trang_thai', '');
+
+        if ($banId <= 0) {
+            $this->json(array('success' => false, 'thong_bao' => 'Bàn không hợp lệ'));
+        }
+
+        $hopLe = array('trong', 'dang_dung', 'cho_thanh_toan', 'da_thanh_toan');
+        if (!in_array($trangThai, $hopLe)) {
+            $this->json(array('success' => false, 'thong_bao' => 'Trạng thái bàn không hợp lệ'));
+        }
+
+        $ok = $this->moHinhBan->capNhatTrangThai($banId, $trangThai);
+        if ($ok) {
+            $this->json(array('success' => true, 'thong_bao' => 'Đã cập nhật trạng thái bàn'));
+        } else {
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cập nhật trạng thái bàn'));
+        }
     }
 
     public function layDanhSachDatBan()
@@ -68,11 +96,27 @@ class NhanVienController extends BoieuKhienCo
 
         $trangThai         = isset($_GET['trang_thai']) ? trim($_GET['trang_thai']) : '';
         $tuKhoa            = isset($_GET['tim'])        ? trim($_GET['tim'])        : '';
+        $ngayDat           = isset($_GET['ngay'])       ? trim($_GET['ngay'])       : '';
         $chiChuaXacNhanBan = isset($_GET['cho_duyet']) && $_GET['cho_duyet'] === '1';
 
-        $danhSach = $this->moHinhDatBan->layDanhSachLocNang($trangThai, $tuKhoa, $chiChuaXacNhanBan);
+        $danhSach = $this->moHinhDatBan->layDanhSachLocNang($trangThai, $tuKhoa, $chiChuaXacNhanBan, $ngayDat);
 
         $this->json(array('success' => true, 'du_lieu' => $danhSach));
+    }
+
+    public function layLichDatBan()
+    {
+        $this->yeuCauAdminHoacNhanVien();
+
+        $thang = isset($_GET['thang']) ? trim($_GET['thang']) : date('Y-m');
+        if (!preg_match('/^[0-9]{4}-[0-9]{2}$/', $thang)) {
+            $thang = date('Y-m');
+        }
+
+        $this->json(array(
+            'success' => true,
+            'du_lieu' => $this->moHinhDatBan->layThongKeNgayTrongThang($thang)
+        ));
     }
 
     // Nhan vien xac nhan ban duoc gan tu dong la phu hop
@@ -81,19 +125,50 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $id = intval($this->post('id', 0));
         if ($id <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'ID dat ban khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'ID đặt bàn không hợp lệ'));
+        }
+
+        $datBan = $this->moHinhDatBan->layTheoId($id);
+        if (!$datBan) {
+            $this->json(array('success' => false, 'thong_bao' => 'Không tìm thấy đặt bàn'));
+        }
+
+        if ($datBan['trang_thai'] === 'cancelled' || $datBan['trang_thai'] === 'expired' || $datBan['trang_thai'] === 'da_huy') {
+            $this->json(array('success' => false, 'thong_bao' => 'Đặt bàn đã hủy, không thể xác nhận'));
+        }
+
+        if (!empty($datBan['sdt_khach']) && $this->moHinhDatBan->khachBiTrungLich($datBan['sdt_khach'], $datBan['ngay_dat'], $datBan['gio_dat'], $id)) {
+            $this->json(array('success' => false, 'thong_bao' => 'Khách này đã có đặt bàn trùng khung giờ'));
+        }
+
+        $banIds = $this->moHinhDatBan->layBanIdsTheoDatBan($id);
+        if (empty($banIds) && !empty($datBan['ban_id'])) {
+            $banIds = array((int)$datBan['ban_id']);
+        }
+
+        foreach ($banIds as $banId) {
+            if ($this->moHinhDatBan->banBiTrungLich($banId, $datBan['ngay_dat'], $datBan['gio_dat'], $id)) {
+                $this->json(array('success' => false, 'thong_bao' => 'Bàn này đã có đặt bàn trùng khung giờ'));
+            }
+        }
+
+        $soKhach = (int)$datBan['so_nguoi_lon'] + (int)$datBan['so_tre_em'];
+        $sucChua = defined('RESTAURANT_CAPACITY') ? (int)RESTAURANT_CAPACITY : 40;
+        $tongKhachDangCo = $this->moHinhDatBan->tongKhachTrungLich($datBan['ngay_dat'], $datBan['gio_dat'], $id);
+        if ($tongKhachDangCo + $soKhach > $sucChua) {
+            $this->json(array('success' => false, 'thong_bao' => 'Khung giờ này đã vượt sức chứa nhà hàng'));
         }
 
         $ok = $this->moHinhDatBan->xacNhanGanBan($id);
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da xac nhan ban cho dat ban nay'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã xác nhận đặt bàn'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi xac nhan'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xác nhận'));
         }
     }
 
@@ -102,19 +177,19 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $donId = intval($this->post('don_id', 0));
         if ($donId <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'Don khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Đơn không hợp lệ'));
         }
 
         $ok = $this->moHinhDon->capNhatTrangThai($donId, 'da_phuc_vu');
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da xac nhan phuc vu don'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã xác nhận phục vụ đơn'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi xac nhan'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xác nhận'));
         }
     }
 
@@ -123,19 +198,19 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $banId = intval($this->post('ban_id', 0));
         if ($banId <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'Ban khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Bàn không hợp lệ'));
         }
 
         $ok = $this->moHinhDon->capNhatTatCaTheoBan($banId, 'da_phuc_vu');
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da xac nhan tat ca don cua ban'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã xác nhận tất cả đơn của bàn'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi xac nhan tat ca'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xác nhận tất cả'));
         }
     }
 
@@ -144,19 +219,19 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $banId = intval($this->post('ban_id', 0));
         if ($banId <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'Ban khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Bàn không hợp lệ'));
         }
 
         $ok = $this->moHinhBan->capNhatTrangThai($banId, 'trong');
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da xac nhan ban trong'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã xác nhận bàn trống'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi xac nhan'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xác nhận'));
         }
     }
 
@@ -165,26 +240,26 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $id         = intval($this->post('id', 0));
         $trangThai = $this->post('trang_thai', '');
 
         if ($id <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'ID khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'ID không hợp lệ'));
         }
 
-        $hopLe = array('cho_xac_nhan', 'da_xac_nhan', 'da_huy', 'hoan_thanh');
+        $hopLe = array('cho_xac_nhan', 'da_xac_nhan', 'da_huy', 'cancelled', 'expired', 'hoan_thanh');
         if (!in_array($trangThai, $hopLe)) {
-            $this->json(array('success' => false, 'thong_bao' => 'Trang thai khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Trạng thái không hợp lệ'));
         }
 
         $ok = $this->moHinhDatBan->capNhatTrangThai($id, $trangThai);
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da cap nhat dat ban'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã cập nhật đặt bàn'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi cap nhat'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cập nhật'));
         }
     }
 
@@ -203,19 +278,19 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $id    = intval($this->post('id', 0));
         $banId = intval($this->post('ban_id', 0));
 
         if ($id <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'Dat ban khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Đặt bàn không hợp lệ'));
         }
 
         $datBan = $this->moHinhDatBan->layTheoId($id);
         if (!$datBan) {
-            $this->json(array('success' => false, 'thong_bao' => 'Khong tim thay dat ban'));
+            $this->json(array('success' => false, 'thong_bao' => 'Không tìm thấy đặt bàn'));
         }
 
         $soKhach = intval($datBan['so_nguoi_lon']) + intval($datBan['so_tre_em']);
@@ -229,7 +304,7 @@ class NhanVienController extends BoieuKhienCo
             }
             $this->json(array(
                 'success'   => false,
-                'thong_bao' => 'Phien 90 phut nay chi con nhan toi da ' . $conLai . ' khach, khong du cho ' . $soKhach . ' khach'
+                'thong_bao' => 'Phiên 90 phút này chỉ còn nhận tối đa ' . $conLai . ' khách, không đủ cho ' . $soKhach . ' khách'
             ));
         }
 
@@ -238,13 +313,13 @@ class NhanVienController extends BoieuKhienCo
         if ($banId > 0) {
             $ban = $this->moHinhBan->layTheoId($banId);
             if (!$ban) {
-                $this->json(array('success' => false, 'thong_bao' => 'Ban khong ton tai'));
+                $this->json(array('success' => false, 'thong_bao' => 'Bàn không tồn tại'));
             }
 
             if ($this->moHinhDatBan->banBiTrungLich($banId, $datBan['ngay_dat'], $datBan['gio_dat'], $id)) {
                 $this->json(array(
                     'success'   => false,
-                    'thong_bao' => 'Ban ' . $ban['so_ban'] . ' da co dat ban trung phien 90 phut'
+                    'thong_bao' => 'Bàn ' . $ban['so_ban'] . ' đã có đặt bàn trùng phiên 90 phút'
                 ));
             }
 
@@ -260,7 +335,7 @@ class NhanVienController extends BoieuKhienCo
             if (empty($danhSachBanGan)) {
                 $this->json(array(
                     'success'   => false,
-                    'thong_bao' => 'Khong con to hop ban phu hop cho ' . $soKhach . ' khach trong phien 90 phut nay'
+                    'thong_bao' => 'Không còn tổ hợp bàn phù hợp cho ' . $soKhach . ' khách trong phiên 90 phút này'
                 ));
             }
         }
@@ -274,11 +349,11 @@ class NhanVienController extends BoieuKhienCo
 
         $ok = $this->moHinhDatBan->capNhatNhieuBan($id, $banIds);
         if ($ok) {
-            // Sau khi doi ban thu cong -> reset co xac nhan de nhan vien xem lai
+            // Sau khi đổi bàn thủ công -> reset cờ xác nhận để nhân viên xem lại
             $this->moHinhDatBan->boXacNhanGanBan($id);
-            $this->json(array('success' => true, 'thong_bao' => 'Da gan ban: ' . implode(', ', $tenBan)));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã gán bàn: ' . implode(', ', $tenBan)));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Khong the gan ban'));
+            $this->json(array('success' => false, 'thong_bao' => 'Không thể gán bàn'));
         }
     }
 
@@ -305,21 +380,21 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         if (!$this->isPost()) {
-            $this->json(array('success' => false, 'thong_bao' => 'Phuong thuc khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
         $taiKhoanId = intval($this->post('tai_khoan_id', 0));
         $diem       = intval($this->post('diem', 0));
 
         if ($taiKhoanId <= 0 || $diem <= 0) {
-            $this->json(array('success' => false, 'thong_bao' => 'Thong tin khong hop le'));
+            $this->json(array('success' => false, 'thong_bao' => 'Thông tin không hợp lệ'));
         }
 
         $ok = $this->moHinhTaiKhoan->congDiem($taiKhoanId, $diem);
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Da cong ' . $diem . ' diem cho khach hang'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã cộng ' . $diem . ' điểm cho khách hàng'));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Loi khi cong diem'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cộng điểm'));
         }
     }
 }
