@@ -136,19 +136,19 @@ $managerViewPath = dirname(__FILE__);
             </div>
 
             <nav class="nav">
+                <a class="side-link <?php echo $laTrangBaoCao ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao">
+                    <span class="side-icon">&#128200;</span>
+                    <span>Báo cáo doanh thu</span>
+                </a>
                 <a class="nav-parent side-link <?php echo (!$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
                     <span class="side-icon">&#127858;</span>
                     <span>Quản lý thực đơn</span>
-                    <span class="chevron"></span>
                 </a>
                 <a class="side-link <?php echo $laTrangNhanVien ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/nhan-vien">
                     <span class="side-icon">&#128101;</span>
                     <span>Quản lý nhân viên</span>
                 </a>
-                <a class="side-link <?php echo $laTrangBaoCao ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao">
-                    <span class="side-icon">&#128200;</span>
-                    <span>Báo cáo doanh thu</span>
-                </a>
+
 
             </nav>
 

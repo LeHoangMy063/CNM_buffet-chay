@@ -37,10 +37,7 @@ $laBep = $vaiTro === 'bep';
                         <span>Xem đơn món</span>
                     </button>
                 <?php else: ?>
-                    <button type="button" class="side-link active" data-section="home" onclick="StaffTabs.show('home')">
-                        <span class="side-icon">&#8962;</span>
-                        <span>Trang chủ</span>
-                    </button>
+
                     <button type="button" class="side-link" data-section="dat-ban" onclick="StaffTabs.show('dat-ban')">
                         <span class="side-icon">&#129681;</span>
                         <span>Quản lý bàn</span>

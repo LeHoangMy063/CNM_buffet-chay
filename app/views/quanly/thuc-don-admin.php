@@ -1,4 +1,14 @@
-<?php $pageTitle = 'Thuc Don';
+<?php
+$pageTitle = 'Thuc Don';
+$items = isset($items) && is_array($items) ? $items : (isset($danhSachMon) && is_array($danhSachMon) ? $danhSachMon : array());
+for ($i = 0; $i < count($items); $i++) {
+    $items[$i]['name'] = isset($items[$i]['name']) ? $items[$i]['name'] : (isset($items[$i]['ten']) ? $items[$i]['ten'] : '');
+    $items[$i]['category'] = isset($items[$i]['category']) ? $items[$i]['category'] : (isset($items[$i]['danh_muc']) ? $items[$i]['danh_muc'] : '');
+    $items[$i]['description'] = isset($items[$i]['description']) ? $items[$i]['description'] : (isset($items[$i]['mo_ta']) ? $items[$i]['mo_ta'] : '');
+    $items[$i]['is_featured'] = isset($items[$i]['is_featured']) ? $items[$i]['is_featured'] : (isset($items[$i]['noi_bat']) ? $items[$i]['noi_bat'] : 0);
+    $items[$i]['is_available'] = isset($items[$i]['is_available']) ? $items[$i]['is_available'] : (isset($items[$i]['con_mon']) ? $items[$i]['con_mon'] : 1);
+    $items[$i]['sort_order'] = isset($items[$i]['sort_order']) ? $items[$i]['sort_order'] : (isset($items[$i]['thu_tu']) ? $items[$i]['thu_tu'] : 0);
+}
 require dirname(__FILE__) . '/_dau-trang.php'; ?>
 <div style="margin-bottom:1rem;text-align:right">
     <button class="btn-admin btn-green" onclick="openForm()">+ Them Mon Moi</button>
