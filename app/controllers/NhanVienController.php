@@ -508,6 +508,7 @@ class NhanVienController extends BoieuKhienCo
 
         $taiKhoanId = intval($this->post('tai_khoan_id', 0));
         $diem       = intval($this->post('diem', 0));
+        $soTien     = intval($this->post('so_tien', 0));
         $sdt        = trim($this->post('sdt', ''));
         $ngay       = trim($this->post('ngay', ''));
         $tuHoaDon   = $this->post('tu_hoa_don', '0') === '1';
@@ -531,6 +532,10 @@ class NhanVienController extends BoieuKhienCo
                 $hoaDonTichDiem = $this->moHinhBan->layTongHoaDonTichDiemTheoSDTNgay($sdt, $ngay);
             }
             $diem = isset($hoaDonTichDiem['diem_quy_doi']) ? (int)$hoaDonTichDiem['diem_quy_doi'] : 0;
+        }
+
+        if (!$tuHoaDon && $soTien > 0) {
+            $diem = (int)floor($soTien / 10000);
         }
 
         $daTaoTaiKhoan = false;
@@ -567,7 +572,7 @@ class NhanVienController extends BoieuKhienCo
             }
             $thongBao = 'Đã cộng ' . $diem . ' điểm cho khách hàng';
             if ($daTaoTaiKhoan) {
-                $thongBao = 'Đã tạo tài khoản khách và cộng ' . $diem . ' điểm. Mật khẩu mặc định: ' . $matKhauMacDinh;
+                $thongBao = 'Đã tạo tài khoản khách và cộng ' . $diem . ' điểm. Mật khẩu mặc định là 6 số cuối của số điện thoại';
             }
             $this->json(array('success' => true, 'thong_bao' => $thongBao));
         } else {

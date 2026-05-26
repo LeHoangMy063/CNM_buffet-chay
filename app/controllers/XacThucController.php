@@ -3,6 +3,7 @@
 require_once dirname(__FILE__) . '/../models/MoHinhCo.php';
 require_once dirname(__FILE__) . '/../models/MoHinh.php';
 require_once dirname(__FILE__) . '/../models/MoHinhKhach.php';
+require_once dirname(__FILE__) . '/../core/MatKhau.php';
 require_once dirname(__FILE__) . '/BoieuKhienCo.php';
 
 class XacThucController extends BoieuKhienCo
@@ -61,9 +62,13 @@ class XacThucController extends BoieuKhienCo
             return;
         }
 
-        if (md5($mat_khau) !== $tai_khoan['mat_khau']) {
+        if (!MatKhau::hopLe($mat_khau, $tai_khoan['mat_khau'])) {
             echo json_encode(array('success' => false, 'thong_bao' => 'Sai ten dang nhap hoac mat khau'));
             return;
+        }
+
+        if (MatKhau::canNangCap($tai_khoan['mat_khau'])) {
+            $this->moHinhTaiKhoan->capNhatMatKhauDaMaHoa($tai_khoan['id'], MatKhau::maHoa($mat_khau));
         }
 
         if ($tai_khoan['dang_hoat_dong'] == 0) {
@@ -135,9 +140,13 @@ class XacThucController extends BoieuKhienCo
             return;
         }
 
-        if (md5($mat_khau) !== $tai_khoan['mat_khau']) {
+        if (!MatKhau::hopLe($mat_khau, $tai_khoan['mat_khau'])) {
             echo json_encode(array('success' => false, 'thong_bao' => 'Mat khau khong chinh xac'));
             return;
+        }
+
+        if (MatKhau::canNangCap($tai_khoan['mat_khau'])) {
+            $this->moHinhKhach->capNhatMatKhauDaMaHoa($tai_khoan['id'], MatKhau::maHoa($mat_khau));
         }
 
         if ($tai_khoan['dang_hoat_dong'] == 0) {
