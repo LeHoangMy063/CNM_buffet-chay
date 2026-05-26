@@ -13,8 +13,7 @@ define('ROLE_NHANVIEN', 'nhanvien');
 define('ROLE_CUSTOMER', 'customer');
 
 define('PASSWORD_MIN_LENGTH',   6);
-// PHP 5.3 không có password_hash, dùng md5 (tương thích cũ)
-define('PASSWORD_HASH_METHOD',  'md5');
+define('PASSWORD_HASH_METHOD',  'password_hash');
 
 // Session timeout (phút)
 define('QUANLY_SESSION_TIMEOUT', 480); // 8 giờ
