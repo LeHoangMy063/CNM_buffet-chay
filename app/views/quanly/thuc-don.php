@@ -7,6 +7,7 @@ $vaiTroQuanLy = isset($nguoiDung['vai_tro']) ? $nguoiDung['vai_tro'] : '';
 $danhSachMon = isset($danhSachMon) ? $danhSachMon : array();
 $danhSachNhanVien = isset($danhSachNhanVien) ? $danhSachNhanVien : array();
 $bangDangMo = isset($bangDangMo) ? $bangDangMo : 'thuc-don';
+$laTrangDashboard = $bangDangMo === 'dashboard';
 $laTrangNhanVien = $bangDangMo === 'nhan-vien';
 $laTrangBaoCao = $bangDangMo === 'bao-cao';
 
@@ -111,6 +112,11 @@ function managerRoleText($value)
 
 $jsonMon = json_encode(managerCleanJsonData($danhSachMon), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $jsonNhanVien = json_encode(managerCleanJsonData($danhSachNhanVien), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$jsonBaoCao = json_encode(managerCleanJsonData(isset($baoCaoDoanhThu) ? $baoCaoDoanhThu : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$jsonTopMon = json_encode(managerCleanJsonData(isset($topMonBanChay) ? $topMonBanChay : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$jsonDanhMuc = json_encode(managerCleanJsonData(isset($thongKeDanhMuc) ? $thongKeDanhMuc : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$jsonTheoGio = json_encode(managerCleanJsonData(isset($thongKeTheoGio) ? $thongKeTheoGio : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$tieuDeQuanLy = $laTrangDashboard ? 'Dashboard vận hành' : ($laTrangBaoCao ? 'Báo cáo doanh thu' : ($laTrangNhanVien ? 'Quản lý nhân viên' : 'Quản lý thực đơn'));
 $managerViewPath = dirname(__FILE__);
 ?>
 <!DOCTYPE html>
@@ -119,7 +125,7 @@ $managerViewPath = dirname(__FILE__);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title><?php echo $laTrangBaoCao ? 'Báo cáo doanh thu' : ($laTrangNhanVien ? 'Quản lý nhân viên' : 'Quản lý thực đơn'); ?> - <?php echo APP_NAME; ?></title>
+    <title><?php echo htmlspecialchars($tieuDeQuanLy, ENT_QUOTES, 'UTF-8'); ?> - <?php echo APP_NAME; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/quanly/thuc-don.css">
 </head>
@@ -136,11 +142,15 @@ $managerViewPath = dirname(__FILE__);
             </div>
 
             <nav class="nav">
+                <a class="side-link <?php echo $laTrangDashboard ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/dashboard">
+                    <span class="side-icon">&#128202;</span>
+                    <span>Dashboard</span>
+                </a>
                 <a class="side-link <?php echo $laTrangBaoCao ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao">
                     <span class="side-icon">&#128200;</span>
                     <span>Báo cáo doanh thu</span>
                 </a>
-                <a class="nav-parent side-link <?php echo (!$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
+                <a class="nav-parent side-link <?php echo (!$laTrangDashboard && !$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
                     <span class="side-icon">&#127858;</span>
                     <span>Quản lý thực đơn</span>
                 </a>
@@ -166,11 +176,13 @@ $managerViewPath = dirname(__FILE__);
             <div class="welcome-panel">
                 <div>
                     <p class="eyebrow">Quản lý</p>
-                    <h2><?php echo $laTrangBaoCao ? 'Báo cáo doanh thu' : ($laTrangNhanVien ? 'Quản lý nhân viên' : 'Quản lý thực đơn'); ?></h2>
+                    <h2><?php echo htmlspecialchars($tieuDeQuanLy, ENT_QUOTES, 'UTF-8'); ?></h2>
                 </div>
             </div>
 
-            <?php if ($laTrangBaoCao) : ?>
+            <?php if ($laTrangDashboard) : ?>
+                <?php include $managerViewPath . '/dashboard.php'; ?>
+            <?php elseif ($laTrangBaoCao) : ?>
                 <?php include $managerViewPath . '/bao-cao.php'; ?>
             <?php elseif ($laTrangNhanVien) : ?>
                 <?php include $managerViewPath . '/nhan-vien/danh-sach.php'; ?>
@@ -189,7 +201,11 @@ $managerViewPath = dirname(__FILE__);
         var ITEM_COUNT = <?php echo (int)$tongMon; ?>;
         var ITEMS = <?php echo $jsonMon ? $jsonMon : '[]'; ?>;
         var STAFF_ITEMS = <?php echo $jsonNhanVien ? $jsonNhanVien : '[]'; ?>;
-        var MANAGER_SECTION = '<?php echo $laTrangBaoCao ? 'bao-cao' : ($laTrangNhanVien ? 'nhan-vien' : 'thuc-don'); ?>';
+        var MANAGER_SECTION = '<?php echo $laTrangDashboard ? 'dashboard' : ($laTrangBaoCao ? 'bao-cao' : ($laTrangNhanVien ? 'nhan-vien' : 'thuc-don')); ?>';
+        var REVENUE_CHART = <?php echo $jsonBaoCao ? $jsonBaoCao : '[]'; ?>;
+        var TOP_DISH_CHART = <?php echo $jsonTopMon ? $jsonTopMon : '[]'; ?>;
+        var CATEGORY_CHART = <?php echo $jsonDanhMuc ? $jsonDanhMuc : '[]'; ?>;
+        var HOUR_CHART = <?php echo $jsonTheoGio ? $jsonTheoGio : '[]'; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/public/assets/js/quanly-thuc-don.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/quanly-thuc-don.js'); ?>"></script>
 </body>

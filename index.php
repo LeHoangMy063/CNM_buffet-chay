@@ -80,6 +80,7 @@ $routes = array(
 
     // QUAN LY
     array('GET',  '/quan-ly',              'QuanLyController', 'trangChu'),
+    array('GET',  '/quan-ly/dashboard',    'QuanLyController', 'dashboard'),
     array('GET',  '/quan-ly/thuc-don',     'QuanLyController', 'thucDon'),
     array('POST', '/quan-ly/thuc-don/luu', 'QuanLyController', 'luuMon'),
     array('POST', '/quan-ly/thuc-don/xoa', 'QuanLyController', 'xoaMon'),
@@ -119,6 +120,7 @@ $routes = array(
     array('GET',  '/nhan-vien/danh-sach-ban', 'NhanVienController', 'layDanhSachBan'),
     array('POST', '/nhan-vien/cap-nhat-trang-thai-ban', 'NhanVienController', 'capNhatTrangThaiBan'),
     array('GET',  '/nhan-vien/don-theo-ban',  'NhanVienController', 'layDonTheoBan'),
+    array('GET',  '/nhan-vien/don-mon/su-kien', 'NhanVienController', 'suKienDonMon'),
     array('GET',  '/nhan-vien/dat-ban/danh-sach', 'NhanVienController', 'layDanhSachDatBan'),
     array('GET',  '/nhan-vien/dat-ban/lich', 'NhanVienController', 'layLichDatBan'),
     array('POST', '/nhan-vien/xac-nhan-mon',  'NhanVienController', 'xacNhanMon'),

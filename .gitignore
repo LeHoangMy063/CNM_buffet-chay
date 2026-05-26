@@ -1,2 +1,5 @@
 tmp/
 *.log
+.env
+ngrok.exe
+ngrok.zip

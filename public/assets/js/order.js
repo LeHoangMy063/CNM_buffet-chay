@@ -109,6 +109,170 @@ function filterCat(cat, btn) {
   });
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a")
+    .replace(/[èéẹẻẽêềếệểễ]/g, "e")
+    .replace(/[ìíịỉĩ]/g, "i")
+    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o")
+    .replace(/[ùúụủũưừứựửữ]/g, "u")
+    .replace(/[ỳýỵỷỹ]/g, "y")
+    .replace(/đ/g, "d");
+}
+
+function menuItemName(item) {
+  return item.name || item.ten || "";
+}
+
+function pickMenuItems(words, count, used) {
+  var source = typeof MENU_ITEMS === "undefined" ? [] : MENU_ITEMS;
+  var result = [];
+  used = used || {};
+
+  for (var i = 0; i < source.length && result.length < count; i++) {
+    var item = source[i];
+    if (!item || used[item.id]) continue;
+    if (Number(item.con_mon || 1) === 0) continue;
+
+    var text = normalizeText(
+      menuItemName(item) +
+        " " +
+        (item.category || item.danh_muc || "") +
+        " " +
+        (item.description || item.mo_ta || ""),
+    );
+    var matched = false;
+    for (var j = 0; j < words.length; j++) {
+      if (text.indexOf(words[j]) !== -1) matched = true;
+    }
+    if (matched) {
+      result.push(item);
+      used[item.id] = true;
+    }
+  }
+
+  return result;
+}
+
+function fillMenuItems(result, count, used) {
+  var source = typeof MENU_ITEMS === "undefined" ? [] : MENU_ITEMS;
+  used = used || {};
+  for (var i = 0; i < source.length && result.length < count; i++) {
+    if (!source[i] || used[source[i].id]) continue;
+    if (Number(source[i].con_mon || 1) === 0) continue;
+    result.push(source[i]);
+    used[source[i].id] = true;
+  }
+  return result;
+}
+
+function buildComboSets() {
+  if (typeof MENU_ITEMS === "undefined" || !MENU_ITEMS.length) return [];
+  var sets = [];
+
+  var usedStarter = {};
+  var starter = [];
+  starter = starter.concat(pickMenuItems(["khai vi", "goi", "cha gio", "salad", "sup"], 3, usedStarter));
+  starter = starter.concat(pickMenuItems(["do uong", "tra", "nuoc", "ep"], 1, usedStarter));
+  fillMenuItems(starter, 4, usedStarter);
+  sets.push({
+    title: "Set nhập tiệc",
+    note: "Món nhẹ, dễ ăn, phù hợp để bắt đầu bữa buffet.",
+    items: starter,
+  });
+
+  var usedHotpot = {};
+  var hotpot = [];
+  hotpot = hotpot.concat(pickMenuItems(["nuoc lau", "lau"], 1, usedHotpot));
+  hotpot = hotpot.concat(pickMenuItems(["rau", "nam", "topping", "dau hu", "tau hu"], 4, usedHotpot));
+  fillMenuItems(hotpot, 5, usedHotpot);
+  sets.push({
+    title: "Set lẩu cân bằng",
+    note: "Có nước lẩu, rau, nấm và topping để gọi đủ nhóm.",
+    items: hotpot,
+  });
+
+  var usedFull = {};
+  var full = [];
+  full = full.concat(pickMenuItems(["mon chinh", "com", "mi", "bun", "dau hu", "nam"], 4, usedFull));
+  full = full.concat(pickMenuItems(["canh", "sup"], 1, usedFull));
+  fillMenuItems(full, 5, usedFull);
+  sets.push({
+    title: "Set no bụng",
+    note: "Hợp với bàn đông người hoặc muốn gọi món chính trước.",
+    items: full,
+  });
+
+  var usedFast = {};
+  var fast = [];
+  fast = fast.concat(pickMenuItems(["goi", "salad", "rau", "topping", "cha gio", "sup"], 4, usedFast));
+  fillMenuItems(fast, 4, usedFast);
+  sets.push({
+    title: "Set bếp ra nhanh",
+    note: "Ưu tiên các món ra nhanh trong lúc chờ món nóng.",
+    items: fast,
+  });
+
+  return sets;
+}
+
+function renderComboSets() {
+  var box = document.getElementById("comboList");
+  if (!box) return;
+
+  var sets = buildComboSets();
+  if (!sets.length) {
+    document.getElementById("comboSuggest").style.display = "none";
+    return;
+  }
+
+  box.innerHTML = sets
+    .map(function (set, index) {
+      var itemsHtml = set.items
+        .map(function (item) {
+          return "<span>" + esc(menuItemName(item)) + "</span>";
+        })
+        .join("");
+      return (
+        '<article class="combo-card">' +
+        "<h3>" +
+        esc(set.title) +
+        "</h3>" +
+        "<p>" +
+        esc(set.note) +
+        "</p>" +
+        '<div class="combo-items">' +
+        itemsHtml +
+        "</div>" +
+        '<button type="button" onclick="addComboSet(' +
+        index +
+        ')">+ Thêm set</button>' +
+        "</article>"
+      );
+    })
+    .join("");
+  window.__comboSets = sets;
+}
+
+function addComboSet(index) {
+  var set = window.__comboSets && window.__comboSets[index];
+  if (!set) return;
+
+  set.items.forEach(function (item) {
+    var name = menuItemName(item);
+    var existing = cart.find(function (c) {
+      return String(c.id) === String(item.id) && c.note === "";
+    });
+    if (existing) existing.qty = Math.min(10, existing.qty + 1);
+    else cart.push({ id: item.id, name: name, qty: 1, note: "" });
+  });
+
+  renderCart();
+  toast("Đã thêm " + set.title + " vào danh sách");
+  openOrderPanel();
+}
+
 /* ── Add modal ───────────────────────────────────────── */
 function openAdd(id, name, desc, img) {
   selId = id;
@@ -405,6 +569,7 @@ function toast(msg, err) {
 /* ── Init ────────────────────────────────────────────── */
 setInterval(refreshOrders, 25000);
 document.addEventListener("DOMContentLoaded", () => {
+  renderComboSets();
   updateVisibility();
   refreshOrders();
   document.addEventListener("keydown", function (e) {

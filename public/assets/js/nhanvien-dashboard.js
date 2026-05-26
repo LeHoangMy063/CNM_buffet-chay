@@ -234,6 +234,92 @@
     },
   };
 
+  window.StaffRealtime = {
+    source: null,
+    version: "",
+    enabled: !!window.EventSource,
+    connect: function () {
+      if (!this.enabled) return;
+      if (this.source) {
+        this.source.close();
+        this.source = null;
+      }
+
+      var url = BASE_URL + "/nhan-vien/don-mon/su-kien";
+      if (this.version) url += "?v=" + encodeURIComponent(this.version);
+
+      var self = this;
+      try {
+        this.source = new EventSource(url);
+      } catch (e) {
+        this.enabled = false;
+        return;
+      }
+
+      this.source.addEventListener("orders", function (ev) {
+        var data = {};
+        try {
+          data = JSON.parse(ev.data || "{}");
+        } catch (e) {
+          data = {};
+        }
+        var oldVersion = self.version;
+        self.version = data.version || self.version;
+
+        if (oldVersion && data.don_cho > 0) {
+          self.notifyNewOrder();
+        }
+
+        if (window.StaffOrders) {
+          StaffOrders.loadTables();
+          if (StaffOrders.selectedTableId) StaffOrders.loadOrders();
+        }
+
+        self.source.close();
+        self.source = null;
+        setTimeout(function () {
+          self.connect();
+        }, 250);
+      });
+
+      this.source.addEventListener("heartbeat", function () {
+        self.source.close();
+        self.source = null;
+        setTimeout(function () {
+          self.connect();
+        }, 250);
+      });
+
+      this.source.onerror = function () {
+        if (self.source) self.source.close();
+        self.source = null;
+        setTimeout(function () {
+          self.connect();
+        }, 4000);
+      };
+    },
+    notifyNewOrder: function () {
+      toast("Có đơn mới từ khách");
+      try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        var ctx = new AudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.04;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        setTimeout(function () {
+          osc.stop();
+          ctx.close();
+        }, 180);
+      } catch (e) {}
+    },
+  };
+
   function init() {
     var tableSearch = el("tableSearch");
     if (tableSearch) {
@@ -298,6 +384,7 @@
       StaffTabs.show("dat-ban");
     }
     StaffOrders.loadTables();
+    StaffRealtime.connect();
 
     setInterval(function () {
       StaffOrders.loadTables();
@@ -324,6 +411,168 @@
   var setText = ui.setText;
   var fmtTime = ui.fmtTime;
   var tableStatusInfo = ui.tableStatusInfo;
+
+  function normalizeText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a")
+      .replace(/[èéẹẻẽêềếệểễ]/g, "e")
+      .replace(/[ìíịỉĩ]/g, "i")
+      .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o")
+      .replace(/[ùúụủũưừứựửữ]/g, "u")
+      .replace(/[ỳýỵỷỹ]/g, "y")
+      .replace(/đ/g, "d");
+  }
+
+  function menuItems() {
+    var source = typeof STAFF_MENU_ITEMS === "undefined" ? [] : STAFF_MENU_ITEMS;
+    var items = [];
+    for (var i = 0; i < source.length; i++) {
+      if (Number(source[i].con_mon || 0) === 0) continue;
+      items.push(source[i]);
+    }
+    return items;
+  }
+
+  function pickBy(items, words, count, used) {
+    var result = [];
+    used = used || {};
+    for (var i = 0; i < items.length && result.length < count; i++) {
+      var it = items[i];
+      if (used[it.id]) continue;
+      var text = normalizeText((it.ten || "") + " " + (it.danh_muc || "") + " " + (it.mo_ta || ""));
+      var matched = false;
+      for (var j = 0; j < words.length; j++) {
+        if (text.indexOf(words[j]) !== -1) matched = true;
+      }
+      if (matched) {
+        result.push(it);
+        used[it.id] = true;
+      }
+    }
+    return result;
+  }
+
+  function fillAny(items, result, count, used) {
+    used = used || {};
+    for (var i = 0; i < items.length && result.length < count; i++) {
+      if (used[items[i].id]) continue;
+      result.push(items[i]);
+      used[items[i].id] = true;
+    }
+    return result;
+  }
+
+  function dishNames(list) {
+    var names = [];
+    for (var i = 0; i < list.length; i++) {
+      names.push(list[i].ten || "Món");
+    }
+    return names;
+  }
+
+  window.StaffMealSuggest = {
+    currentSets: [],
+    buildSets: function (orders) {
+      var items = menuItems();
+      if (!items.length) return [];
+
+      var orderText = normalizeText(JSON.stringify(orders || []));
+      var hasHotpot = orderText.indexOf("lau") !== -1 || orderText.indexOf("nuoc lau") !== -1;
+      var hasManyOrders = orders && orders.length >= 2;
+      var sets = [];
+
+      var usedStarter = {};
+      var starter = [];
+      starter = starter.concat(pickBy(items, ["khai vi", "goi", "cha gio", "salad", "sup"], 3, usedStarter));
+      starter = starter.concat(pickBy(items, ["do uong", "tra", "nuoc", "ep"], 1, usedStarter));
+      fillAny(items, starter, 4, usedStarter);
+      sets.push({ title: "Set nhập tiệc", note: "Dễ giới thiệu cho bàn mới ngồi, ưu tiên món ra nhanh.", items: starter, priority: !orders || !orders.length ? 1 : 4 });
+
+      var usedHotpot = {};
+      var hotpot = [];
+      hotpot = hotpot.concat(pickBy(items, ["nuoc lau", "lau"], 1, usedHotpot));
+      hotpot = hotpot.concat(pickBy(items, ["rau", "nam", "topping", "dau hu", "tau hu"], 4, usedHotpot));
+      fillAny(items, hotpot, 5, usedHotpot);
+      sets.push({ title: "Set lẩu cân bằng", note: "Có nước lẩu, rau, nấm và topping để bàn gọi đủ nhóm.", items: hotpot, priority: hasHotpot ? 1 : 2 });
+
+      var usedFull = {};
+      var full = [];
+      full = full.concat(pickBy(items, ["mon chinh", "com", "mi", "bun", "dau hu", "nam"], 4, usedFull));
+      full = full.concat(pickBy(items, ["canh", "sup"], 1, usedFull));
+      fillAny(items, full, 5, usedFull);
+      sets.push({ title: "Set no bụng", note: "Phù hợp bàn đông khách hoặc khách muốn món chính chắc bụng.", items: full, priority: hasManyOrders ? 1 : 3 });
+
+      var usedLight = {};
+      var light = [];
+      light = light.concat(pickBy(items, ["salad", "sup", "rau", "luoc", "hap", "nam"], 4, usedLight));
+      fillAny(items, light, 4, usedLight);
+      sets.push({ title: "Set nhẹ thanh đạm", note: "Dành cho khách thích món nhẹ, ít dầu hoặc người lớn tuổi.", items: light, priority: 5 });
+
+      var usedFast = {};
+      var fast = [];
+      fast = fast.concat(pickBy(items, ["goi", "salad", "rau", "topping", "cha gio", "sup"], 4, usedFast));
+      fillAny(items, fast, 4, usedFast);
+      sets.push({ title: "Set bếp ra nhanh", note: "Dùng khi quán đông, giúp khách có món trước trong lúc chờ món nóng.", items: fast, priority: 2 });
+
+      sets.sort(function (a, b) {
+        return a.priority - b.priority;
+      });
+      return sets;
+    },
+    render: function (orders) {
+      var panel = el("mealSuggestPanel");
+      var list = el("mealSuggestList");
+      if (!panel || !list) return;
+      if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep") {
+        panel.style.display = "none";
+        return;
+      }
+      if (!StaffOrders.selectedTableId) {
+        panel.style.display = "none";
+        return;
+      }
+
+      panel.style.display = "block";
+      var sets = this.buildSets(orders || []);
+      if (!sets.length) {
+        list.innerHTML = '<div class="empty-state">Chưa có dữ liệu thực đơn để gợi ý set món.</div>';
+        return;
+      }
+
+      var html = "";
+      for (var i = 0; i < sets.length && i < 4; i++) {
+        var set = sets[i];
+        var names = dishNames(set.items);
+        html += '<article class="meal-set-card' + (i === 0 ? " featured" : "") + '">';
+        html += "<h4>" + esc(set.title) + "</h4>";
+        html += "<p>" + esc(set.note) + "</p>";
+        html += '<div class="meal-set-items">';
+        for (var j = 0; j < names.length; j++) {
+          html += "<span>" + esc(names[j]) + "</span>";
+        }
+        html += "</div>";
+        html += '<div class="meal-set-actions"><button class="btn secondary btn-sm" type="button" onclick="StaffMealSuggest.copySet(' + i + ')">Sao chép gợi ý</button></div>';
+        html += "</article>";
+      }
+      list.innerHTML = html;
+      this.currentSets = sets;
+    },
+    copySet: function (index) {
+      var set = this.currentSets && this.currentSets[index];
+      if (!set) return;
+      var text = set.title + ": " + dishNames(set.items).join(", ");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          toast("Đã sao chép set món gợi ý");
+        }, function () {
+          toast(text);
+        });
+      } else {
+        toast(text);
+      }
+    },
+  };
 
   window.StaffOrders = {
     tables: [],
@@ -501,10 +750,13 @@
       }
 
       if (!n) {
+        if (window.StaffMealSuggest) StaffMealSuggest.render([]);
         el("orders").innerHTML =
           '<div class="empty-state"><div style="font-size:32px;margin-bottom:8px">&#127860;</div><div>Bàn này không có đơn nào đang chờ phục vụ.</div></div>';
         return;
       }
+
+      if (window.StaffMealSuggest) StaffMealSuggest.render(orders);
 
       var html = "";
       for (var i = 0; i < orders.length; i++) {
@@ -923,7 +1175,11 @@
 
       var tenBan = "Bàn " + (t.so_ban || id);
       var ma = t.ma_phien_goi_mon || t.ma_truy_cap || "";
-      var url = BASE_URL + "/goi-mon?ma=" + encodeURIComponent(ma);
+      var qrBase =
+        typeof PUBLIC_BASE_URL !== "undefined" && PUBLIC_BASE_URL
+          ? PUBLIC_BASE_URL
+          : BASE_URL;
+      var url = qrBase.replace(/\/+$/, "") + "/goi-mon?ma=" + encodeURIComponent(ma);
       var qrUrl =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
         encodeURIComponent(url);

@@ -13,7 +13,15 @@ define('APP_NAME',   'Buffet Chay An Lac');
 
 // BASE_URL: prefer environment variable, otherwise derive from current request
 if (getenv('BASE_URL')) {
-    define('BASE_URL', getenv('BASE_URL'));
+    $baseUrl = getenv('BASE_URL');
+    $requestHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    if ($requestHost !== '' && strpos($baseUrl, 'localhost') !== false && strpos($requestHost, 'localhost') === false && strpos($requestHost, '127.0.0.1') === false) {
+        $parts = parse_url($baseUrl);
+        $scheme = isset($parts['scheme']) ? $parts['scheme'] : 'http';
+        $path = isset($parts['path']) ? rtrim($parts['path'], '/') : '';
+        $baseUrl = $scheme . '://' . $requestHost . $path;
+    }
+    define('BASE_URL', $baseUrl);
 } else {
     $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
@@ -22,6 +30,8 @@ if (getenv('BASE_URL')) {
     $basePath = $basePath === '/' ? '' : $basePath;
     define('BASE_URL', $scheme . '://' . $host . $basePath);
 }
+
+define('PUBLIC_BASE_URL', getenv('PUBLIC_BASE_URL') ? rtrim(getenv('PUBLIC_BASE_URL'), '/') : BASE_URL);
 
 define('PRICE_ADULT', 199000);
 define('PRICE_CHILD', 0);

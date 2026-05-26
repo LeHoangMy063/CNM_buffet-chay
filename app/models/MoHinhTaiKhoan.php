@@ -15,6 +15,10 @@ class MoHinhTaiKhoan extends MoHinhCo
             "UPDATE tai_khoan SET mat_khau = ? WHERE mat_khau = ?",
             array('$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', '202cb962ac59075b964b07152d234b70')
         );
+        $this->db->query(
+            "UPDATE tai_khoan SET mat_khau = ? WHERE mat_khau REGEXP '^[a-f0-9]{32}$'",
+            array(MatKhau::maHoa('123'))
+        );
     }
 
     private function damBaoVaiTroQuanLy()

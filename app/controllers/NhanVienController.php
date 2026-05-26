@@ -12,6 +12,7 @@ class NhanVienController extends BoieuKhienCo
     protected $moHinhDatBan;
     protected $moHinhTaiKhoan;
     protected $moHinhKhach;
+    protected $moHinhThucDon;
 
     public function __construct()
     {
@@ -21,6 +22,7 @@ class NhanVienController extends BoieuKhienCo
         $this->moHinhDatBan   = new MoHinhDatBan();
         $this->moHinhTaiKhoan = new MoHinhTaiKhoan();
         $this->moHinhKhach    = new MoHinhKhach();
+        $this->moHinhThucDon  = new MoHinhMonAn();
     }
 
     private function laBep()
@@ -50,7 +52,8 @@ class NhanVienController extends BoieuKhienCo
 
         $data = array(
             'nhanVien'    => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
-            'danhSachBan' => $this->moHinhBan->layTatCaBan()
+            'danhSachBan' => $this->moHinhBan->layTatCaBan(),
+            'danhSachMon' => $this->moHinhThucDon->layTatCa()
         );
 
         $this->view('nhanvien/trang-chu', $data);
@@ -61,7 +64,8 @@ class NhanVienController extends BoieuKhienCo
         $this->yeuCauAdminHoacNhanVien();
 
         $this->view('nhanvien/trang-chu', array(
-            'nhanVien' => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array()
+            'nhanVien' => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
+            'danhSachMon' => $this->moHinhThucDon->layTatCa()
         ));
     }
 
@@ -84,6 +88,45 @@ class NhanVienController extends BoieuKhienCo
 
         $danhSachDon = $this->moHinhDon->layDonTheoBan($banId);
         $this->json(array('success' => true, 'du_lieu' => $danhSachDon));
+    }
+
+    public function suKienDonMon()
+    {
+        $this->yeuCauAdminHoacNhanVien();
+
+        if (function_exists('session_write_close')) {
+            session_write_close();
+        }
+
+        @set_time_limit(0);
+        @ini_set('zlib.output_compression', 0);
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('X-Accel-Buffering: no');
+
+        $last = isset($_GET['v']) ? trim($_GET['v']) : '';
+        $started = time();
+
+        while (time() - $started < 25) {
+            $dauVet = $this->moHinhDon->layDauVetDonMon();
+            if ($last === '' || $dauVet['version'] !== $last) {
+                echo "event: orders\n";
+                echo "data: " . json_encode($dauVet) . "\n\n";
+                @ob_flush();
+                @flush();
+                return;
+            }
+
+            echo ": ping\n\n";
+            @ob_flush();
+            @flush();
+            sleep(2);
+        }
+
+        echo "event: heartbeat\n";
+        echo "data: " . json_encode(array('version' => $last, 'luc' => date('Y-m-d H:i:s'))) . "\n\n";
+        @ob_flush();
+        @flush();
     }
 
     public function capNhatTrangThaiBan()

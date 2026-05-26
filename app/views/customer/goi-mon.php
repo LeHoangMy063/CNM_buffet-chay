@@ -13,6 +13,15 @@ $orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/cu
 $checkoutCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/checkout.css');
 $orderJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/order.js');
 $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/checkout.js');
+$menuItemsFlat = array();
+foreach ($menuByCategory as $cat => $items) {
+    foreach ($items as $item) {
+        $item['danh_muc'] = $cat;
+        $item['category'] = $cat;
+        $menuItemsFlat[] = $item;
+    }
+}
+$menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -52,6 +61,16 @@ $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/c
 
         <!-- MENU -->
         <div class="menu-area">
+            <section class="combo-suggest" id="comboSuggest">
+                <div class="combo-suggest-head">
+                    <div>
+                        <span>AI gợi ý set món</span>
+                        <h2>Chọn nhanh theo kiểu buffet</h2>
+                    </div>
+                </div>
+                <div class="combo-list" id="comboList"></div>
+            </section>
+
             <div class="tabs" id="tabs">
                 <button class="tab active" onclick="filterCat('all',this)">Tất cả</button>
                 <?php foreach (array_keys($menuByCategory) as $cat) { ?>
@@ -72,7 +91,18 @@ $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/c
                 'Tráng miệng' => '🍮',
             );
             foreach ($menuByCategory as $cat => $items) {
+                $emojiTheoDanhMuc = array(
+                    'Khai vị' => '🍽️',
+                    'Món chính' => '🍜',
+                    'Nước lẩu' => '🍲',
+                    'Đồ uống' => '🍹',
+                    'Rau' => '🥬',
+                    'Topping' => '🍢'
+                );
                 $em = isset($catEmoji[$cat]) ? $catEmoji[$cat] : '🌿';
+                if (isset($emojiTheoDanhMuc[$cat])) {
+                    $em = $emojiTheoDanhMuc[$cat];
+                }
             ?>
                 <div class="cat-block" data-cat="<?php echo htmlspecialchars($cat) ?>">
                     <div class="cat-header">
@@ -200,6 +230,8 @@ $checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/c
     <script>
         var CODE = '<?php echo htmlspecialchars($accessCode) ?>';
         var BASE = '<?php echo BASE_URL ?>';
+        var PUBLIC_BASE = '<?php echo PUBLIC_BASE_URL ?>';
+        var MENU_ITEMS = <?php echo $menuItemsJson ? $menuItemsJson : '[]'; ?>;
     </script>
     <script src="<?php echo BASE_URL ?>/public/assets/js/order.js?v=<?php echo $orderJsVersion ?>"></script>
     <script src="<?php echo BASE_URL ?>/public/assets/js/checkout.js?v=<?php echo $checkoutJsVersion ?>"></script>

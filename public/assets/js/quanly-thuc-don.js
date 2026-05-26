@@ -331,6 +331,185 @@ function staffRoleLabel(value) {
   return labels[value] || value || "-";
 }
 
+function compactNumber(value) {
+  var n = Number(value || 0);
+  if (n >= 1000000) {
+    return Math.round(n / 100000) / 10 + "tr";
+  }
+  if (n >= 1000) {
+    return Math.round(n / 100) / 10 + "k";
+  }
+  return String(n);
+}
+
+function fitCanvas(canvas) {
+  var rect = canvas.getBoundingClientRect();
+  var ratio = window.devicePixelRatio || 1;
+  var width = Math.max(320, Math.floor(rect.width || canvas.width));
+  var height = Math.max(240, Math.floor(rect.height || 300));
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  var ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return { ctx: ctx, width: width, height: height };
+}
+
+function drawEmptyChart(ctx, width, height, message) {
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#f8faf5";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#7b887f";
+  ctx.font = "700 13px Be Vietnam Pro, Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(message || "Chua co du lieu", width / 2, height / 2);
+}
+
+function drawLineChart(canvasId, rows, valueKey, labelKey) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) {
+    return;
+  }
+  var fitted = fitCanvas(canvas);
+  var ctx = fitted.ctx;
+  var width = fitted.width;
+  var height = fitted.height;
+  var data = rows || [];
+  if (!data.length) {
+    drawEmptyChart(ctx, width, height, "Chua co du lieu khach buffet");
+    return;
+  }
+
+  var pad = { left: 54, right: 20, top: 22, bottom: 42 };
+  var chartW = width - pad.left - pad.right;
+  var chartH = height - pad.top - pad.bottom;
+  var max = 0;
+  for (var i = 0; i < data.length; i++) {
+    max = Math.max(max, Number(data[i][valueKey] || 0));
+  }
+  max = max || 1;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = "#e0e5dc";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#7b887f";
+  ctx.font = "600 11px Be Vietnam Pro, Arial";
+  ctx.textAlign = "right";
+
+  for (var g = 0; g <= 4; g++) {
+    var y = pad.top + chartH - (chartH * g) / 4;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(compactNumber((max * g) / 4), pad.left - 8, y + 4);
+  }
+
+  ctx.beginPath();
+  for (var j = 0; j < data.length; j++) {
+    var x = pad.left + (data.length === 1 ? chartW / 2 : (chartW * j) / (data.length - 1));
+    var yPoint = pad.top + chartH - (Number(data[j][valueKey] || 0) / max) * chartH;
+    if (j === 0) {
+      ctx.moveTo(x, yPoint);
+    } else {
+      ctx.lineTo(x, yPoint);
+    }
+  }
+  ctx.strokeStyle = "#2f6b4f";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = "#2f6b4f";
+  for (var k = 0; k < data.length; k++) {
+    var px = pad.left + (data.length === 1 ? chartW / 2 : (chartW * k) / (data.length - 1));
+    var py = pad.top + chartH - (Number(data[k][valueKey] || 0) / max) * chartH;
+    ctx.beginPath();
+    ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#526157";
+  ctx.textAlign = "center";
+  var step = Math.max(1, Math.ceil(data.length / 8));
+  for (var l = 0; l < data.length; l += step) {
+    var lx = pad.left + (data.length === 1 ? chartW / 2 : (chartW * l) / (data.length - 1));
+    ctx.fillText(String(data[l][labelKey] || "").slice(5), lx, height - 16);
+  }
+}
+
+function drawBarChart(canvasId, rows, valueKey, labelKey, emptyMessage) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas) {
+    return;
+  }
+  var fitted = fitCanvas(canvas);
+  var ctx = fitted.ctx;
+  var width = fitted.width;
+  var height = fitted.height;
+  var data = rows || [];
+  if (!data.length) {
+    drawEmptyChart(ctx, width, height, emptyMessage);
+    return;
+  }
+
+  var pad = { left: 18, right: 18, top: 18, bottom: 86 };
+  var chartW = width - pad.left - pad.right;
+  var chartH = height - pad.top - pad.bottom;
+  var max = 0;
+  for (var i = 0; i < data.length; i++) {
+    max = Math.max(max, Number(data[i][valueKey] || 0));
+  }
+  max = max || 1;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, width, height);
+
+  var gap = 10;
+  var barW = Math.max(22, (chartW - gap * (data.length - 1)) / data.length);
+  for (var j = 0; j < data.length; j++) {
+    var value = Number(data[j][valueKey] || 0);
+    var barH = (value / max) * chartH;
+    var x = pad.left + j * (barW + gap);
+    var y = pad.top + chartH - barH;
+    ctx.fillStyle = j % 2 ? "#b7791f" : "#2f6b4f";
+    ctx.fillRect(x, y, barW, barH);
+    ctx.fillStyle = "#17211c";
+    ctx.font = "800 12px Be Vietnam Pro, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(compactNumber(value), x + barW / 2, Math.max(14, y - 6));
+
+    ctx.save();
+    ctx.translate(x + barW / 2, height - 72);
+    ctx.rotate(-Math.PI / 5);
+    ctx.fillStyle = "#526157";
+    ctx.font = "600 11px Be Vietnam Pro, Arial";
+    ctx.textAlign = "right";
+    ctx.fillText(String(data[j][labelKey] || "-").slice(0, 18), 0, 0);
+    ctx.restore();
+  }
+}
+
+function drawHourChart() {
+  var rows = [];
+  var source = typeof HOUR_CHART === "undefined" ? [] : HOUR_CHART;
+  for (var i = 0; i < source.length; i++) {
+    rows.push({
+      label: String(source[i].gio || "0") + "h",
+      value: Number(source[i].so_mon || 0),
+    });
+  }
+  drawBarChart("hourCanvas", rows, "value", "label", "Chua co du lieu tai bep theo gio");
+}
+
+function initDashboardCharts() {
+  drawLineChart("revenueCanvas", typeof REVENUE_CHART === "undefined" ? [] : REVENUE_CHART, "so_khach", "ngay");
+  drawBarChart("topDishCanvas", typeof TOP_DISH_CHART === "undefined" ? [] : TOP_DISH_CHART, "tong_ban", "ten", "Chua co du lieu mon duoc goi");
+  drawBarChart("categoryCanvas", typeof CATEGORY_CHART === "undefined" ? [] : CATEGORY_CHART, "tong_ban", "danh_muc", "Chua co du lieu nhom mon");
+  drawHourChart();
+}
+
 function findStaff(id) {
   for (var i = 0; i < STAFF_ITEMS.length; i++) {
     if (String(STAFF_ITEMS[i].id) === String(id)) {
@@ -567,7 +746,10 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-if (typeof MANAGER_SECTION === "undefined" || MANAGER_SECTION === "thuc-don") {
+if (typeof MANAGER_SECTION !== "undefined" && MANAGER_SECTION === "dashboard") {
+  initDashboardCharts();
+  window.addEventListener("resize", initDashboardCharts);
+} else if (typeof MANAGER_SECTION === "undefined" || MANAGER_SECTION === "thuc-don") {
   initCategories();
   renderList();
 } else {

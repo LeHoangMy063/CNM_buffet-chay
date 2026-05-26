@@ -20,7 +20,12 @@ class QuanLyController extends BoieuKhienCo
 
     public function trangChu()
     {
-        $this->chuyenHuong(BASE_URL . '/quan-ly/thuc-don');
+        $this->chuyenHuong(BASE_URL . '/quan-ly/dashboard');
+    }
+
+    public function dashboard()
+    {
+        $this->hienThiTrangQuanLy('dashboard');
     }
 
     public function thucDon()
@@ -49,17 +54,86 @@ class QuanLyController extends BoieuKhienCo
             ? $_GET['den_ngay']
             : date('Y-m-t', strtotime('last day of previous month'));
 
+        $topMonBanChay = $this->moHinhDon->topMonBanChayTrongKhoang(6, $tuNgay, $denNgay);
+        $thongKeDanhMuc = $this->moHinhDon->thongKeDanhMucTrongKhoang($tuNgay, $denNgay);
+        $thongKeTheoGio = $this->moHinhDon->thongKeDonTheoGio($tuNgay, $denNgay);
+        $monCanDay = $this->moHinhDon->monItBanTrongKhoang(5, $tuNgay, $denNgay);
+        $tongQuanDoanhThu = $this->moHinhDon->tongQuanDoanhThu($tuNgay, $denNgay);
+
         $this->view('quanly/thuc-don', array(
             'nguoiDung' => $this->layNguoiDung(),
             'danhSachMon' => $this->moHinhThucDon->layTatCa(),
             'danhSachNhanVien' => $this->moHinhTaiKhoan->layNhanVienQuanLy(),
             'tuNgay' => $tuNgay,
             'denNgay' => $denNgay,
-            'tongQuanDoanhThu' => $this->moHinhDon->tongQuanDoanhThu($tuNgay, $denNgay),
+            'tongQuanDoanhThu' => $tongQuanDoanhThu,
             'baoCaoDoanhThu' => $this->moHinhDon->thongKeDoanThu($tuNgay, $denNgay),
             'chiTietDoanhThu' => $this->moHinhDon->chiTietDoanhThu($tuNgay, $denNgay),
+            'topMonBanChay' => $topMonBanChay,
+            'thongKeDanhMuc' => $thongKeDanhMuc,
+            'thongKeTheoGio' => $thongKeTheoGio,
+            'monCanDay' => $monCanDay,
+            'goiYMonAi' => $this->taoGoiYMonAi($topMonBanChay, $thongKeDanhMuc, $monCanDay, $tongQuanDoanhThu),
             'bangDangMo' => $bangDangMo
         ));
+    }
+
+    private function taoGoiYMonAi($topMon, $danhMuc, $monCanDay, $tongQuan)
+    {
+        $goiY = array();
+        $soPhien = isset($tongQuan['so_phien']) ? (int)$tongQuan['so_phien'] : 0;
+        $tongKhach = isset($tongQuan['tong_khach']) ? (int)$tongQuan['tong_khach'] : 0;
+
+        if (!empty($topMon)) {
+            $mon = $topMon[0];
+            $goiY[] = array(
+                'nhan' => 'Món được gọi nhiều',
+                'tieu_de' => 'Chuẩn bị sẵn "' . $mon['ten'] . '" trước giờ đông khách',
+                'mo_ta' => 'Món này có lượng gọi cao nhất trong buffet. Nên sơ chế trước theo mẻ nhỏ để ra món nhanh mà vẫn giữ chất lượng.',
+                'hanh_dong' => 'Tăng định mức sơ chế cho ca cao điểm.'
+            );
+        }
+
+        if (!empty($danhMuc)) {
+            $dm = $danhMuc[0];
+            $goiY[] = array(
+                'nhan' => 'Nhóm món hút khách',
+                'tieu_de' => 'Ưu tiên quay vòng nhóm ' . $dm['danh_muc'],
+                'mo_ta' => 'Nhóm này đang được gọi nhiều trong buffet. Nên bố trí nguyên liệu và nhân sự bếp theo nhóm này để tránh trễ món.',
+                'hanh_dong' => 'Kiểm tra tồn kho và lịch sơ chế theo nhóm.'
+            );
+        }
+
+        if (!empty($monCanDay)) {
+            $monCham = $monCanDay[0];
+            $goiY[] = array(
+                'nhan' => 'Món ít được gọi',
+                'tieu_de' => 'Xem lại vị trí hiển thị của "' . $monCham['ten'] . '"',
+                'mo_ta' => 'Món còn phục vụ nhưng ít khách chọn. Nên đổi ảnh, tên gọi, mô tả hoặc đưa vào vị trí dễ thấy hơn trên màn hình gọi món.',
+                'hanh_dong' => 'Thử hiển thị nổi bật trong 1 ca phục vụ.'
+            );
+        }
+
+        if ($soPhien > 0 && $tongKhach > 0) {
+            $khachMoiPhien = round($tongKhach / $soPhien, 1);
+            $goiY[] = array(
+                'nhan' => 'Tải bếp',
+                'tieu_de' => 'Trung bình ' . $khachMoiPhien . ' khách mỗi phiên buffet',
+                'mo_ta' => 'Khi số khách mỗi phiên cao, nên đưa các món ra nhanh như khai vị, rau và topping lên trước để giảm áp lực bếp nóng.',
+                'hanh_dong' => 'Sắp xếp màn hình gọi món theo tốc độ ra món.'
+            );
+        }
+
+        if (empty($goiY)) {
+            $goiY[] = array(
+                'nhan' => 'Khởi động',
+                'tieu_de' => 'Cần thêm dữ liệu gọi món để AI gợi ý tốt hơn',
+                'mo_ta' => 'Hãy phục vụ vài phiên buffet đầu tiên, sau đó dashboard sẽ nhìn được món được gọi nhiều, giờ cao điểm và món ít được chọn.',
+                'hanh_dong' => 'Tiếp tục ghi nhận đơn món.'
+            );
+        }
+
+        return array_slice($goiY, 0, 4);
     }
 
     public function luuMon()

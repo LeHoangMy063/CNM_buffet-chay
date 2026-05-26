@@ -394,10 +394,10 @@ CREATE TABLE `tai_khoan` (
 --
 
 INSERT INTO `tai_khoan` (`id`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
-(1, 'quanly', 'e6e061838856bf47e1de730719fb2609', 'quanly', 1, 'Quan tri vien', NULL, NULL, 0, '2026-04-27 14:09:41'),
-(2, 'nhanvien01', '202cb962ac59075b964b07152d234b70', 'nhanvien', 1, 'Nguyen Thanh Truc', NULL, NULL, 0, '2026-04-27 14:09:41'),
-(6, 'quanly01', '202cb962ac59075b964b07152d234b70', 'quanly', 1, 'Quan ly nha hang', NULL, NULL, 0, '2026-05-14 00:00:00'),
-(7, 'nhanvien02', '202cb962ac59075b964b07152d234b70', 'bep', 1, 'Nhan vien bep', NULL, NULL, 0, '2026-05-26 00:00:00');
+(1, 'quanly', '$2y$10$mYFxzdEx8VM1P2TBvXAc5.ez9b8L9zupQll/yqTZCXVjjHJpjcok.', 'quanly', 1, 'Quan tri vien', NULL, NULL, 0, '2026-04-27 14:09:41'),
+(2, 'nhanvien01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'nhanvien', 1, 'Nguyen Thanh Truc', NULL, NULL, 0, '2026-04-27 14:09:41'),
+(6, 'quanly01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'quanly', 1, 'Quan ly nha hang', NULL, NULL, 0, '2026-05-14 00:00:00'),
+(7, 'nhanvien02', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'bep', 1, 'Nhan vien bep', NULL, NULL, 0, '2026-05-26 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -426,9 +426,9 @@ CREATE TABLE `khach_tai_khoan` (
 --
 
 INSERT INTO `khach_tai_khoan` (`id`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
-(1, '0932396610', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),
-(2, '01871638136', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
-(3, '0187193123', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39');
+(1, '0932396610', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),
+(2, '01871638136', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
+(3, '0187193123', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39');
 
 --
 -- Constraints for dumped tables

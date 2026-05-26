@@ -186,6 +186,47 @@ class MoHinhDonMon extends MoHinhCo
         return !empty($rows) ? (int)$rows[0]['tong'] : 0;
     }
 
+    public function layDauVetDonMon()
+    {
+        $this->damBaoBangChiTietDon();
+
+        $rows = $this->db->query("
+        SELECT
+            COUNT(DISTINCT CASE WHEN d.trang_thai = 'cho_phuc_vu' THEN d.id END) AS don_cho,
+            COUNT(CASE WHEN ct.trang_thai = 'cho_phuc_vu' THEN ct.id END) AS mon_cho,
+            COALESCE(MAX(d.id), 0) AS don_cuoi,
+            COALESCE(MAX(ct.id), 0) AS chi_tiet_cuoi,
+            COALESCE(MAX(d.ngay_tao), '') AS tao_cuoi
+        FROM don_mon d
+        LEFT JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
+        WHERE DATE(d.ngay_tao) = CURDATE()
+        ");
+
+        $row = !empty($rows) ? $rows[0] : array(
+            'don_cho' => 0,
+            'mon_cho' => 0,
+            'don_cuoi' => 0,
+            'chi_tiet_cuoi' => 0,
+            'tao_cuoi' => ''
+        );
+
+        $version = implode('|', array(
+            isset($row['don_cho']) ? $row['don_cho'] : 0,
+            isset($row['mon_cho']) ? $row['mon_cho'] : 0,
+            isset($row['don_cuoi']) ? $row['don_cuoi'] : 0,
+            isset($row['chi_tiet_cuoi']) ? $row['chi_tiet_cuoi'] : 0,
+            isset($row['tao_cuoi']) ? $row['tao_cuoi'] : ''
+        ));
+
+        return array(
+            'version' => md5($version),
+            'don_cho' => (int)$row['don_cho'],
+            'mon_cho' => (int)$row['mon_cho'],
+            'don_cuoi' => (int)$row['don_cuoi'],
+            'luc' => date('Y-m-d H:i:s')
+        );
+    }
+
     public function layGanDay($gioi_han)
     {
         $this->damBaoBangChiTietDon();
@@ -458,6 +499,84 @@ class MoHinhDonMon extends MoHinhCo
         LIMIT ?
         ";
         return $this->db->query($sql, array((int)$gioi_han));
+    }
+
+    public function topMonBanChayTrongKhoang($gioi_han, $tu_ngay, $den_ngay)
+    {
+        $this->damBaoBangChiTietDon();
+
+        $sql = "
+        SELECT m.id, m.ten, m.danh_muc, SUM(ct.so_luong) AS tong_ban
+        FROM chitiet_donmon ct
+        JOIN don_mon d ON d.id = ct.don_mon_id
+        JOIN mon_an m ON ct.mon_an_id = m.id
+        WHERE d.trang_thai = 'da_phuc_vu'
+          AND ct.trang_thai = 'da_phuc_vu'
+          AND DATE(d.ngay_tao) BETWEEN ? AND ?
+        GROUP BY m.id, m.ten, m.danh_muc
+        ORDER BY tong_ban DESC, m.ten ASC
+        LIMIT ?
+        ";
+        return $this->db->query($sql, array($tu_ngay, $den_ngay, (int)$gioi_han));
+    }
+
+    public function thongKeDanhMucTrongKhoang($tu_ngay, $den_ngay)
+    {
+        $this->damBaoBangChiTietDon();
+
+        $sql = "
+        SELECT m.danh_muc, SUM(ct.so_luong) AS tong_ban
+        FROM chitiet_donmon ct
+        JOIN don_mon d ON d.id = ct.don_mon_id
+        JOIN mon_an m ON ct.mon_an_id = m.id
+        WHERE d.trang_thai = 'da_phuc_vu'
+          AND ct.trang_thai = 'da_phuc_vu'
+          AND DATE(d.ngay_tao) BETWEEN ? AND ?
+        GROUP BY m.danh_muc
+        ORDER BY tong_ban DESC, m.danh_muc ASC
+        ";
+        return $this->db->query($sql, array($tu_ngay, $den_ngay));
+    }
+
+    public function thongKeDonTheoGio($tu_ngay, $den_ngay)
+    {
+        $this->damBaoBangChiTietDon();
+
+        $sql = "
+        SELECT HOUR(d.ngay_tao) AS gio,
+               COUNT(DISTINCT d.id) AS so_don,
+               COALESCE(SUM(ct.so_luong), 0) AS so_mon
+        FROM don_mon d
+        LEFT JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
+        WHERE d.trang_thai <> 'da_huy'
+          AND DATE(d.ngay_tao) BETWEEN ? AND ?
+        GROUP BY HOUR(d.ngay_tao)
+        ORDER BY gio ASC
+        ";
+        return $this->db->query($sql, array($tu_ngay, $den_ngay));
+    }
+
+    public function monItBanTrongKhoang($gioi_han, $tu_ngay, $den_ngay)
+    {
+        $this->damBaoBangChiTietDon();
+
+        $sql = "
+        SELECT m.id, m.ten, m.danh_muc,
+               COALESCE(SUM(CASE WHEN d.id IS NOT NULL THEN ct.so_luong ELSE 0 END), 0) AS tong_ban
+        FROM mon_an m
+        LEFT JOIN chitiet_donmon ct
+          ON ct.mon_an_id = m.id
+         AND ct.trang_thai = 'da_phuc_vu'
+        LEFT JOIN don_mon d
+          ON d.id = ct.don_mon_id
+         AND d.trang_thai = 'da_phuc_vu'
+         AND DATE(d.ngay_tao) BETWEEN ? AND ?
+        WHERE m.con_mon = 1
+        GROUP BY m.id, m.ten, m.danh_muc
+        ORDER BY tong_ban ASC, m.noi_bat DESC, m.ten ASC
+        LIMIT ?
+        ";
+        return $this->db->query($sql, array($tu_ngay, $den_ngay, (int)$gioi_han));
     }
 }
 

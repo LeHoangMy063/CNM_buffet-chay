@@ -9,7 +9,8 @@ services:
       DB_USER: buffet_user
       DB_PASS: buffet_pass
       DB_CHARSET: utf8
-      BASE_URL: http://localhost:8080/buffet-chay
+      BASE_URL: ${BASE_URL:-http://localhost:8080/buffet-chay}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080/buffet-chay}
     volumes:
       - ./:/var/www/html/buffet-chay
     depends_on:

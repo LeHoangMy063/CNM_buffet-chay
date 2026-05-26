@@ -1,4 +1,6 @@
 Options -Indexes
+AddType application/manifest+json .webmanifest
+AddType image/svg+xml .svg
 RewriteEngine On
 
 # Nếu file/thư mục thật sự tồn tại thì phục vụ trực tiếp

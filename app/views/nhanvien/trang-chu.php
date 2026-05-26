@@ -5,6 +5,8 @@ $tenNhanVien = isset($nhanVien['ho_ten']) && $nhanVien['ho_ten'] !== ''
     : (isset($nhanVien['ten_dang_nhap']) ? $nhanVien['ten_dang_nhap'] : 'Nhân viên');
 $vaiTro = isset($nhanVien['vai_tro']) ? $nhanVien['vai_tro'] : '';
 $laBep = $vaiTro === 'bep';
+$danhSachMon = isset($danhSachMon) ? $danhSachMon : array();
+$jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -12,7 +14,11 @@ $laBep = $vaiTro === 'bep';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#2d6a4f">
+    <meta name="mobile-web-app-capable" content="yes">
     <title><?php echo $laBep ? 'Màn hình bếp' : 'Trang nhân viên'; ?> - <?php echo APP_NAME; ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/nhanvien/dashboard.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/css/nhanvien/dashboard.css'); ?>">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/nhanvien/orders.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/css/nhanvien/orders.css'); ?>">
@@ -117,11 +123,20 @@ $laBep = $vaiTro === 'bep';
 
     <script>
         var BASE_URL = '<?php echo BASE_URL; ?>';
+        var PUBLIC_BASE_URL = '<?php echo PUBLIC_BASE_URL; ?>';
         var RESTAURANT_CAPACITY = <?php echo defined('RESTAURANT_CAPACITY') ? (int)RESTAURANT_CAPACITY : 40; ?>;
         var PRICE_ADULT = <?php echo defined('PRICE_ADULT') ? (int)PRICE_ADULT : 199000; ?>;
         var PRICE_CHILD = <?php echo defined('PRICE_CHILD') ? (int)PRICE_CHILD : 0; ?>;
         var STAFF_ROLE = '<?php echo htmlspecialchars($vaiTro, ENT_QUOTES, 'UTF-8'); ?>';
         var STAFF_DEFAULT_PANE = '<?php echo $laBep ? 'xac-nhan-mon' : 'xac-nhan-dat-ban'; ?>';
+        var STAFF_MENU_ITEMS = <?php echo $jsonDanhSachMon ? $jsonDanhSachMon : '[]'; ?>;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register(BASE_URL + '/service-worker.js', {
+                    scope: BASE_URL + '/'
+                }).catch(function() {});
+            });
+        }
     </script>
     <script src="<?php echo BASE_URL; ?>/public/assets/js/nhanvien-dashboard.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/nhanvien-dashboard.js'); ?>"></script>
     <script src="<?php echo BASE_URL; ?>/public/assets/js/nhanvien-reservations.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/nhanvien-reservations.js'); ?>"></script>

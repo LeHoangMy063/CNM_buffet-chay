@@ -4,38 +4,75 @@ require_once dirname(__FILE__) . '/MoHinhCo.php';
 
 class MoHinhMonAn extends MoHinhCo
 {
+    private function chuThuongKhongDau($value)
+    {
+        $value = trim((string)$value);
+        $value = function_exists('mb_strtolower')
+            ? mb_strtolower($value, 'UTF-8')
+            : strtolower($value);
+
+        $from = array(
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ'
+        );
+        $to = array(
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd'
+        );
+
+        return str_replace($from, $to, $value);
+    }
+
     private function chuanHoaDanhMuc($danh_muc)
     {
         $danh_muc = trim((string)$danh_muc);
-        $key = function_exists('mb_strtolower')
-            ? mb_strtolower($danh_muc, 'UTF-8')
-            : strtolower($danh_muc);
+        $key = $this->chuThuongKhongDau($danh_muc);
 
-        $map = array(
-            'khai vi' => 'Khai vi',
-            'khai vá»‹' => 'Khai vi',
-            'mon chinh' => 'Mon chinh',
-            'mÃ³n chÃ­nh' => 'Mon chinh',
-            'nuoc lau' => 'Nuoc lau',
-            'nÆ°á»›c láº©u' => 'Nuoc lau',
-            'topping' => 'Topping',
-            'rau' => 'Rau',
-            'do uong' => 'Do uong',
-            'Ä‘á»“ uá»‘ng' => 'Do uong',
-        );
+        if (strpos($key, 'khai') !== false || strpos($key, 'vi') !== false) {
+            return 'Khai vi';
+        }
+        if (strpos($key, 'chinh') !== false || strpos($key, 'mon chinh') !== false) {
+            return 'Mon chinh';
+        }
+        if (strpos($key, 'lau') !== false || strpos($key, 'nuoc') !== false) {
+            return 'Nuoc lau';
+        }
+        if (strpos($key, 'uong') !== false || strpos($key, 'do uong') !== false) {
+            return 'Do uong';
+        }
+        if (strpos($key, 'topping') !== false) {
+            return 'Topping';
+        }
+        if (strpos($key, 'rau') !== false) {
+            return 'Rau';
+        }
+        if (strpos($key, 'trang') !== false) {
+            return 'Trang mieng';
+        }
 
-        return isset($map[$key]) ? $map[$key] : $danh_muc;
+        return $danh_muc;
     }
 
     private function tenHienThiDanhMuc($danh_muc)
     {
         $labels = array(
-            'Khai vi' => 'Khai vá»‹',
-            'Mon chinh' => 'MÃ³n chÃ­nh',
-            'Nuoc lau' => 'NÆ°á»›c láº©u',
+            'Khai vi' => 'Khai vị',
+            'Mon chinh' => 'Món chính',
+            'Nuoc lau' => 'Nước lẩu',
             'Topping' => 'Topping',
             'Rau' => 'Rau',
-            'Do uong' => 'Äá»“ uá»‘ng',
+            'Do uong' => 'Đồ uống',
+            'Trang mieng' => 'Tráng miệng',
         );
 
         $maDanhMuc = $this->chuanHoaDanhMuc($danh_muc);
