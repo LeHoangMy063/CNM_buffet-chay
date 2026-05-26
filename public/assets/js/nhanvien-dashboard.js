@@ -282,8 +282,20 @@
       };
     }
 
+    var requestedTab = "";
+    try {
+      requestedTab = new URLSearchParams(window.location.search).get("tab") || "";
+    } catch (e) {
+      requestedTab = "";
+    }
+    if (!requestedTab && window.location.hash) {
+      requestedTab = window.location.hash.replace(/^#/, "");
+    }
+
     if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep") {
       StaffTableManager.showPane("xac-nhan-mon");
+    } else if (requestedTab === "dat-ban") {
+      StaffTabs.show("dat-ban");
     }
     StaffOrders.loadTables();
 
