@@ -1,8 +1,17 @@
 <?php
 require_once dirname(__FILE__) . '/MoHinhCo.php';
+require_once dirname(__FILE__) . '/../core/MatKhau.php';
 
 class MoHinhKhach extends MoHinhCo
 {
+    private function nangCapMatKhauMacDinhCu()
+    {
+        $this->db->query(
+            "UPDATE khach_tai_khoan SET mat_khau = ? WHERE mat_khau = ?",
+            array('$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'e10adc3949ba59abbe56e057f20f883e')
+        );
+    }
+
     private function damBaoBangKhachTaiKhoan()
     {
         $this->db->query(
@@ -33,6 +42,7 @@ class MoHinhKhach extends MoHinhCo
         $this->damBaoCotKhachTaiKhoan('diem_tich_luy', "ALTER TABLE khach_tai_khoan ADD COLUMN diem_tich_luy int(11) NOT NULL default 0");
         $this->damBaoCotKhachTaiKhoan('ngay_tao', "ALTER TABLE khach_tai_khoan ADD COLUMN ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP");
         $this->dongBoKhachCuTuTaiKhoan();
+        $this->nangCapMatKhauMacDinhCu();
     }
 
     private function dongBoKhachCuTuTaiKhoan()
@@ -117,7 +127,7 @@ class MoHinhKhach extends MoHinhCo
 
         $ok = $this->db->query($sql, array(
             $so_dien_thoai,
-            md5($mat_khau),
+            MatKhau::maHoa($mat_khau),
             $ho_ten,
             $email,
             $so_dien_thoai
@@ -132,5 +142,13 @@ class MoHinhKhach extends MoHinhCo
 
         $sql = "UPDATE khach_tai_khoan SET diem_tich_luy = diem_tich_luy + ? WHERE id = ?";
         return $this->db->query($sql, array((int)$diem, (int)$id));
+    }
+
+    public function capNhatMatKhauDaMaHoa($id, $matKhauDaMaHoa)
+    {
+        $this->damBaoBangKhachTaiKhoan();
+
+        $sql = "UPDATE khach_tai_khoan SET mat_khau = ? WHERE id = ?";
+        return $this->db->query($sql, array($matKhauDaMaHoa, (int)$id));
     }
 }
