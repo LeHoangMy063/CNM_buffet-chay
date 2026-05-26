@@ -101,8 +101,6 @@
     var map = {
       trong: { text: "Trống", badge: "ok", cls: "empty" },
       dang_dung: { text: "Đang dùng", badge: "warn", cls: "busy" },
-      cho_thanh_toan: { text: "Chờ thanh toán", badge: "blue", cls: "paying" },
-      da_thanh_toan: { text: "Đã thanh toán", badge: "muted", cls: "paid" },
     };
     return map[s] || { text: s || "-", badge: "muted", cls: "empty" };
   }
@@ -342,6 +340,8 @@
         var t = this.tables[i];
         var name = "Bàn " + esc(t.so_ban);
         var code = t.ma_truy_cap || "";
+        var sessionCode =
+          Number(t.ma_phien_con_han || 0) === 1 ? t.ma_phien_goi_mon || "" : "";
 
         if (
           keyword &&
@@ -583,6 +583,19 @@
   var el = ui.el;
   var tableStatusInfo = ui.tableStatusInfo;
 
+  function money(v) {
+    v = Number(v || 0);
+    return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
+  }
+
+  function priceAdult() {
+    return typeof PRICE_ADULT !== "undefined" ? Number(PRICE_ADULT || 0) : 199000;
+  }
+
+  function priceChild() {
+    return typeof PRICE_CHILD !== "undefined" ? Number(PRICE_CHILD || 0) : 0;
+  }
+
   window.StaffTableStatus = {
     tables: [],
 
@@ -620,6 +633,8 @@
         var effectiveStatus = t.trang_thai || "trong";
         var rawStatus = t.trang_thai_goc || effectiveStatus;
         var code = t.ma_truy_cap || "";
+        var sessionCode =
+          Number(t.ma_phien_con_han || 0) === 1 ? t.ma_phien_goi_mon || "" : "";
         var name = "Bàn " + t.so_ban;
 
         if (
@@ -655,7 +670,29 @@
           "<div><span>Mã bàn</span><strong>" +
           esc(code || "-") +
           "</strong></div>";
+        if (rawStatus === "dang_dung" && sessionCode) {
+          html +=
+            "<div><span>Mã tạm thời</span><strong>" +
+            esc(sessionCode) +
+            "</strong></div>";
+        }
         html += "</div>";
+
+        if (rawStatus === "dang_dung" && sessionCode) {
+          html +=
+            '<div class="table-status-note">Mã tạm thời có hiệu lực gọi món trong 100 phút.</div>';
+        }
+
+        if (rawStatus === "dang_dung" && sessionCode && (t.phien_ten_khach || Number(t.phien_nguoi_lon || 0) + Number(t.phien_tre_em || 0) > 0)) {
+          html +=
+            '<div class="table-status-note">Bill: ' +
+            esc(t.phien_ten_khach || "Khach le") +
+            " - " +
+            esc(Number(t.phien_nguoi_lon || 0) + Number(t.phien_tre_em || 0)) +
+            " khach - " +
+            esc(money(t.phien_tong_tien || 0)) +
+            "</div>";
+        }
 
         if (Number(t.so_don_cho || 0) > 0) {
           html +=
@@ -667,31 +704,13 @@
         html += '<div class="table-status-actions">';
         html += this.statusButton(t.id, "trong", rawStatus, "Trống");
         html += this.statusButton(t.id, "dang_dung", rawStatus, "Đang dùng");
-        html += this.statusButton(
-          t.id,
-          "cho_thanh_toan",
-          rawStatus,
-          "Chờ thanh toán",
-        );
-        html += this.statusButton(
-          t.id,
-          "da_thanh_toan",
-          rawStatus,
-          "Đã thanh toán",
-        );
         html += "</div>";
 
-        if (rawStatus === "dang_dung" && code) {
+        if (rawStatus === "dang_dung" && sessionCode) {
           html +=
-            '<button type="button" class="table-status-btn" style="width:100%;margin-top:6px"' +
-            ' onclick="StaffTableStatus.inPhieu(' +
+            '<button type="button" class="table-status-btn" style="width:100%;margin-top:6px" onclick="StaffTableStatus.inPhieu(' +
             t.id +
-            ",'" +
-            esc(name) +
-            "','" +
-            esc(code) +
-            "')\"" +
-            ">🖨️ In phiếu gọi món</button>";
+            ')">In phiếu gọi món</button>';
         }
 
         html += "</div>"; // đóng table-status-card
@@ -718,6 +737,10 @@
     },
 
     update: function (id, status) {
+      if (status === "dang_dung") {
+        this.openBillForm(id);
+        return;
+      }
       var self = this;
       postForm(
         BASE_URL + "/nhan-vien/cap-nhat-trang-thai-ban",
@@ -732,35 +755,203 @@
         },
       );
     },
-    inPhieu: function (id, tenBan, ma) {
+    findTable: function (id) {
+      for (var i = 0; i < this.tables.length; i++) {
+        if (String(this.tables[i].id) === String(id)) return this.tables[i];
+      }
+      return null;
+    },
+
+    ensureBillForm: function () {
+      var box = el("tableBillModal");
+      if (box) return box;
+
+      box = document.createElement("div");
+      box.id = "tableBillModal";
+      box.className = "bill-modal";
+      box.innerHTML =
+        '<div class="bill-modal-card">' +
+        '<div class="bill-modal-head"><div><p class="eyebrow">Bill mẫu</p><h3 id="billModalTitle">Mở bàn</h3></div><button type="button" onclick="StaffTableStatus.closeBillForm()">×</button></div>' +
+        '<form id="tableBillForm" class="bill-form">' +
+        '<input type="hidden" id="billTableId">' +
+        '<label>Tên khách<input id="billCustomerName" type="text" autocomplete="off" required></label>' +
+        '<label>SĐT <span>không bắt buộc</span><input id="billCustomerPhone" type="text" autocomplete="off"></label>' +
+        '<div class="bill-form-grid">' +
+        '<label>Người lớn<input id="billAdultCount" type="number" min="0" value="1"></label>' +
+        '<label>Trẻ em<input id="billChildCount" type="number" min="0" value="0"></label>' +
+        '</div>' +
+        '<div class="bill-preview">' +
+        '<div><span>Giá người lớn</span><strong id="billAdultPrice"></strong></div>' +
+        '<div><span>Giá trẻ em</span><strong id="billChildPrice"></strong></div>' +
+        '<div class="bill-total"><span>Tổng giá</span><strong id="billTotalPrice"></strong></div>' +
+        '</div>' +
+        '<div class="bill-modal-actions"><button type="button" class="table-status-btn" onclick="StaffTableStatus.closeBillForm()">Hủy</button><button type="submit" class="table-status-btn active">Xác nhận</button></div>' +
+        '</form>' +
+        '</div>';
+      document.body.appendChild(box);
+
+      el("tableBillForm").onsubmit = function (ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        StaffTableStatus.confirmBillForm();
+        return false;
+      };
+      el("billAdultCount").onkeyup = el("billAdultCount").oninput = function () {
+        StaffTableStatus.updateBillTotal();
+      };
+      el("billChildCount").onkeyup = el("billChildCount").oninput = function () {
+        StaffTableStatus.updateBillTotal();
+      };
+      return box;
+    },
+
+    openBillForm: function (id) {
+      var t = this.findTable(id);
+      var box = this.ensureBillForm();
+      el("billTableId").value = id;
+      el("billModalTitle").textContent = "Mở " + (t && t.so_ban ? "Bàn " + t.so_ban : "bàn");
+      el("billCustomerName").value = t && t.phien_ten_khach ? t.phien_ten_khach : "";
+      el("billCustomerPhone").value = t && t.phien_sdt_khach ? t.phien_sdt_khach : "";
+      el("billAdultCount").value = t && Number(t.phien_nguoi_lon || 0) > 0 ? Number(t.phien_nguoi_lon || 0) : 1;
+      el("billChildCount").value = t && Number(t.phien_tre_em || 0) > 0 ? Number(t.phien_tre_em || 0) : 0;
+      this.updateBillTotal();
+      box.className = "bill-modal show";
+      setTimeout(function () {
+        el("billCustomerName").focus();
+      }, 20);
+    },
+
+    closeBillForm: function () {
+      var box = el("tableBillModal");
+      if (box) box.className = "bill-modal";
+    },
+
+    updateBillTotal: function () {
+      var adult = Math.max(0, Number(el("billAdultCount").value || 0));
+      var child = Math.max(0, Number(el("billChildCount").value || 0));
+      el("billAdultPrice").textContent = money(priceAdult());
+      el("billChildPrice").textContent = money(priceChild());
+      el("billTotalPrice").textContent = money(adult * priceAdult() + child * priceChild());
+    },
+
+    confirmBillForm: function () {
+      var id = el("billTableId").value;
+      var ten = el("billCustomerName").value.replace(/^\s+|\s+$/g, "");
+      var sdt = el("billCustomerPhone").value.replace(/^\s+|\s+$/g, "");
+      var adult = Math.max(0, parseInt(el("billAdultCount").value || "0", 10));
+      var child = Math.max(0, parseInt(el("billChildCount").value || "0", 10));
+
+      if (!ten) {
+        toast("Vui lòng nhập tên khách", "err");
+        el("billCustomerName").focus();
+        return;
+      }
+      if (adult + child <= 0) {
+        toast("Vui lòng nhập số lượng khách", "err");
+        el("billAdultCount").focus();
+        return;
+      }
+
+      this.closeBillForm();
+      var self = this;
+      postForm(
+        BASE_URL + "/nhan-vien/cap-nhat-trang-thai-ban",
+        {
+          ban_id: id,
+          trang_thai: "dang_dung",
+          ten_khach: ten,
+          sdt_khach: sdt,
+          nguoi_lon: adult,
+          tre_em: child,
+        },
+        function (res) {
+          if (res.success) {
+            toast(res.thong_bao || "Da cap nhat trang thai ban");
+            if (res.du_lieu && res.du_lieu.id) {
+              var replaced = false;
+              for (var i = 0; i < self.tables.length; i++) {
+                if (String(self.tables[i].id) === String(res.du_lieu.id)) {
+                  self.tables[i] = res.du_lieu;
+                  replaced = true;
+                  break;
+                }
+              }
+              if (!replaced) self.tables.push(res.du_lieu);
+              self.inPhieu(res.du_lieu.id);
+            }
+            self.load();
+          } else {
+            toast(res.thong_bao || "Khong the cap nhat trang thai ban", "err");
+          }
+        },
+      );
+    },
+
+    inPhieu: function (id) {
+      var t = null;
+      for (var i = 0; i < this.tables.length; i++) {
+        if (String(this.tables[i].id) === String(id)) {
+          t = this.tables[i];
+          break;
+        }
+      }
+      if (!t) return;
+
+      var tenBan = "Bàn " + (t.so_ban || id);
+      var ma = t.ma_phien_goi_mon || t.ma_truy_cap || "";
       var url = BASE_URL + "/goi-mon?ma=" + encodeURIComponent(ma);
       var qrUrl =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
         encodeURIComponent(url);
+      var today = new Date();
+      var ngayIn =
+        (today.getDate() < 10 ? "0" : "") +
+        today.getDate() +
+        "/" +
+        (today.getMonth() + 1 < 10 ? "0" : "") +
+        (today.getMonth() + 1) +
+        "/" +
+        today.getFullYear();
+      var nguoiLon = Number(t.phien_nguoi_lon || 0);
+      var treEm = Number(t.phien_tre_em || 0);
+      var tongKhach = nguoiLon + treEm;
+      var tenKhach = t.phien_ten_khach || "";
+      var sdtKhach = t.phien_sdt_khach || "";
+      var tongTien = Number(t.phien_tong_tien || (nguoiLon * priceAdult() + treEm * priceChild()));
+      var batDau = t.phien_bat_dau || "";
       var win = window.open("", "_blank");
       win.document.write(
-        "<html><head><title>Phiếu gọi món - " +
+        "<html><head><title>Hóa đơn gọi món - " +
           tenBan +
           "</title>" +
           "<style>" +
-          "body{font-family:Arial,sans-serif;text-align:center;padding:30px}" +
-          "h2{margin-bottom:4px} p{color:#555;margin:4px 0}" +
-          ".qr{margin:20px auto} .note{margin-top:16px;font-size:13px;color:#888}" +
+          "body{font-family:Arial,sans-serif;color:#111;padding:24px;background:#fff}" +
+          ".bill{width:360px;margin:0 auto}.head{text-align:center;border-bottom:1px solid #ddd;padding-bottom:10px;margin-bottom:12px}" +
+          "h2{margin:0 0 4px;font-size:24px}.muted{color:#666;font-size:13px}.row{display:flex;justify-content:space-between;gap:12px;margin:8px 0;font-size:14px}.row strong{text-align:right}" +
+          ".section{border-bottom:1px dashed #bbb;padding:8px 0}.qr{text-align:center;margin:18px auto}.qr img{width:180px;height:180px}.note{text-align:center;margin-top:12px;font-size:12px;color:#777}" +
           "</style></head><body>" +
-          "<h2>🌿 Buffet Chay</h2>" +
-          "<p>" +
-          tenBan +
-          "</p>" +
+          '<div class="bill">' +
+          '<div class="head"><h2>Buffet Chay</h2><div class="muted">Hóa đơn mở phiên gọi món</div></div>' +
+          '<div class="section">' +
+          '<div class="row"><span>Ngày in</span><strong>' + esc(ngayIn) + '</strong></div>' +
+          '<div class="row"><span>Bàn</span><strong>' + esc(tenBan) + '</strong></div>' +
+          '<div class="row"><span>Mã tạm thời</span><strong>' + esc(ma) + '</strong></div>' +
+          '</div>' +
+          '<div class="section">' +
+          '<div class="row"><span>Tên khách</span><strong>' + esc(tenKhach) + '</strong></div>' +
+          '<div class="row"><span>SĐT</span><strong>' + esc(sdtKhach) + '</strong></div>' +
+          '<div class="row"><span>Mở phiên</span><strong>' + esc(batDau) + '</strong></div>' +
+          '<div class="row"><span>Người lớn</span><strong>' + esc(nguoiLon) + '</strong></div>' +
+          '<div class="row"><span>Trẻ em</span><strong>' + esc(treEm) + '</strong></div>' +
+          '<div class="row"><span>Số lượng</span><strong>' + esc(tongKhach ? tongKhach + " khách" : "") + '</strong></div>' +
+          '<div class="row"><span>Tổng giá</span><strong>' + esc(money(tongTien)) + '</strong></div>' +
+          '</div>' +
           '<div class="qr"><img src="' +
           qrUrl +
-          '" width="200" height="200"></div>' +
-          "<p><strong>Quét QR để gọi món</strong></p>" +
-          '<p style="font-size:12px;color:#aaa">Mã: ' +
-          ma +
-          "</p>" +
-          '<div class="note">Phiếu chỉ có hiệu lực trong phiên này</div>' +
+          '"><div><strong>Quét QR để gọi món</strong></div></div>' +
+          '<div class="note">Mã tạm thời chỉ có hiệu lực gọi món trong 100 phút.</div>' +
+          '</div>' +
           "<script>window.onload=function(){window.print()}<\/script>" +
-          "</body></html>",
+          "</body></html>"
       );
       win.document.close();
     },

@@ -152,7 +152,7 @@
             <h2 class="section-title">Nhập Mã Bàn<br>Để Bắt Đầu</h2>
             <p class="section-sub">Mã bàn được in trên biển hiệu tại bàn của bạn. Nhập mã để gọi món trực tiếp — không cần đợi phục vụ.</p>
             <div class="code-wrap">
-                <input type="text" id="codeInput" placeholder="VD: BAN-A1" maxlength="10">
+                <input type="text" id="codeInput" placeholder="VD: BANA1-1234" maxlength="20">
                 <button onclick="goOrder()">Vào Gọi Món →</button>
             </div>
         </div>
@@ -348,7 +348,7 @@
                     var d = JSON.parse(xhr.responseText);
                     if (d.success) {
                         showReservationConfirmation(d, e.target);
-                        toast((d.thong_bao || 'Đặt bàn thành công') + ' - Mã gọi món: ' + (d.ma_dat_ban || ''), 'ok');
+                        toast(d.thong_bao || 'Đặt bàn thành công', 'ok');
                     } else toast(d.thong_bao || 'Không thể đặt bàn, vui lòng thử lại', 'err');
                 } catch (x) {
                     toast('Lỗi phản hồi server: ' + xhr.responseText.substring(0, 100), 'err');

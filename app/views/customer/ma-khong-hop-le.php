@@ -19,7 +19,8 @@ a:hover{background:#6b7c5e;}
 <div class="box">
     <div class="icon">🔍</div>
     <h2>Mã Bàn Không Tìm Thấy</h2>
-    <?php if (!empty($code)) { ?><div class="code"><?php echo htmlspecialchars($code) ?></div><br><?php } ?>
+    <?php $maHienThi = isset($ma) ? $ma : (isset($code) ? $code : ''); ?>
+    <?php if (!empty($maHienThi)) { ?><div class="code"><?php echo htmlspecialchars($maHienThi) ?></div><br><?php } ?>
     <p>Mã bàn này không tồn tại hoặc đã hết hạn.<br>Vui lòng kiểm tra lại biển hiệu trên bàn.</p>
     <a href="<?php echo BASE_URL ?>">← Về Trang Chủ</a>
 </div>

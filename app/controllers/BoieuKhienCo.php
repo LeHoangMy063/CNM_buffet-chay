@@ -196,6 +196,21 @@ class BoieuKhienCo
         }
     }
 
+    protected function yeuCauQuanLy()
+    {
+        if (!$this->daDangNhap()) {
+            header('Location: ' . BASE_URL . '/dang-nhap');
+            exit;
+        }
+        $vai_tro = isset($_SESSION['nguoi_dung']['vai_tro'])
+            ? $_SESSION['nguoi_dung']['vai_tro']
+            : '';
+        if ($vai_tro !== 'quan_ly' && $vai_tro !== 'admin') {
+            header('Location: ' . BASE_URL . '/dang-nhap');
+            exit;
+        }
+    }
+
     public function chuyenHuong($url)
     {
         header('Location: ' . $url);

@@ -7,6 +7,124 @@ require_once dirname(__FILE__) . '/MoHinhCo.php';
 // ================= MO HINH BAN =================
 class MoHinhBan extends MoHinhCo
 {
+    private function damBaoMaPhienBan()
+    {
+        $cotMa = $this->db->query("
+            SELECT COUNT(*) AS co
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'ban'
+              AND COLUMN_NAME = 'ma_phien_goi_mon'
+        ");
+        if (empty($cotMa) || (int)$cotMa[0]['co'] === 0) {
+            $this->db->query("
+                ALTER TABLE ban ADD COLUMN ma_phien_goi_mon varchar(30) DEFAULT NULL
+            ");
+        }
+
+        $cotHan = $this->db->query("
+            SELECT COUNT(*) AS co
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'ban'
+              AND COLUMN_NAME = 'ma_phien_het_han'
+        ");
+        if (empty($cotHan) || (int)$cotHan[0]['co'] === 0) {
+            $this->db->query("
+                ALTER TABLE ban ADD COLUMN ma_phien_het_han datetime DEFAULT NULL
+            ");
+        }
+
+        $cotPhien = array(
+            'phien_ten_khach'  => "ALTER TABLE ban ADD COLUMN phien_ten_khach varchar(100) DEFAULT NULL",
+            'phien_sdt_khach'  => "ALTER TABLE ban ADD COLUMN phien_sdt_khach varchar(20) DEFAULT NULL",
+            'phien_nguoi_lon'  => "ALTER TABLE ban ADD COLUMN phien_nguoi_lon int(11) NOT NULL DEFAULT 0",
+            'phien_tre_em'     => "ALTER TABLE ban ADD COLUMN phien_tre_em int(11) NOT NULL DEFAULT 0",
+            'phien_tong_tien'  => "ALTER TABLE ban ADD COLUMN phien_tong_tien decimal(12,0) NOT NULL DEFAULT 0",
+            'phien_bat_dau'    => "ALTER TABLE ban ADD COLUMN phien_bat_dau datetime DEFAULT NULL"
+        );
+
+        foreach ($cotPhien as $tenCot => $lenhThemCot) {
+            $kiemTra = $this->db->query("
+                SELECT COUNT(*) AS co
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'ban'
+                  AND COLUMN_NAME = ?
+            ", array($tenCot));
+            if (empty($kiemTra) || (int)$kiemTra[0]['co'] === 0) {
+                $this->db->query($lenhThemCot);
+            }
+        }
+
+        $this->damBaoBangPhienGoiMon();
+        $this->capNhatPhienHetHan();
+    }
+
+    private function damBaoBangPhienGoiMon()
+    {
+        $this->db->query("
+        CREATE TABLE IF NOT EXISTS phien_goi_mon (
+            id int(11) NOT NULL auto_increment,
+            ban_id int(11) NOT NULL,
+            ma_phien varchar(30) NOT NULL,
+            bat_dau_luc datetime NOT NULL,
+            het_han_luc datetime NOT NULL,
+            ket_thuc_luc datetime default NULL,
+            trang_thai enum('dang_dung','het_han','da_ket_thuc','da_huy') NOT NULL default 'dang_dung',
+            ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY ma_phien (ma_phien),
+            KEY ban_id (ban_id),
+            KEY trang_thai (trang_thai),
+            KEY bat_dau_luc (bat_dau_luc)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ");
+
+        $this->db->query("
+        CREATE TABLE IF NOT EXISTS hoa_don_phien (
+            id int(11) NOT NULL auto_increment,
+            phien_goi_mon_id int(11) NOT NULL,
+            ten_khach varchar(100) default NULL,
+            sdt_khach varchar(20) default NULL,
+            so_nguoi_lon int(11) NOT NULL default 0,
+            so_tre_em int(11) NOT NULL default 0,
+            tong_tien decimal(12,0) NOT NULL default 0,
+            ghi_chu text,
+            ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY phien_goi_mon_id (phien_goi_mon_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ");
+    }
+
+    private function capNhatPhienHetHan()
+    {
+        $this->db->query("
+        UPDATE ban b
+        JOIN phien_goi_mon p ON p.ban_id = b.id AND p.ma_phien = b.ma_phien_goi_mon
+        SET b.trang_thai = 'trong',
+            b.ma_phien_goi_mon = NULL,
+            b.ma_phien_het_han = NULL,
+            b.phien_ten_khach = NULL,
+            b.phien_sdt_khach = NULL,
+            b.phien_nguoi_lon = 0,
+            b.phien_tre_em = 0,
+            b.phien_tong_tien = 0,
+            b.phien_bat_dau = NULL
+        WHERE p.trang_thai = 'dang_dung'
+          AND p.het_han_luc <= NOW()
+        ");
+
+        $this->db->query("
+        UPDATE phien_goi_mon
+        SET trang_thai = 'het_han',
+            ket_thuc_luc = IFNULL(ket_thuc_luc, NOW())
+        WHERE trang_thai = 'dang_dung'
+          AND het_han_luc <= NOW()
+        ");
+    }
+
     private function damBaoBangGanBan()
     {
         // Bang lien ket dat_ban voi ban (nhieu ban)
@@ -59,6 +177,8 @@ class MoHinhBan extends MoHinhCo
 
     public function layTheoId($id)
     {
+        $this->damBaoMaPhienBan();
+
         $sql  = "SELECT * FROM ban WHERE id = ? LIMIT 1";
         $rows = $this->db->query($sql, array((int)$id));
         return !empty($rows) ? $rows[0] : null;
@@ -66,15 +186,30 @@ class MoHinhBan extends MoHinhCo
 
     public function layTatCaBan()
     {
+        $this->damBaoMaPhienBan();
+
         $sql = "
         SELECT
-            b.id, b.so_ban, b.suc_chua, b.ma_truy_cap,
-            b.trang_thai AS trang_thai_goc,
+            b.id, b.so_ban, b.suc_chua, b.ma_truy_cap, b.ma_phien_goi_mon, b.ma_phien_het_han,
+            b.phien_ten_khach, b.phien_sdt_khach, b.phien_nguoi_lon, b.phien_tre_em,
+            b.phien_tong_tien, b.phien_bat_dau,
+            CASE
+                WHEN b.ma_phien_goi_mon IS NOT NULL
+                 AND b.ma_phien_het_han IS NOT NULL
+                 AND b.ma_phien_het_han > NOW()
+                THEN 1
+                ELSE 0
+            END AS ma_phien_con_han,
+            CASE
+                WHEN b.trang_thai = 'dang_dung' THEN 'dang_dung'
+                ELSE 'trong'
+            END AS trang_thai_goc,
             IFNULL(dm.so_don_cho, 0) AS so_don_cho,
             CASE
                 WHEN IFNULL(dm.so_don_cho, 0) > 0
                 THEN 'dang_dung'
-                ELSE b.trang_thai
+                WHEN b.trang_thai = 'dang_dung' THEN 'dang_dung'
+                ELSE 'trong'
             END AS trang_thai
         FROM ban b
         LEFT JOIN (
@@ -90,6 +225,150 @@ class MoHinhBan extends MoHinhCo
 
     public function layTheoMaTruyCap($ma)
     {
+        $this->damBaoMaPhienBan();
+
+        $sql  = "
+        SELECT * FROM ban
+        WHERE (ma_phien_goi_mon = ? AND ma_phien_het_han > NOW())
+           OR (
+               ma_truy_cap = ?
+               AND (
+                   trang_thai <> 'dang_dung'
+                   OR ma_phien_goi_mon IS NULL
+                   OR ma_phien_het_han IS NULL
+               )
+           )
+        LIMIT 1
+        ";
+        $rows = $this->db->query($sql, array($ma, $ma));
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    public function layTheoMaPhienGoiMon($ma)
+    {
+        $this->damBaoMaPhienBan();
+
+        $sql = "
+        SELECT b.*, p.id AS phien_goi_mon_id
+        FROM ban b
+        JOIN phien_goi_mon p ON p.ban_id = b.id AND p.ma_phien = b.ma_phien_goi_mon
+        WHERE ma_phien_goi_mon = ?
+          AND ma_phien_het_han > NOW()
+          AND b.trang_thai = 'dang_dung'
+          AND p.trang_thai = 'dang_dung'
+        LIMIT 1
+        ";
+        $rows = $this->db->query($sql, array($ma));
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    private function taoMaPhienGoiMon($maBan)
+    {
+        $goc = preg_replace('/[^A-Za-z0-9]/', '', $maBan);
+        if ($goc === '') {
+            $goc = 'BAN';
+        }
+
+        do {
+            $ma = strtoupper($goc) . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $rows = $this->db->query(
+                "SELECT COUNT(*) AS tong FROM ban WHERE ma_phien_goi_mon = ? AND ma_phien_het_han > NOW()",
+                array($ma)
+            );
+        } while (!empty($rows) && (int)$rows[0]['tong'] > 0);
+
+        return $ma;
+    }
+
+    public function taoPhienGoiMon($id, $thongTinBill = array())
+    {
+        $this->damBaoMaPhienBan();
+
+        $ban = $this->layTheoId($id);
+        if (!$ban) {
+            return null;
+        }
+
+        $maBan = !empty($ban['ma_truy_cap']) ? $ban['ma_truy_cap'] : ('BAN' . (int)$id);
+        $maPhien = $this->taoMaPhienGoiMon($maBan);
+        $tenKhach = isset($thongTinBill['ten_khach']) ? trim($thongTinBill['ten_khach']) : '';
+        $sdtKhach = isset($thongTinBill['sdt_khach']) ? trim($thongTinBill['sdt_khach']) : '';
+        $nguoiLon = isset($thongTinBill['nguoi_lon']) ? (int)$thongTinBill['nguoi_lon'] : 0;
+        $treEm = isset($thongTinBill['tre_em']) ? (int)$thongTinBill['tre_em'] : 0;
+        $tongTien = isset($thongTinBill['tong_tien']) ? (int)$thongTinBill['tong_tien'] : 0;
+
+        $this->capNhatKetThucPhienHienTai($id, 'da_ket_thuc');
+
+        $sql = "
+        UPDATE ban
+        SET ma_phien_goi_mon = ?,
+            ma_phien_het_han = DATE_ADD(NOW(), INTERVAL 100 MINUTE),
+            phien_ten_khach = ?,
+            phien_sdt_khach = ?,
+            phien_nguoi_lon = ?,
+            phien_tre_em = ?,
+            phien_tong_tien = ?,
+            phien_bat_dau = NOW()
+        WHERE id = ?
+        ";
+        $ok = $this->db->query($sql, array($maPhien, $tenKhach, $sdtKhach, $nguoiLon, $treEm, $tongTien, (int)$id));
+        if (!$ok) {
+            return null;
+        }
+
+        $this->db->query("
+            INSERT INTO phien_goi_mon
+                (ban_id, ma_phien, bat_dau_luc, het_han_luc, trang_thai)
+            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 100 MINUTE), 'dang_dung')
+        ", array((int)$id, $maPhien));
+        $phienId = $this->db->lastInsertId();
+
+        if ($phienId) {
+            $this->db->query("
+                INSERT INTO hoa_don_phien
+                    (phien_goi_mon_id, ten_khach, sdt_khach, so_nguoi_lon, so_tre_em, tong_tien)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ", array($phienId, $tenKhach, $sdtKhach, $nguoiLon, $treEm, $tongTien));
+        }
+
+        return $this->layTheoId($id);
+    }
+
+    private function capNhatKetThucPhienHienTai($id, $trangThaiPhien)
+    {
+        $this->damBaoBangPhienGoiMon();
+
+        $sql = "
+        UPDATE phien_goi_mon
+        SET trang_thai = ?,
+            ket_thuc_luc = NOW()
+        WHERE ban_id = ?
+          AND trang_thai = 'dang_dung'
+        ";
+        return $this->db->query($sql, array($trangThaiPhien, (int)$id));
+    }
+
+    public function xoaPhienGoiMon($id)
+    {
+        $this->damBaoMaPhienBan();
+        $this->capNhatKetThucPhienHienTai($id, 'da_ket_thuc');
+
+        $sql = "
+        UPDATE ban
+        SET ma_phien_goi_mon = NULL,
+            ma_phien_het_han = NULL,
+            phien_ten_khach = NULL,
+            phien_sdt_khach = NULL,
+            phien_nguoi_lon = 0,
+            phien_tre_em = 0,
+            phien_tong_tien = 0,
+            phien_bat_dau = NULL
+        WHERE id = ?";
+        return $this->db->query($sql, array((int)$id));
+    }
+
+    public function layTheoMaCoDinh($ma)
+    {
         $sql  = "SELECT * FROM ban WHERE ma_truy_cap = ? LIMIT 1";
         $rows = $this->db->query($sql, array($ma));
         return !empty($rows) ? $rows[0] : null;
@@ -104,8 +383,14 @@ class MoHinhBan extends MoHinhCo
 
     public function capNhatTrangThai($id, $trang_thai)
     {
+        $this->damBaoMaPhienBan();
+
         $sql = "UPDATE ban SET trang_thai = ? WHERE id = ?";
-        return $this->db->query($sql, array($trang_thai, (int)$id));
+        $ok = $this->db->query($sql, array($trang_thai, (int)$id));
+        if ($ok && $trang_thai !== 'dang_dung') {
+            $this->xoaPhienGoiMon($id);
+        }
+        return $ok;
     }
 
     public function layBanTrong($ngay, $gio)
@@ -256,8 +541,47 @@ class MoHinhBan extends MoHinhCo
 // ================= MO HINH DON MON =================
 class MoHinhDonMon extends MoHinhCo
 {
+    private function damBaoBangPhienGoiMon()
+    {
+        $this->db->query("
+        CREATE TABLE IF NOT EXISTS phien_goi_mon (
+            id int(11) NOT NULL auto_increment,
+            ban_id int(11) NOT NULL,
+            ma_phien varchar(30) NOT NULL,
+            bat_dau_luc datetime NOT NULL,
+            het_han_luc datetime NOT NULL,
+            ket_thuc_luc datetime default NULL,
+            trang_thai enum('dang_dung','het_han','da_ket_thuc','da_huy') NOT NULL default 'dang_dung',
+            ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY ma_phien (ma_phien),
+            KEY ban_id (ban_id),
+            KEY trang_thai (trang_thai),
+            KEY bat_dau_luc (bat_dau_luc)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ");
+
+        $this->db->query("
+        CREATE TABLE IF NOT EXISTS hoa_don_phien (
+            id int(11) NOT NULL auto_increment,
+            phien_goi_mon_id int(11) NOT NULL,
+            ten_khach varchar(100) default NULL,
+            sdt_khach varchar(20) default NULL,
+            so_nguoi_lon int(11) NOT NULL default 0,
+            so_tre_em int(11) NOT NULL default 0,
+            tong_tien decimal(12,0) NOT NULL default 0,
+            ghi_chu text,
+            ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY phien_goi_mon_id (phien_goi_mon_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ");
+    }
+
     private function damBaoBangChiTietDon()
     {
+        $this->damBaoBangPhienGoiMon();
+
         $this->db->query("
         CREATE TABLE IF NOT EXISTS chitiet_donmon (
             id int(11) NOT NULL auto_increment,
@@ -289,6 +613,22 @@ class MoHinhDonMon extends MoHinhCo
                 WHERE mon_an_id IS NOT NULL
             ");
         }
+
+        $cotPhien = $this->db->query("
+            SELECT COUNT(*) AS co
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'don_mon'
+              AND COLUMN_NAME = 'phien_goi_mon_id'
+        ");
+        if (empty($cotPhien) || (int)$cotPhien[0]['co'] === 0) {
+            $this->db->query("
+                ALTER TABLE don_mon ADD COLUMN phien_goi_mon_id int(11) default NULL
+            ");
+            $this->db->query("
+                ALTER TABLE don_mon ADD KEY phien_goi_mon_id (phien_goi_mon_id)
+            ");
+        }
     }
 
     // Lay don theo ban - chi don dang cho phuc vu (nhan vien)
@@ -317,9 +657,16 @@ class MoHinhDonMon extends MoHinhCo
     }
 
     // Lay chi tiet mon theo ban - khach theo doi ca mon da phuc vu
-    public function layTheoMaBan($ban_id)
+    public function layTheoMaBan($ban_id, $phien_goi_mon_id = 0)
     {
         $this->damBaoBangChiTietDon();
+
+        $wherePhien = '';
+        $params = array((int)$ban_id);
+        if ((int)$phien_goi_mon_id > 0) {
+            $wherePhien = ' AND d.phien_goi_mon_id = ?';
+            $params[] = (int)$phien_goi_mon_id;
+        }
 
         $sql = "
         SELECT ct.id, ct.don_mon_id, ct.so_luong, ct.trang_thai, ct.ghi_chu,
@@ -328,11 +675,12 @@ class MoHinhDonMon extends MoHinhCo
         JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
         JOIN mon_an m ON ct.mon_an_id = m.id
         WHERE d.ban_id = ?
+          " . $wherePhien . "
           AND d.trang_thai IN ('cho_phuc_vu','dang_che_bien','da_phuc_vu')
           AND ct.trang_thai IN ('cho_phuc_vu','dang_che_bien','da_phuc_vu')
         ORDER BY d.ngay_tao ASC, ct.id ASC
         ";
-        return $this->db->query($sql, array((int)$ban_id));
+        return $this->db->query($sql, $params);
     }
 
     public function layTatCa()
@@ -405,15 +753,23 @@ class MoHinhDonMon extends MoHinhCo
         )));
     }
 
-    public function datNhieuMon($ban_id, $danh_sach_mon)
+    public function datNhieuMon($ban_id, $danh_sach_mon, $phien_goi_mon_id = 0)
     {
         $this->damBaoBangChiTietDon();
 
-        $sql = "
-        INSERT INTO don_mon (ban_id, trang_thai)
-        VALUES (?, 'cho_phuc_vu')
-        ";
-        $ok = $this->db->query($sql, array((int)$ban_id));
+        if ((int)$phien_goi_mon_id > 0) {
+            $sql = "
+            INSERT INTO don_mon (ban_id, phien_goi_mon_id, trang_thai)
+            VALUES (?, ?, 'cho_phuc_vu')
+            ";
+            $ok = $this->db->query($sql, array((int)$ban_id, (int)$phien_goi_mon_id));
+        } else {
+            $sql = "
+            INSERT INTO don_mon (ban_id, trang_thai)
+            VALUES (?, 'cho_phuc_vu')
+            ";
+            $ok = $this->db->query($sql, array((int)$ban_id));
+        }
         if (!$ok) {
             return false;
         }
@@ -445,17 +801,25 @@ class MoHinhDonMon extends MoHinhCo
     }
 
     // Huy mon boi khach (chi duoc khi con cho_phuc_vu)
-    public function huyBoiKhach($chi_tiet_id, $ban_id)
+    public function huyBoiKhach($chi_tiet_id, $ban_id, $phien_goi_mon_id = 0)
     {
         $this->damBaoBangChiTietDon();
+
+        $wherePhien = '';
+        $params = array((int)$chi_tiet_id, (int)$ban_id);
+        if ((int)$phien_goi_mon_id > 0) {
+            $wherePhien = ' AND d.phien_goi_mon_id = ?';
+            $params[] = (int)$phien_goi_mon_id;
+        }
 
         $sql = "
         UPDATE chitiet_donmon ct
         JOIN don_mon d ON d.id = ct.don_mon_id
         SET ct.trang_thai = 'da_huy'
         WHERE ct.id = ? AND d.ban_id = ? AND ct.trang_thai = 'cho_phuc_vu'
+          " . $wherePhien . "
         ";
-        $ok = $this->db->query($sql, array((int)$chi_tiet_id, (int)$ban_id));
+        $ok = $this->db->query($sql, $params);
         if ($ok) {
             $this->dongBoTrangThaiDonTheoChiTiet($chi_tiet_id);
         }
@@ -522,15 +886,25 @@ class MoHinhDonMon extends MoHinhCo
         $this->damBaoBangChiTietDon();
 
         $sql = "
-        SELECT DATE(d.ngay_tao) AS ngay,
-               COUNT(*) AS so_don,
-               SUM(ct.so_luong) AS tong_mon
-        FROM don_mon d
-        JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
-        WHERE d.trang_thai = 'da_phuc_vu'
-          AND ct.trang_thai = 'da_phuc_vu'
-          AND DATE(d.ngay_tao) BETWEEN ? AND ?
-        GROUP BY DATE(d.ngay_tao)
+        SELECT DATE(p.bat_dau_luc) AS ngay,
+               COUNT(p.id) AS so_phien,
+               COALESCE(SUM(od.so_don), 0) AS so_don,
+               COALESCE(SUM(od.tong_mon), 0) AS tong_mon,
+               COALESCE(SUM(h.tong_tien), 0) AS doanh_thu
+        FROM phien_goi_mon p
+        JOIN hoa_don_phien h ON h.phien_goi_mon_id = p.id
+        LEFT JOIN (
+            SELECT d.phien_goi_mon_id,
+                   COUNT(DISTINCT d.id) AS so_don,
+                   SUM(CASE WHEN ct.trang_thai <> 'da_huy' THEN ct.so_luong ELSE 0 END) AS tong_mon
+            FROM don_mon d
+            LEFT JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
+            WHERE d.phien_goi_mon_id IS NOT NULL
+            GROUP BY d.phien_goi_mon_id
+        ) od ON od.phien_goi_mon_id = p.id
+        WHERE DATE(p.bat_dau_luc) BETWEEN ? AND ?
+          AND p.trang_thai IN ('dang_dung','da_ket_thuc','het_han')
+        GROUP BY DATE(p.bat_dau_luc)
         ORDER BY ngay ASC
         ";
         return $this->db->query($sql, array($tu_ngay, $den_ngay));
@@ -558,14 +932,34 @@ class MoHinhDonMon extends MoHinhCo
 // ================= MO HINH MON AN =================
 class MoHinhMonAn extends MoHinhCo
 {
+    private function damBaoCotGia()
+    {
+        $cotGia = $this->db->query("
+            SELECT COUNT(*) AS co
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'mon_an'
+              AND COLUMN_NAME = 'gia'
+        ");
+        if (empty($cotGia) || (int)$cotGia[0]['co'] === 0) {
+            $this->db->query("
+                ALTER TABLE mon_an ADD COLUMN gia decimal(10,0) default '0'
+            ");
+        }
+    }
+
     public function layTatCa()
     {
+        $this->damBaoCotGia();
+
         $sql = "SELECT * FROM mon_an ORDER BY danh_muc, thu_tu";
         return $this->db->query($sql);
     }
 
     public function layNhomTheoDanhMuc()
     {
+        $this->damBaoCotGia();
+
         $sql  = "SELECT * FROM mon_an WHERE con_mon = 1 ORDER BY danh_muc, thu_tu";
         $rows = $this->db->query($sql);
 
@@ -589,11 +983,14 @@ class MoHinhMonAn extends MoHinhCo
 
     public function luu($du_lieu)
     {
+        $this->damBaoCotGia();
+
         $id       = isset($du_lieu['id'])       ? (int)$du_lieu['id']        : 0;
         $ten      = isset($du_lieu['ten'])       ? trim($du_lieu['ten'])      : '';
         $mo_ta    = isset($du_lieu['mo_ta'])     ? trim($du_lieu['mo_ta'])    : '';
         $danh_muc = isset($du_lieu['danh_muc'])  ? trim($du_lieu['danh_muc']) : '';
         $anh_url  = isset($du_lieu['anh_url'])   ? trim($du_lieu['anh_url'])  : '';
+        $gia      = isset($du_lieu['gia'])       ? (float)$du_lieu['gia']     : 0;
         $con_mon  = isset($du_lieu['con_mon'])   ? (int)$du_lieu['con_mon']   : 1;
         $noi_bat  = isset($du_lieu['noi_bat'])   ? (int)$du_lieu['noi_bat']   : 0;
         $thu_tu   = isset($du_lieu['thu_tu'])    ? (int)$du_lieu['thu_tu']    : 0;
@@ -601,7 +998,7 @@ class MoHinhMonAn extends MoHinhCo
         if ($id > 0) {
             $sql = "
             UPDATE mon_an
-            SET ten=?, mo_ta=?, danh_muc=?, anh_url=?, con_mon=?, noi_bat=?, thu_tu=?
+            SET ten=?, mo_ta=?, danh_muc=?, anh_url=?, gia=?, con_mon=?, noi_bat=?, thu_tu=?
             WHERE id=?
             ";
             return $this->db->query($sql, array(
@@ -609,6 +1006,7 @@ class MoHinhMonAn extends MoHinhCo
                 $mo_ta,
                 $danh_muc,
                 $anh_url,
+                $gia,
                 $con_mon,
                 $noi_bat,
                 $thu_tu,
@@ -616,14 +1014,15 @@ class MoHinhMonAn extends MoHinhCo
             ));
         } else {
             $sql = "
-            INSERT INTO mon_an (ten, mo_ta, danh_muc, anh_url, con_mon, noi_bat, thu_tu)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO mon_an (ten, mo_ta, danh_muc, anh_url, gia, con_mon, noi_bat, thu_tu)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ";
             return $this->db->query($sql, array(
                 $ten,
                 $mo_ta,
                 $danh_muc,
                 $anh_url,
+                $gia,
                 $con_mon,
                 $noi_bat,
                 $thu_tu
@@ -1189,6 +1588,7 @@ class MoHinhDatBan extends MoHinhCo
         SELECT ngay_dat, COUNT(*) AS tong
         FROM dat_ban
         WHERE DATE_FORMAT(ngay_dat, '%Y-%m') = ?
+          AND trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')
         GROUP BY ngay_dat
         ORDER BY ngay_dat ASC
         ";
@@ -1221,9 +1621,19 @@ class MoHinhDatBan extends MoHinhCo
 // Dung CHUNG cho ca staff/admin va khach hang - chi mot bang: tai_khoan
 class MoHinhTaiKhoan extends MoHinhCo
 {
+    private function damBaoVaiTroQuanLy()
+    {
+        $this->db->query("
+            ALTER TABLE tai_khoan
+            MODIFY vai_tro enum('admin','quan_ly','nhan_vien','bep','khach') NOT NULL default 'khach'
+        ");
+    }
+
     // Dang nhap staff/admin bang ten_dang_nhap
     public function layTheoTenDangNhap($ten_dang_nhap)
     {
+        $this->damBaoVaiTroQuanLy();
+
         $sql  = "SELECT * FROM tai_khoan WHERE ten_dang_nhap = ? LIMIT 1";
         $rows = $this->db->query($sql, array($ten_dang_nhap));
         return !empty($rows) ? $rows[0] : null;
@@ -1247,6 +1657,8 @@ class MoHinhTaiKhoan extends MoHinhCo
 
     public function layTatCa()
     {
+        $this->damBaoVaiTroQuanLy();
+
         $sql = "SELECT * FROM tai_khoan ORDER BY vai_tro, ngay_tao DESC";
         return $this->db->query($sql);
     }
@@ -1279,6 +1691,8 @@ class MoHinhTaiKhoan extends MoHinhCo
     // Them nhan vien/admin (Usecase 113)
     public function themNhanVien($du_lieu)
     {
+        $this->damBaoVaiTroQuanLy();
+
         $sql = "
         INSERT INTO tai_khoan
             (ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,

@@ -8,7 +8,7 @@ $tableNumber = isset($table['table_number'])
     : (isset($table['so_ban']) ? $table['so_ban'] : '');
 $accessCode = isset($table['access_code'])
     ? $table['access_code']
-    : (isset($table['ma_truy_cap']) ? $table['ma_truy_cap'] : (isset($ma) ? $ma : ''));
+    : (isset($table['ma_phien_goi_mon']) ? $table['ma_phien_goi_mon'] : (isset($ma) ? $ma : ''));
 $orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/order.css');
 $checkoutCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/checkout.css');
 $orderJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/order.js');

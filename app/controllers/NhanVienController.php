@@ -77,14 +77,56 @@ class NhanVienController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Bàn không hợp lệ'));
         }
 
-        $hopLe = array('trong', 'dang_dung', 'cho_thanh_toan', 'da_thanh_toan');
+        $hopLe = array('trong', 'dang_dung');
         if (!in_array($trangThai, $hopLe)) {
             $this->json(array('success' => false, 'thong_bao' => 'Trạng thái bàn không hợp lệ'));
         }
 
+        $thongTinBill = array();
+        if ($trangThai === 'dang_dung') {
+            $tenKhach = trim($this->post('ten_khach', ''));
+            $sdtKhach = trim($this->post('sdt_khach', ''));
+            $nguoiLon = intval($this->post('nguoi_lon', 0));
+            $treEm    = intval($this->post('tre_em', 0));
+
+            if ($tenKhach === '') {
+                $this->json(array('success' => false, 'thong_bao' => 'Vui long nhap ten khach'));
+            }
+            if ($nguoiLon < 0 || $treEm < 0 || ($nguoiLon + $treEm) <= 0) {
+                $this->json(array('success' => false, 'thong_bao' => 'Vui long nhap so luong khach hop le'));
+            }
+
+            $giaNguoiLon = defined('PRICE_ADULT') ? (int)PRICE_ADULT : 199000;
+            $giaTreEm    = defined('PRICE_CHILD') ? (int)PRICE_CHILD : 0;
+            $tongTien    = ($nguoiLon * $giaNguoiLon) + ($treEm * $giaTreEm);
+
+            $thongTinBill = array(
+                'ten_khach' => $tenKhach,
+                'sdt_khach' => $sdtKhach,
+                'nguoi_lon' => $nguoiLon,
+                'tre_em'    => $treEm,
+                'tong_tien' => $tongTien
+            );
+        }
+
         $ok = $this->moHinhBan->capNhatTrangThai($banId, $trangThai);
+        $banSauCapNhat = null;
+        if ($ok && $trangThai === 'dang_dung') {
+            $banSauCapNhat = $this->moHinhBan->taoPhienGoiMon($banId, $thongTinBill);
+        } elseif ($ok) {
+            $banSauCapNhat = $this->moHinhBan->layTheoId($banId);
+        }
+
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Đã cập nhật trạng thái bàn'));
+            $thongBao = 'Đã cập nhật trạng thái bàn';
+            if ($trangThai === 'dang_dung' && $banSauCapNhat && !empty($banSauCapNhat['ma_phien_goi_mon'])) {
+                $thongBao = 'Đã mở phiên gọi món. Mã tạm thời: ' . $banSauCapNhat['ma_phien_goi_mon'];
+            }
+            $this->json(array(
+                'success' => true,
+                'thong_bao' => $thongBao,
+                'du_lieu' => $banSauCapNhat
+            ));
         } else {
             $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cập nhật trạng thái bàn'));
         }

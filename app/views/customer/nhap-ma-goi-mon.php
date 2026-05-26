@@ -257,14 +257,14 @@
                 </p>
             </div>
             
-            <form id="reservationForm" action="<?php echo BASE_URL; ?>/khach-hang/trang-goi-mon" method="get">
+            <form id="reservationForm" action="<?php echo BASE_URL; ?>/goi-mon" method="get">
                 <div class="form-group">
                     <label for="reservationCode">Mã Đặt Bàn / Mã Bàn</label>
                     <input 
                         type="text" 
                         id="reservationCode" 
-                        name="code"
-                        placeholder="Ví dụ: RES-20260427-12345"
+                        name="ma"
+                        placeholder="Vi du: BANA1-1234"
                         required
                         autocomplete="off"
                         maxlength="20"

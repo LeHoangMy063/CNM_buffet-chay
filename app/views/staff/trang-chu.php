@@ -110,6 +110,8 @@ $vaiTro = isset($nhanVien['vai_tro']) ? $nhanVien['vai_tro'] : '';
     <script>
         var BASE_URL = '<?php echo BASE_URL; ?>';
         var RESTAURANT_CAPACITY = <?php echo defined('RESTAURANT_CAPACITY') ? (int)RESTAURANT_CAPACITY : 40; ?>;
+        var PRICE_ADULT = <?php echo defined('PRICE_ADULT') ? (int)PRICE_ADULT : 199000; ?>;
+        var PRICE_CHILD = <?php echo defined('PRICE_CHILD') ? (int)PRICE_CHILD : 0; ?>;
     </script>
     <script src="<?php echo BASE_URL; ?>/public/assets/js/staff-dashboard.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/staff-dashboard.js'); ?>"></script>
     <script src="<?php echo BASE_URL; ?>/public/assets/js/staff-reservations.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/staff-reservations.js'); ?>"></script>

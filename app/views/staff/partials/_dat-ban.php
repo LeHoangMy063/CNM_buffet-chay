@@ -71,8 +71,6 @@
                         <option value="">Tất cả trạng thái</option>
                         <option value="trong">Trống</option>
                         <option value="dang_dung">Đang dùng</option>
-                        <option value="cho_thanh_toan">Chờ thanh toán</option>
-                        <option value="da_thanh_toan">Đã thanh toán</option>
                     </select>
                 </div>
                 <div id="tableStatusList" class="table-status-grid">

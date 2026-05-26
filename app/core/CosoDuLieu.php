@@ -18,10 +18,11 @@ class CosoDuLieu
 
     private function ketNoi()
     {
-        $host   = "localhost";
-        $user   = "root";
-        $pass   = "";
-        $dbname = "buffet_chay";
+        $host   = defined('DB_HOST') ? DB_HOST : "localhost";
+        $user   = defined('DB_USER') ? DB_USER : "root";
+        $pass   = defined('DB_PASS') ? DB_PASS : "";
+        $dbname = defined('DB_NAME') ? DB_NAME : "buffet_chay";
+        $charset = defined('DB_CHARSET') ? DB_CHARSET : "utf8";
 
         $this->conn = new mysqli($host, $user, $pass, $dbname);
 
@@ -29,7 +30,7 @@ class CosoDuLieu
             die("Ket noi CSDL that bai: " . $this->conn->connect_error);
         }
 
-        $this->conn->set_charset("utf8");
+        $this->conn->set_charset($charset);
     }
 
     // Thuc thi truy van SQL voi tham so (PHP 5.3 safe - khong dung get_result)
@@ -60,6 +61,7 @@ class CosoDuLieu
 
         // Khong co metadata -> la INSERT / UPDATE / DELETE
         if (!$meta) {
+            $stmt->close();
             return true;
         }
 
@@ -84,6 +86,7 @@ class CosoDuLieu
             $ket_qua[] = $dong;
         }
 
+        $stmt->close();
         return $ket_qua;
     }
 

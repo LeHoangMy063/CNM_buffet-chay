@@ -16,6 +16,7 @@ require_once dirname(__FILE__) . '/app/models/MoHinh.php';
 require_once dirname(__FILE__) . '/app/controllers/BoieuKhienCo.php';
 require_once dirname(__FILE__) . '/app/controllers/TrangChuController.php';
 require_once dirname(__FILE__) . '/app/controllers/KhachHangController.php';
+require_once dirname(__FILE__) . '/app/controllers/QuanLyController.php';
 require_once dirname(__FILE__) . '/app/controllers/QuanTriController.php';
 require_once dirname(__FILE__) . '/app/controllers/NhanVienController.php';
 require_once dirname(__FILE__) . '/app/controllers/XacThucController.php';
@@ -76,6 +77,12 @@ $routes = array(
     array('GET',  '/khach/dang-ky',         'XacThucController', 'hienThiDangKy'),
     array('POST', '/khach/dang-ky/xu-ly',   'XacThucController', 'xuLyDangKy'),
     array('POST', '/danh-gia',              'KhachHangController', 'danhGia'),
+
+    // QUAN LY
+    array('GET',  '/quan-ly',              'QuanLyController', 'trangChu'),
+    array('GET',  '/quan-ly/thuc-don',     'QuanLyController', 'thucDon'),
+    array('POST', '/quan-ly/thuc-don/luu', 'QuanLyController', 'luuMon'),
+    array('POST', '/quan-ly/thuc-don/xoa', 'QuanLyController', 'xoaMon'),
 
     // QUAN TRI
     array('GET', '/quan-tri',           'QuanTriController', 'tongQuan'),

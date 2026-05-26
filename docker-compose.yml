@@ -1,0 +1,44 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: buffet_chay
+      DB_USER: buffet_user
+      DB_PASS: buffet_pass
+      DB_CHARSET: utf8
+      BASE_URL: http://localhost:8080/buffet-chay
+    volumes:
+      - ./:/var/www/html/buffet-chay
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.5
+    environment:
+      MYSQL_DATABASE: buffet_chay
+      MYSQL_USER: buffet_user
+      MYSQL_PASSWORD: buffet_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+    ports:
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: buffet_user
+      PMA_PASSWORD: buffet_pass
+    depends_on:
+      - db
+
+volumes:
+  db_data:

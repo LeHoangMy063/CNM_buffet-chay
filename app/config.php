@@ -3,14 +3,14 @@
 // CAU HINH UNG DUNG - PHP 5.3 COMPATIBLE
 // ============================================
 
-define('DB_HOST',    'localhost');
-define('DB_NAME',    'buffet_chay');
-define('DB_USER',    'root');
-define('DB_PASS',    '');
-define('DB_CHARSET', 'utf8');
+define('DB_HOST',    getenv('DB_HOST') ? getenv('DB_HOST') : 'localhost');
+define('DB_NAME',    getenv('DB_NAME') ? getenv('DB_NAME') : 'buffet_chay');
+define('DB_USER',    getenv('DB_USER') ? getenv('DB_USER') : 'root');
+define('DB_PASS',    getenv('DB_PASS') ? getenv('DB_PASS') : '');
+define('DB_CHARSET', getenv('DB_CHARSET') ? getenv('DB_CHARSET') : 'utf8');
 
 define('APP_NAME',   'Buffet Chay An Lac');
-define('BASE_URL',   'http://localhost/buffet-chay');
+define('BASE_URL',   getenv('BASE_URL') ? getenv('BASE_URL') : 'http://localhost/buffet-chay');
 
 define('PRICE_ADULT', 199000);
 define('PRICE_CHILD', 0);
