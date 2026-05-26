@@ -1,5 +1,5 @@
 <?php
-// app/views/staff/login.php
+// app/views/nhanvien/dang-nhap.php
 // Trang đăng nhập chung — backend tự phân biệt admin / staff
 ?>
 <!DOCTYPE html>
@@ -221,7 +221,7 @@
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="<?php echo BASE_URL ?>/staff/login">
+            <form method="POST" action="<?php echo BASE_URL ?>/nhanvien/dang-nhap">
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
                     <input type="text" id="username" name="username"

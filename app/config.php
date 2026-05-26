@@ -10,7 +10,18 @@ define('DB_PASS',    getenv('DB_PASS') ? getenv('DB_PASS') : '');
 define('DB_CHARSET', getenv('DB_CHARSET') ? getenv('DB_CHARSET') : 'utf8');
 
 define('APP_NAME',   'Buffet Chay An Lac');
-define('BASE_URL',   getenv('BASE_URL') ? getenv('BASE_URL') : 'http://localhost/buffet-chay');
+
+// BASE_URL: prefer environment variable, otherwise derive from current request
+if (getenv('BASE_URL')) {
+    define('BASE_URL', getenv('BASE_URL'));
+} else {
+    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+    $basePath = rtrim(dirname(isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : ''), '/\\');
+    // If basePath is root, keep empty string
+    $basePath = $basePath === '/' ? '' : $basePath;
+    define('BASE_URL', $scheme . '://' . $host . $basePath);
+}
 
 define('PRICE_ADULT', 199000);
 define('PRICE_CHILD', 0);

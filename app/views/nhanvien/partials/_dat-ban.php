@@ -1,5 +1,7 @@
-<section class="staff-section" id="section-dat-ban">
+<?php $laBep = isset($laBep) ? $laBep : (isset($vaiTro) && $vaiTro === 'bep'); ?>
+<section class="staff-section<?php echo $laBep ? ' active' : ''; ?>" id="section-dat-ban">
 
+    <?php if (!$laBep): ?>
     <div class="table-work-pane active" id="pane-xac-nhan-dat-ban">
         <div class="panel">
             <div class="reservation-panel-head">
@@ -79,6 +81,8 @@
             </div>
         </div>
     </div>
+
+    <?php endif; ?>
 
     <?php require dirname(__FILE__) . '/_goi-mon.php'; ?>
 </section>

@@ -1,9 +1,14 @@
-<div class="table-work-pane" id="pane-xac-nhan-mon" style="display:none">
+<?php $laBep = isset($laBep) ? $laBep : (isset($vaiTro) && $vaiTro === 'bep'); ?>
+<div class="table-work-pane<?php echo $laBep ? ' active' : ''; ?>" id="pane-xac-nhan-mon" style="<?php echo $laBep ? 'display:block' : 'display:none'; ?>">
     <div class="section-intro compact-intro">
         <div>
-            <p class="eyebrow">Xác nhận món theo bàn</p>
-            <h3>Xác nhận món theo bàn</h3>
-            <span>Chọn bàn để xem đơn đang chờ phục vụ, xác nhận từng đơn hoặc toàn bộ bàn sau khi đã mang món ra.</span>
+            <p class="eyebrow"><?php echo $laBep ? 'Xem đơn món' : 'Xác nhận món theo bàn'; ?></p>
+            <h3><?php echo $laBep ? 'Xem đơn món' : 'Xác nhận món theo bàn'; ?></h3>
+            <span>
+                <?php echo $laBep
+                    ? 'Chọn bàn để xem các đơn món đang chờ xử lý.'
+                    : 'Chọn bàn để xem đơn đang chờ phục vụ, xác nhận từng đơn hoặc toàn bộ bàn sau khi đã mang món ra.'; ?>
+            </span>
         </div>
         <button class="btn btn-icon" type="button" onclick="StaffOrders.loadTables()">&#8635; Làm mới</button>
     </div>
@@ -23,7 +28,7 @@
         </div>
         <div class="gm-stat gm-stat-orders">
             <strong id="statOrders">0</strong>
-            <span>Đơn chờ phục vụ</span>
+            <span>Đơn chờ xử lý</span>
         </div>
     </div>
 
@@ -67,16 +72,18 @@
                         <div>
                             <span id="orderCountLabel" class="badge warn">0 đơn đang chờ</span>
                         </div>
-                        <div class="order-action-right">
-                            <button id="confirmAllBtn" class="btn btn-sm" type="button"
-                                    onclick="StaffOrders.confirmAll()" style="display:none">
-                                &#10003; Xác nhận tất cả
-                            </button>
-                            <button id="clearTableBtn" class="btn danger btn-sm" type="button"
-                                    onclick="StaffOrders.markTableEmpty()" disabled>
-                                Xác nhận bàn trống
-                            </button>
-                        </div>
+                        <?php if (!$laBep): ?>
+                            <div class="order-action-right">
+                                <button id="confirmAllBtn" class="btn btn-sm" type="button"
+                                        onclick="StaffOrders.confirmAll()" style="display:none">
+                                    &#10003; Xác nhận tất cả
+                                </button>
+                                <button id="clearTableBtn" class="btn danger btn-sm" type="button"
+                                        onclick="StaffOrders.markTableEmpty()" disabled>
+                                    Xác nhận bàn trống
+                                </button>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div id="orders" class="orders">

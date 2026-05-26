@@ -162,7 +162,7 @@
     <footer>
         <div class="footer-brand">🌿 <?php echo APP_NAME ?></div>
         <p style="margin-bottom:.5rem">Ẩm thực thuần chay tươi lành · Mở cửa 10:00–21:00 hàng ngày</p>
-        <p><a href="<?php echo BASE_URL ?>/admin/login">Quản trị viên</a></p>
+        <p><a href="<?php echo BASE_URL ?>/quanly/dang-nhap">Quản trị viên</a></p>
     </footer>
 
     <!-- RESERVATION MODAL -->

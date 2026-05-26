@@ -2,6 +2,7 @@
 
 require_once dirname(__FILE__) . '/../models/MoHinhCo.php';
 require_once dirname(__FILE__) . '/../models/MoHinh.php';
+require_once dirname(__FILE__) . '/../models/MoHinhKhach.php';
 require_once dirname(__FILE__) . '/BoieuKhienCo.php';
 
 class NhanVienController extends BoieuKhienCo
@@ -10,6 +11,7 @@ class NhanVienController extends BoieuKhienCo
     protected $moHinhDon;
     protected $moHinhDatBan;
     protected $moHinhTaiKhoan;
+    protected $moHinhKhach;
 
     public function __construct()
     {
@@ -18,6 +20,28 @@ class NhanVienController extends BoieuKhienCo
         $this->moHinhDon      = new MoHinhDonMon();
         $this->moHinhDatBan   = new MoHinhDatBan();
         $this->moHinhTaiKhoan = new MoHinhTaiKhoan();
+        $this->moHinhKhach    = new MoHinhKhach();
+    }
+
+    private function laBep()
+    {
+        return isset($_SESSION['nguoi_dung']['vai_tro']) && $_SESSION['nguoi_dung']['vai_tro'] === 'bep';
+    }
+
+    private function yeuCauNhanVienPhucVuJson()
+    {
+        $this->yeuCauAdminHoacNhanVien();
+        if ($this->laBep()) {
+            $this->json(array('success' => false, 'thong_bao' => 'Tài khoản bếp chỉ được xem đơn món'));
+        }
+    }
+
+    private function yeuCauNhanVienPhucVuPage()
+    {
+        $this->yeuCauAdminHoacNhanVien();
+        if ($this->laBep()) {
+            $this->chuyenHuong(BASE_URL . '/nhan-vien/tong-quan');
+        }
     }
 
     public function tongQuan()
@@ -29,14 +53,14 @@ class NhanVienController extends BoieuKhienCo
             'danhSachBan' => $this->moHinhBan->layTatCaBan()
         );
 
-        $this->view('staff/trang-chu', $data);
+        $this->view('nhanvien/trang-chu', $data);
     }
 
     public function xemDon()
     {
         $this->yeuCauAdminHoacNhanVien();
 
-        $this->view('staff/trang-chu', array(
+        $this->view('nhanvien/trang-chu', array(
             'nhanVien' => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array()
         ));
     }
@@ -64,7 +88,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function capNhatTrangThaiBan()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -134,7 +158,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function layDanhSachDatBan()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         $trangThai         = isset($_GET['trang_thai']) ? trim($_GET['trang_thai']) : '';
         $tuKhoa            = isset($_GET['tim'])        ? trim($_GET['tim'])        : '';
@@ -148,7 +172,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function layLichDatBan()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         $thang = isset($_GET['thang']) ? trim($_GET['thang']) : date('Y-m');
         if (!preg_match('/^[0-9]{4}-[0-9]{2}$/', $thang)) {
@@ -164,7 +188,7 @@ class NhanVienController extends BoieuKhienCo
     // Nhan vien xac nhan ban duoc gan tu dong la phu hop
     public function xacNhanGanBan()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -216,7 +240,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function xacNhanMon()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -237,7 +261,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function xacNhanTatCa()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -258,7 +282,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function xacNhanBanTrong()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -279,7 +303,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function capNhatDatBan()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -317,7 +341,7 @@ class NhanVienController extends BoieuKhienCo
 
     public function ganBanDatBanTheoSucChuaNhaHang()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -401,25 +425,82 @@ class NhanVienController extends BoieuKhienCo
 
     public function tichDiem()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuPage();
 
         $sdt   = isset($_GET['sdt']) ? trim($_GET['sdt']) : '';
+        $ngay  = isset($_GET['ngay']) ? trim($_GET['ngay']) : date('Y-m-d');
         $khach = null;
+        $hoaDonTichDiem = null;
+        $hoaDonChuaSdt = array();
 
-        if ($sdt !== '') {
-            $khach = $this->moHinhTaiKhoan->layTheoSDT($sdt);
+        if (!preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $ngay)) {
+            $ngay = date('Y-m-d');
         }
 
-        $this->view('staff/tich-diem', array(
+        if ($sdt !== '') {
+            $khach = $this->moHinhKhach->layTheoSDT($sdt);
+            if ($khach) {
+                $khach['_bang_tich_diem'] = 'khach_tai_khoan';
+            }
+
+            $hoaDonTichDiem = $this->moHinhBan->layTongHoaDonTichDiemTheoSDTNgay($sdt, $ngay);
+            if (empty($hoaDonTichDiem) || (int)$hoaDonTichDiem['tong_tien'] <= 0) {
+                $this->moHinhBan->taoHoaDonTuPhienDangDungTheoSDTNgay($sdt, $ngay);
+                $hoaDonTichDiem = $this->moHinhBan->layTongHoaDonTichDiemTheoSDTNgay($sdt, $ngay);
+            }
+        }
+
+        $hoaDonChuaSdt = $this->moHinhBan->layHoaDonChuaSdtTheoNgay($ngay);
+
+        $this->view('nhanvien/tich-diem', array(
             'nhanVien' => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
             'sdt'      => $sdt,
-            'khach'    => $khach
+            'ngay'     => $ngay,
+            'khach'    => $khach,
+            'hoaDonTichDiem' => $hoaDonTichDiem,
+            'hoaDonChuaSdt' => $hoaDonChuaSdt
         ));
+    }
+
+    private function taoMatKhauKhachTuSdt($sdt)
+    {
+        $so = preg_replace('/[^0-9]/', '', $sdt);
+        return strlen($so) >= 6 ? substr($so, -6) : $sdt;
+    }
+
+    private function layHoacTaoKhachTichDiem($sdt, $tenKhach, &$daTaoTaiKhoan, &$matKhauMacDinh)
+    {
+        $sdt = trim($sdt);
+        $tenKhach = trim($tenKhach);
+        $daTaoTaiKhoan = false;
+        $matKhauMacDinh = '';
+
+        if ($sdt === '') {
+            return null;
+        }
+
+        $khach = $this->moHinhKhach->layTheoSDT($sdt);
+        if ($khach) {
+            return $khach;
+        }
+
+        if ($tenKhach === '') {
+            $tenKhach = $sdt;
+        }
+
+        $matKhauMacDinh = $this->taoMatKhauKhachTuSdt($sdt);
+        $idMoi = $this->moHinhKhach->dangKy($tenKhach, $sdt, '', $matKhauMacDinh);
+        if (!$idMoi) {
+            return null;
+        }
+
+        $daTaoTaiKhoan = true;
+        return $this->moHinhKhach->layTheoId($idMoi);
     }
 
     public function xuLyTichDiem()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        $this->yeuCauNhanVienPhucVuJson();
 
         if (!$this->isPost()) {
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
@@ -427,14 +508,68 @@ class NhanVienController extends BoieuKhienCo
 
         $taiKhoanId = intval($this->post('tai_khoan_id', 0));
         $diem       = intval($this->post('diem', 0));
+        $sdt        = trim($this->post('sdt', ''));
+        $ngay       = trim($this->post('ngay', ''));
+        $tuHoaDon   = $this->post('tu_hoa_don', '0') === '1';
+        $hoaDonId   = intval($this->post('hoa_don_id', 0));
+        $tenKhachPost = trim($this->post('ten_khach', ''));
+        $hoaDonTichDiem = null;
+
+        if ($tuHoaDon && $hoaDonId > 0) {
+            $hoaDonTichDiem = $this->moHinhBan->layHoaDonChuaTichDiemTheoId($hoaDonId);
+            if (!$hoaDonTichDiem) {
+                $this->json(array('success' => false, 'thong_bao' => 'Hóa đơn không hợp lệ hoặc đã tích điểm'));
+            }
+            $diem = isset($hoaDonTichDiem['diem_quy_doi']) ? (int)$hoaDonTichDiem['diem_quy_doi'] : 0;
+            if ($sdt === '') {
+                $sdt = isset($hoaDonTichDiem['sdt_khach']) ? trim($hoaDonTichDiem['sdt_khach']) : '';
+            }
+        } elseif ($tuHoaDon && $sdt !== '' && $ngay !== '') {
+            $hoaDonTichDiem = $this->moHinhBan->layTongHoaDonTichDiemTheoSDTNgay($sdt, $ngay);
+            if (empty($hoaDonTichDiem) || (int)$hoaDonTichDiem['tong_tien'] <= 0) {
+                $this->moHinhBan->taoHoaDonTuPhienDangDungTheoSDTNgay($sdt, $ngay);
+                $hoaDonTichDiem = $this->moHinhBan->layTongHoaDonTichDiemTheoSDTNgay($sdt, $ngay);
+            }
+            $diem = isset($hoaDonTichDiem['diem_quy_doi']) ? (int)$hoaDonTichDiem['diem_quy_doi'] : 0;
+        }
+
+        $daTaoTaiKhoan = false;
+        $matKhauMacDinh = '';
+        if ($taiKhoanId <= 0 && $sdt !== '' && $diem > 0) {
+            $tenKhachTao = $tenKhachPost;
+            if ($tenKhachTao === '' && isset($hoaDonTichDiem['ten_khach'])) {
+                $tenKhachTao = trim($hoaDonTichDiem['ten_khach']);
+            }
+            $khachTichDiem = $this->layHoacTaoKhachTichDiem($sdt, $tenKhachTao, $daTaoTaiKhoan, $matKhauMacDinh);
+            if ($khachTichDiem) {
+                $taiKhoanId = (int)$khachTichDiem['id'];
+            }
+        }
 
         if ($taiKhoanId <= 0 || $diem <= 0) {
             $this->json(array('success' => false, 'thong_bao' => 'Thông tin không hợp lệ'));
         }
 
-        $ok = $this->moHinhTaiKhoan->congDiem($taiKhoanId, $diem);
+        $ok = $this->moHinhKhach->congDiem($taiKhoanId, $diem);
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Đã cộng ' . $diem . ' điểm cho khách hàng'));
+            if ($tuHoaDon && $hoaDonId > 0) {
+                $tenHoaDon = $tenKhachPost !== ''
+                    ? $tenKhachPost
+                    : (isset($hoaDonTichDiem['ten_khach']) ? trim($hoaDonTichDiem['ten_khach']) : '');
+                if ($tenHoaDon === '') {
+                    $tenHoaDon = $sdt;
+                }
+                $this->moHinhBan->capNhatKhachHoaDon($hoaDonId, $tenHoaDon, $sdt);
+                $this->moHinhBan->danhDauMotHoaDonDaTichDiem($hoaDonId, $taiKhoanId, $diem);
+            }
+            if ($tuHoaDon && $hoaDonId <= 0 && $sdt !== '' && $ngay !== '') {
+                $this->moHinhBan->danhDauHoaDonDaTichDiem($sdt, $ngay, $taiKhoanId, $diem);
+            }
+            $thongBao = 'Đã cộng ' . $diem . ' điểm cho khách hàng';
+            if ($daTaoTaiKhoan) {
+                $thongBao = 'Đã tạo tài khoản khách và cộng ' . $diem . ' điểm. Mật khẩu mặc định: ' . $matKhauMacDinh;
+            }
+            $this->json(array('success' => true, 'thong_bao' => $thongBao));
         } else {
             $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cộng điểm'));
         }

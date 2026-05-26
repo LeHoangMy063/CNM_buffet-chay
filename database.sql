@@ -90,10 +90,68 @@ CREATE TABLE `hoa_don_phien` (
   `so_tre_em` int(11) NOT NULL default '0',
   `tong_tien` decimal(12,0) NOT NULL default '0',
   `ghi_chu` text,
+  `tich_diem_luc` datetime default NULL,
+  `tich_diem_tai_khoan_id` int(11) default NULL,
+  `diem_da_cong` int(11) NOT NULL default '0',
   `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `phien_goi_mon_id` (`phien_goi_mon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `doanh_thu_ngay`
+--
+
+CREATE TABLE `doanh_thu_ngay` (
+  `id` int(11) NOT NULL auto_increment,
+  `ngay` date NOT NULL,
+  `so_khach` int(11) NOT NULL default '0',
+  `so_phien` int(11) NOT NULL default '0',
+  `doanh_thu` decimal(12,0) NOT NULL default '0',
+  `nguon` varchar(30) NOT NULL default 'he_thong',
+  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `ngay_cap_nhat` datetime default NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_doanh_thu_ngay` (`ngay`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=31 ;
+
+--
+-- Dumping data for table `doanh_thu_ngay`
+--
+
+INSERT INTO `doanh_thu_ngay` (`id`, `ngay`, `so_khach`, `so_phien`, `doanh_thu`, `nguon`, `ngay_cap_nhat`) VALUES
+(1, '2026-04-01', 34, 9, '6766000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(2, '2026-04-02', 41, 11, '8159000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(3, '2026-04-03', 48, 12, '9552000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(4, '2026-04-04', 76, 18, '15124000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(5, '2026-04-05', 69, 17, '13731000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(6, '2026-04-06', 32, 8, '6368000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(7, '2026-04-07', 37, 9, '7363000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(8, '2026-04-08', 45, 11, '8955000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(9, '2026-04-09', 43, 10, '8557000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(10, '2026-04-10', 52, 13, '10348000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(11, '2026-04-11', 82, 20, '16318000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(12, '2026-04-12', 74, 18, '14726000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(13, '2026-04-13', 35, 9, '6965000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(14, '2026-04-14', 39, 10, '7761000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(15, '2026-04-15', 47, 12, '9353000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(16, '2026-04-16', 44, 11, '8756000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(17, '2026-04-17', 58, 14, '11542000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(18, '2026-04-18', 88, 21, '17512000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(19, '2026-04-19', 79, 19, '15721000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(20, '2026-04-20', 36, 9, '7164000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(21, '2026-04-21', 42, 10, '8358000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(22, '2026-04-22', 49, 12, '9751000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(23, '2026-04-23', 46, 11, '9154000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(24, '2026-04-24', 57, 14, '11343000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(25, '2026-04-25', 91, 22, '18109000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(26, '2026-04-26', 84, 20, '16716000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(27, '2026-04-27', 38, 9, '7562000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(28, '2026-04-28', 44, 11, '8756000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(29, '2026-04-29', 63, 15, '12537000', 'du_lieu_mau', '2026-05-01 00:00:00'),
+(30, '2026-04-30', 96, 23, '19104000', 'du_lieu_mau', '2026-05-01 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -319,7 +377,7 @@ CREATE TABLE `tai_khoan` (
   `id` int(11) NOT NULL auto_increment,
   `ten_dang_nhap` varchar(50) default NULL,
   `mat_khau` varchar(255) default NULL,
-  `vai_tro` enum('admin','quan_ly','nhan_vien','bep','khach') NOT NULL default 'khach',
+  `vai_tro` enum('quanly','nhanvien','bep') NOT NULL default 'nhanvien',
   `dang_hoat_dong` tinyint(1) NOT NULL default '1',
   `ho_ten` varchar(100) default NULL,
   `email` varchar(100) default NULL,
@@ -329,19 +387,48 @@ CREATE TABLE `tai_khoan` (
   PRIMARY KEY  (`id`),
   UNIQUE KEY `ten_dang_nhap` (`ten_dang_nhap`),
   UNIQUE KEY `so_dien_thoai` (`so_dien_thoai`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
 
 --
 -- Dumping data for table `tai_khoan`
 --
 
 INSERT INTO `tai_khoan` (`id`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
-(1, 'admin', 'e6e061838856bf47e1de730719fb2609', 'admin', 1, 'Quan tri vien', NULL, NULL, 0, '2026-04-27 14:09:41'),
-(2, 'nhanvien01', '202cb962ac59075b964b07152d234b70', 'nhan_vien', 1, 'Nguyen Thanh Truc', NULL, NULL, 0, '2026-04-27 14:09:41'),
-(3, '0932396610', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),
-(4, '01871638136', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
-(5, '0187193123', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39'),
-(6, 'quanly01', '202cb962ac59075b964b07152d234b70', 'quan_ly', 1, 'Quan ly nha hang', NULL, NULL, 0, '2026-05-14 00:00:00');
+(1, 'quanly', 'e6e061838856bf47e1de730719fb2609', 'quanly', 1, 'Quan tri vien', NULL, NULL, 0, '2026-04-27 14:09:41'),
+(2, 'nhanvien01', '202cb962ac59075b964b07152d234b70', 'nhanvien', 1, 'Nguyen Thanh Truc', NULL, NULL, 0, '2026-04-27 14:09:41'),
+(6, 'quanly01', '202cb962ac59075b964b07152d234b70', 'quanly', 1, 'Quan ly nha hang', NULL, NULL, 0, '2026-05-14 00:00:00'),
+(7, 'nhanvien02', '202cb962ac59075b964b07152d234b70', 'bep', 1, 'Nhan vien bep', NULL, NULL, 0, '2026-05-26 00:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `khach_tai_khoan`
+--
+
+CREATE TABLE `khach_tai_khoan` (
+  `id` int(11) NOT NULL auto_increment,
+  `ten_dang_nhap` varchar(50) default NULL,
+  `mat_khau` varchar(255) default NULL,
+  `vai_tro` enum('khach') NOT NULL default 'khach',
+  `dang_hoat_dong` tinyint(1) NOT NULL default '1',
+  `ho_ten` varchar(100) default NULL,
+  `email` varchar(100) default NULL,
+  `so_dien_thoai` varchar(20) default NULL,
+  `diem_tich_luy` int(11) NOT NULL default '0',
+  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ten_dang_nhap` (`ten_dang_nhap`),
+  UNIQUE KEY `so_dien_thoai` (`so_dien_thoai`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `khach_tai_khoan`
+--
+
+INSERT INTO `khach_tai_khoan` (`id`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
+(1, '0932396610', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),
+(2, '01871638136', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
+(3, '0187193123', 'e10adc3949ba59abbe56e057f20f883e', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39');
 
 --
 -- Constraints for dumped tables

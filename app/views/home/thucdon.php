@@ -10,6 +10,44 @@ $laKhach = $nguoiDung
     && isset($nguoiDung['dang_hoat_dong'])
     && $nguoiDung['dang_hoat_dong'] == 1;
 
+function thucDonChuanHoaDanhMuc($danhMuc)
+{
+    $danhMuc = trim((string)$danhMuc);
+    $key = function_exists('mb_strtolower')
+        ? mb_strtolower($danhMuc, 'UTF-8')
+        : strtolower($danhMuc);
+
+    $map = array(
+        'khai vi' => 'Khai vi',
+        'khai vị' => 'Khai vi',
+        'mon chinh' => 'Mon chinh',
+        'món chính' => 'Mon chinh',
+        'nuoc lau' => 'Nuoc lau',
+        'nước lẩu' => 'Nuoc lau',
+        'topping' => 'Topping',
+        'rau' => 'Rau',
+        'do uong' => 'Do uong',
+        'đồ uống' => 'Do uong',
+    );
+
+    return isset($map[$key]) ? $map[$key] : $danhMuc;
+}
+
+function thucDonTenDanhMuc($danhMuc)
+{
+    $labels = array(
+        'Khai vi' => 'Khai vị',
+        'Mon chinh' => 'Món chính',
+        'Nuoc lau' => 'Nước lẩu',
+        'Topping' => 'Topping',
+        'Rau' => 'Rau',
+        'Do uong' => 'Đồ uống',
+        'Khac' => 'Khác',
+    );
+
+    return isset($labels[$danhMuc]) ? $labels[$danhMuc] : $danhMuc;
+}
+
 // Nhóm món ăn theo danh mục
 $theoDanhMuc = array();
 if (!empty($items)) {

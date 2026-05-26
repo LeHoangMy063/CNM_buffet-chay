@@ -42,6 +42,10 @@ body {
     line-height: 1.55;
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
 button,
 input,
 select,
@@ -454,6 +458,24 @@ textarea:focus-visible {
     margin-bottom: 14px;
 }
 
+.staff-toolbar {
+    grid-template-columns: 1fr 170px;
+}
+
+.report-toolbar {
+    grid-template-columns: 170px 170px auto;
+    align-items: center;
+    justify-content: start;
+}
+
+.report-table {
+    margin-top: 8px;
+}
+
+.report-detail-panel {
+    margin-top: 18px;
+}
+
 .input,
 .select,
 textarea {
@@ -524,6 +546,14 @@ textarea:focus {
     gap: 10px;
 }
 
+.field-hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -580,6 +610,76 @@ textarea:focus {
 
 .edit-form {
     display: none;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 28, 23, 0.46);
+}
+
+.modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(540px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-soft);
+}
+
+.modal-head h3 {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.modal-close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: #eef1ed;
+    color: var(--text);
+}
+
+.modal-card .form-grid {
+    display: grid;
+    padding: 16px;
 }
 
 table {
@@ -673,6 +773,39 @@ tr:hover td {
     font-weight: 700;
 }
 
+.staff-detail {
+    padding: 16px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.detail-grid div {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    background: var(--surface-soft);
+}
+
+.detail-grid span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.detail-grid strong {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
 .toast {
     position: fixed;
     right: 20px;
@@ -719,7 +852,8 @@ tr:hover td {
     }
 
     .grid2,
-    .toolbar {
+    .toolbar,
+    .detail-grid {
         grid-template-columns: 1fr;
     }
 

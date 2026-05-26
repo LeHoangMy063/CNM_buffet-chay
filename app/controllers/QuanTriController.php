@@ -25,7 +25,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= TONG QUAN =================
     public function tongQuan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $thongKeHomNay = $this->moHinhDatBan->thongKeHomNay();
         $tongSoBan     = $this->moHinhBan->demTatCa();
@@ -51,7 +51,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= QUAN LY BAN =================
     public function quanLyBan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $data = array(
             'nguoiDung'  => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
@@ -63,7 +63,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function capNhatTrangThaiBan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $id         = intval($this->post('id', 0));
         $trang_thai = $this->post('trang_thai', '');
@@ -79,7 +79,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= QUAN LY THUC DON =================
     public function quanLyThucDon()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $data = array(
             'nguoiDung'   => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
@@ -91,7 +91,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function luuMonAn()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $ok = $this->moHinhThucDon->luu($_POST);
         $this->json(array('success' => (bool)$ok));
@@ -99,7 +99,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function xoaMonAn()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $id = intval($this->post('id', 0));
         $ok = $this->moHinhThucDon->xoa($id);
@@ -109,7 +109,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= QUAN LY DON MON =================
     public function quanLyDonMon()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $data = array(
             'nguoiDung'    => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
@@ -121,7 +121,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function capNhatTrangThaiDon()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $id         = intval($this->post('id', 0));
         $trang_thai = $this->post('trang_thai', '');
@@ -133,7 +133,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= QUAN LY DAT BAN =================
     public function quanLyDatBan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $bo_loc      = isset($_GET['trang_thai']) ? trim($_GET['trang_thai']) : '';
         $tu_khoa     = isset($_GET['tim']) ? trim($_GET['tim']) : '';
@@ -158,7 +158,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function capNhatTrangThaiDatBan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $id         = intval($this->post('id', 0));
         $trang_thai = $this->post('trang_thai', '');
@@ -175,7 +175,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= BAO CAO DOANH THU =================
     public function baoCaoDoanThu()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $tu_ngay  = isset($_GET['tu_ngay'])  ? $_GET['tu_ngay']  : date('Y-m-01');
         $den_ngay = isset($_GET['den_ngay']) ? $_GET['den_ngay'] : date('Y-m-d');
@@ -200,7 +200,7 @@ class QuanTriController extends BoieuKhienCo
     // ================= QUAN LY TAI KHOAN =================
     public function quanLyTaiKhoan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $data = array(
             'nguoiDung'  => isset($_SESSION['nguoi_dung']) ? $_SESSION['nguoi_dung'] : array(),
@@ -212,12 +212,12 @@ class QuanTriController extends BoieuKhienCo
 
     public function themNhanVien()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $duLieu = array(
             'ten_dang_nhap' => trim($this->post('ten_dang_nhap', '')),
             'mat_khau'      => $this->post('mat_khau', ''),
-            'vai_tro'       => $this->post('vai_tro', 'nhan_vien'),
+            'vai_tro'       => $this->post('vai_tro', 'nhanvien'),
             'ho_ten'        => trim($this->post('ho_ten', '')),
             'email'         => trim($this->post('email', '')),
             'so_dien_thoai' => trim($this->post('so_dien_thoai', ''))
@@ -239,7 +239,7 @@ class QuanTriController extends BoieuKhienCo
 
     public function capNhatTrangThaiTaiKhoan()
     {
-        $this->yeuCauVaiTro('admin');
+        $this->yeuCauVaiTro('quanly');
 
         $id         = intval($this->post('id', 0));
         $trang_thai = intval($this->post('trang_thai', 1));

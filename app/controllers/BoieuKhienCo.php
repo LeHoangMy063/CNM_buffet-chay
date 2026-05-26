@@ -67,19 +67,19 @@ class BoieuKhienCo
 
     protected function isAdminLoggedIn()
     {
-        return class_exists('AdminAuthMiddleware')
-            ? AdminAuthMiddleware::isAuthenticated()
+        return class_exists('QuanLyAuthMiddleware')
+            ? QuanLyAuthMiddleware::isAuthenticated()
             : false;
     }
 
     protected function requireAdmin($redirectAfterLogin = '')
     {
-        if (class_exists('AdminAuthMiddleware')) {
-            AdminAuthMiddleware::requireLogin($redirectAfterLogin);
+        if (class_exists('QuanLyAuthMiddleware')) {
+            QuanLyAuthMiddleware::requireLogin($redirectAfterLogin);
         } else {
             // fallback nếu chưa có middleware
-            if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-                header('Location: ' . BASE_URL . '/admin/login');
+            if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'quanly') {
+                header('Location: ' . BASE_URL . '/quanly/dang-nhap');
                 exit;
             }
         }
@@ -87,16 +87,16 @@ class BoieuKhienCo
 
     protected function getAdminUser()
     {
-        if (class_exists('AdminAuthMiddleware')) {
-            return AdminAuthMiddleware::getCurrentAdmin();
+        if (class_exists('QuanLyAuthMiddleware')) {
+            return QuanLyAuthMiddleware::getCurrentAdmin();
         }
         return isset($_SESSION['user']) ? $_SESSION['user'] : null;
     }
 
     protected function logAdminAction($action, $description = '')
     {
-        if (class_exists('AdminAuthMiddleware')) {
-            AdminAuthMiddleware::logAction($action, $description);
+        if (class_exists('QuanLyAuthMiddleware')) {
+            QuanLyAuthMiddleware::logAction($action, $description);
         }
     }
 
@@ -105,7 +105,7 @@ class BoieuKhienCo
     protected function requireAuth()
     {
         if (!isset($_SESSION['user'])) {
-            header('Location: ' . BASE_URL . '/staff/login');
+            header('Location: ' . BASE_URL . '/nhanvien/dang-nhap');
             exit;
         }
     }
@@ -113,7 +113,7 @@ class BoieuKhienCo
     protected function requireRole($role)
     {
         if (!isset($_SESSION['user']['role']) || $_SESSION['user']['role'] !== $role) {
-            header('Location: ' . BASE_URL . '/staff/login');
+            header('Location: ' . BASE_URL . '/nhanvien/dang-nhap');
             exit;
         }
     }
@@ -190,8 +190,8 @@ class BoieuKhienCo
         $vai_tro = isset($_SESSION['nguoi_dung']['vai_tro'])
             ? $_SESSION['nguoi_dung']['vai_tro']
             : '';
-        if ($vai_tro !== 'admin' && $vai_tro !== 'nhan_vien') {
-            header('Location: ' . BASE_URL . '/khach/dang-nhap');
+        if ($vai_tro !== 'quanly' && $vai_tro !== 'nhanvien' && $vai_tro !== 'bep') {
+            header('Location: ' . BASE_URL . '/dang-nhap');
             exit;
         }
     }
@@ -205,7 +205,7 @@ class BoieuKhienCo
         $vai_tro = isset($_SESSION['nguoi_dung']['vai_tro'])
             ? $_SESSION['nguoi_dung']['vai_tro']
             : '';
-        if ($vai_tro !== 'quan_ly' && $vai_tro !== 'admin') {
+        if ($vai_tro !== 'quanly') {
             header('Location: ' . BASE_URL . '/dang-nhap');
             exit;
         }

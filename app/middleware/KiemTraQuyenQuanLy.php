@@ -2,22 +2,22 @@
 
 // Kiem tra quyen admin - PHP 5.3 compatible
 
-class AdminAuthMiddleware
+class QuanLyAuthMiddleware
 {
     // Kiem tra admin da dang nhap chua
     public static function isAuthenticated()
     {
-        return isset($_SESSION[ADMIN_SESSION_KEY])
-            && !empty($_SESSION[ADMIN_SESSION_KEY])
-            && isset($_SESSION[ADMIN_SESSION_KEY]['role'])
-            && $_SESSION[ADMIN_SESSION_KEY]['role'] === ROLE_ADMIN;
+        return isset($_SESSION[QUANLY_SESSION_KEY])
+            && !empty($_SESSION[QUANLY_SESSION_KEY])
+            && isset($_SESSION[QUANLY_SESSION_KEY]['role'])
+            && $_SESSION[QUANLY_SESSION_KEY]['role'] === ROLE_QUANLY;
     }
 
     // Lay thong tin admin hien tai
     public static function getCurrentAdmin()
     {
         if (self::isAuthenticated()) {
-            return $_SESSION[ADMIN_SESSION_KEY];
+            return $_SESSION[QUANLY_SESSION_KEY];
         }
         return null;
     }
@@ -30,7 +30,7 @@ class AdminAuthMiddleware
         }
 
         if (isset($_SESSION['admin_last_activity'])) {
-            $timeout = ADMIN_SESSION_TIMEOUT * 60;
+            $timeout = QUANLY_SESSION_TIMEOUT * 60;
 
             if ((time() - $_SESSION['admin_last_activity']) > $timeout) {
                 self::destroySession();
@@ -45,8 +45,8 @@ class AdminAuthMiddleware
     // Xoa session admin
     public static function destroySession()
     {
-        if (isset($_SESSION[ADMIN_SESSION_KEY])) {
-            unset($_SESSION[ADMIN_SESSION_KEY]);
+        if (isset($_SESSION[QUANLY_SESSION_KEY])) {
+            unset($_SESSION[QUANLY_SESSION_KEY]);
         }
         if (isset($_SESSION['admin_last_activity'])) {
             unset($_SESSION['admin_last_activity']);
@@ -59,7 +59,7 @@ class AdminAuthMiddleware
         if (!self::isSessionValid()) {
             self::destroySession();
 
-            $loginUrl = ADMIN_LOGIN_URL;
+            $loginUrl = QUANLY_LOGIN_URL;
             if ($redirectAfterLogin) {
                 $loginUrl .= '?redirect=' . urlencode($redirectAfterLogin);
             }

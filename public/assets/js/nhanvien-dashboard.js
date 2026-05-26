@@ -118,7 +118,7 @@
   };
 
   window.StaffDashboard = {
-    currentSection: "home",
+    currentSection: typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep" ? "dat-ban" : "home",
   };
 
   window.StaffTabs = {
@@ -165,7 +165,10 @@
   };
 
   window.StaffTableManager = {
-    currentPane: "xac-nhan-dat-ban",
+    currentPane:
+      typeof STAFF_DEFAULT_PANE !== "undefined"
+        ? STAFF_DEFAULT_PANE
+        : "xac-nhan-dat-ban",
     paneTitles: {
       "xac-nhan-dat-ban": "Xác nhận đặt bàn",
       "cap-nhat-trang-thai-ban": "Cập nhật trạng thái bàn",
@@ -180,6 +183,9 @@
       if (menu) menu.style.display = "none";
     },
     showPane: function (name) {
+      if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep" && name !== "xac-nhan-mon") {
+        return;
+      }
       this.currentPane = name;
       if (StaffDashboard.currentSection !== "dat-ban") {
         StaffTabs.show("dat-ban");
@@ -276,6 +282,9 @@
       };
     }
 
+    if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep") {
+      StaffTableManager.showPane("xac-nhan-mon");
+    }
     StaffOrders.loadTables();
 
     setInterval(function () {
@@ -455,6 +464,7 @@
 
     renderOrders: function (orders) {
       var n = orders.length;
+      var isKitchen = typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep";
       var actionBar = el("orderActionBar");
       var clearBtn = el("clearTableBtn");
       var confirmAll = el("confirmAllBtn");
@@ -471,7 +481,7 @@
         clearBtn.textContent =
           n > 0 ? "Phục vụ hết đơn trước" : "Xác nhận bàn trống";
       }
-      if (confirmAll) confirmAll.style.display = n > 0 ? "inline-flex" : "none";
+      if (confirmAll) confirmAll.style.display = !isKitchen && n > 0 ? "inline-flex" : "none";
       if (countLabel) {
         countLabel.textContent =
           n > 0 ? n + " đơn đang chờ" : "Không có đơn chờ";
@@ -511,6 +521,9 @@
           item.id +
           ')">&#10003; Đã phục vụ</button>';
         html += "</div>";
+      }
+      if (isKitchen) {
+        html = html.replace(/<button class="btn btn-sm" type="button" onclick="StaffOrders\.confirmDish\([0-9]+\)">[\s\S]*?<\/button>/g, "");
       }
       el("orders").innerHTML = html;
     },

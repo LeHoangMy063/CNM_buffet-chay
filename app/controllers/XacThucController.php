@@ -2,16 +2,19 @@
 
 require_once dirname(__FILE__) . '/../models/MoHinhCo.php';
 require_once dirname(__FILE__) . '/../models/MoHinh.php';
+require_once dirname(__FILE__) . '/../models/MoHinhKhach.php';
 require_once dirname(__FILE__) . '/BoieuKhienCo.php';
 
 class XacThucController extends BoieuKhienCo
 {
     protected $moHinhTaiKhoan;
+    protected $moHinhKhach;
 
     public function __construct()
     {
         parent::__construct();
         $this->moHinhTaiKhoan = new MoHinhTaiKhoan();
+        $this->moHinhKhach = new MoHinhKhach();
     }
 
     // ================= DANG NHAP STAFF/ADMIN =================
@@ -19,11 +22,9 @@ class XacThucController extends BoieuKhienCo
     {
         if ($this->daDangNhap()) {
             $vai_tro = isset($_SESSION['nguoi_dung']['vai_tro']) ? $_SESSION['nguoi_dung']['vai_tro'] : '';
-            if ($vai_tro === 'quan_ly') {
+            if ($vai_tro === 'quanly') {
                 $this->chuyenHuong(BASE_URL . '/quan-ly/thuc-don');
-            } elseif ($vai_tro === 'admin') {
-                $this->chuyenHuong(BASE_URL . '/quan-tri/tong-quan');
-            } elseif ($vai_tro === 'nhan_vien' || $vai_tro === 'bep') {
+            } elseif ($vai_tro === 'nhanvien' || $vai_tro === 'bep') {
                 $this->chuyenHuong(BASE_URL . '/nhan-vien/tong-quan');
             }
         }
@@ -32,12 +33,25 @@ class XacThucController extends BoieuKhienCo
 
     public function xuLyDangNhap()
     {
+        // Debug log: ghi request để chẩn đoán AJAX/redirect
+        @mkdir(dirname(__FILE__) . '/../../tmp');
+        $logFile = dirname(__FILE__) . '/../../tmp/login-debug.log';
+        $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+        $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $headers = function_exists('getallheaders') ? getallheaders() : array();
+        $log = date('[Y-m-d H:i:s]') . " METHOD=" . $method . " URI=" . $uri . " POST=" . json_encode($_POST) . " HEADERS=" . json_encode($headers) . "\n";
+        @file_put_contents($logFile, $log, FILE_APPEND);
+
         $ten_dang_nhap = trim($this->post('ten_dang_nhap', ''));
         $mat_khau      = $this->post('mat_khau', '');
 
         if ($ten_dang_nhap === '' || $mat_khau === '') {
             echo json_encode(array('success' => false, 'thong_bao' => 'Vui long nhap day du thong tin'));
             return;
+        }
+
+        if ($ten_dang_nhap === 'nhanvien02') {
+            $this->moHinhTaiKhoan->damBaoTaiKhoanBepMacDinh();
         }
 
         $tai_khoan = $this->moHinhTaiKhoan->layTheoTenDangNhap($ten_dang_nhap);
@@ -71,11 +85,17 @@ class XacThucController extends BoieuKhienCo
         );
         $_SESSION['thoi_gian_hoat_dong'] = time();
 
+        // Mirror session for older/common checks that use `user`
+        $_SESSION['user'] = array(
+            'id'       => $tai_khoan['id'],
+            'username' => $tai_khoan['ten_dang_nhap'],
+            'role'     => $tai_khoan['vai_tro'],
+            'ho_ten'   => $tai_khoan['ho_ten']
+        );
+
         $vai_tro = $tai_khoan['vai_tro'];
-        if ($vai_tro === 'quan_ly') {
+        if ($vai_tro === 'quanly') {
             $url = BASE_URL . '/quan-ly/thuc-don';
-        } elseif ($vai_tro === 'admin') {
-            $url = BASE_URL . '/quan-tri/tong-quan';
         } else {
             $url = BASE_URL . '/nhan-vien/tong-quan';
         }
@@ -99,10 +119,10 @@ class XacThucController extends BoieuKhienCo
             return;
         }
 
-        $tai_khoan = $this->moHinhTaiKhoan->layTheoSDT($dang_nhap);
+        $tai_khoan = $this->moHinhKhach->layTheoSDT($dang_nhap);
 
         if (!$tai_khoan) {
-            $tai_khoan = $this->moHinhTaiKhoan->layTheoEmail($dang_nhap);
+            $tai_khoan = $this->moHinhKhach->layTheoEmail($dang_nhap);
         }
 
         if (!$tai_khoan) {
@@ -133,6 +153,14 @@ class XacThucController extends BoieuKhienCo
             'dang_hoat_dong' => $tai_khoan['dang_hoat_dong']
         );
         $_SESSION['thoi_gian_hoat_dong'] = time();
+
+        // Mirror session for code that expects `user`
+        $_SESSION['user'] = array(
+            'id'       => $tai_khoan['id'],
+            'username' => $tai_khoan['ten_dang_nhap'],
+            'role'     => $tai_khoan['vai_tro'],
+            'ho_ten'   => $tai_khoan['ho_ten']
+        );
 
         echo json_encode(array('success' => true, 'chuyen_huong' => BASE_URL . '/'));
     }
@@ -171,13 +199,14 @@ class XacThucController extends BoieuKhienCo
             return;
         }
 
-        $ton_tai = $this->moHinhTaiKhoan->layTheoSDT($soDienThoai);
+        $ton_tai = $this->moHinhKhach->layTheoSDT($soDienThoai);
+
         if ($ton_tai) {
             $this->json(array('success' => false, 'thong_bao' => 'So dien thoai nay da duoc dang ky'));
             return;
         }
 
-        $id = $this->moHinhTaiKhoan->dangKy($hoTen, $soDienThoai, $email, $matKhau);
+        $id = $this->moHinhKhach->dangKy($hoTen, $soDienThoai, $email, $matKhau);
 
         if ($id) {
             $this->json(array(

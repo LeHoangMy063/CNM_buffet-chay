@@ -4,11 +4,11 @@
 session_start();
 
 require_once dirname(__FILE__) . '/app/config.php';
-require_once dirname(__FILE__) . '/app/admin_config.php';
+require_once dirname(__FILE__) . '/app/quanly_config.php';
 
 require_once dirname(__FILE__) . '/app/core/CosoDuLieu.php';
 require_once dirname(__FILE__) . '/app/core/XacThuc.php';
-require_once dirname(__FILE__) . '/app/middleware/KiemTraQuyenAdmin.php';
+require_once dirname(__FILE__) . '/app/middleware/KiemTraQuyenQuanLy.php';
 
 require_once dirname(__FILE__) . '/app/models/MoHinhCo.php';
 require_once dirname(__FILE__) . '/app/models/MoHinh.php';
@@ -48,7 +48,7 @@ $routes = array(
     // DANG NHAP / DANG KY / DANG XUAT
     array('GET',  '/dang-nhap',       'XacThucController', 'hienThiDangNhap'),
     array('POST', '/dang-nhap/xu-ly', 'XacThucController', 'xuLyDangNhap'),
-    array('GET',  '/admin/login',     'XacThucController', 'hienThiDangNhap'),
+    array('GET',  '/quanly/dang-nhap',     'XacThucController', 'hienThiDangNhap'),
     array('POST', '/loginSubmit',     'XacThucController', 'xuLyDangNhap'),
     array('GET',  '/dang-ky',         'XacThucController', 'hienThiDangKy'),
     array('POST', '/dang-ky/xu-ly',   'XacThucController', 'xuLyDangKy'),
@@ -83,6 +83,10 @@ $routes = array(
     array('GET',  '/quan-ly/thuc-don',     'QuanLyController', 'thucDon'),
     array('POST', '/quan-ly/thuc-don/luu', 'QuanLyController', 'luuMon'),
     array('POST', '/quan-ly/thuc-don/xoa', 'QuanLyController', 'xoaMon'),
+    array('GET',  '/quan-ly/nhan-vien',     'QuanLyController', 'nhanVien'),
+    array('POST', '/quan-ly/nhan-vien/luu', 'QuanLyController', 'luuNhanVien'),
+    array('POST', '/quan-ly/nhan-vien/xoa', 'QuanLyController', 'xoaNhanVien'),
+    array('GET',  '/quan-ly/bao-cao',       'QuanLyController', 'baoCaoDoanhThu'),
 
     // QUAN TRI
     array('GET', '/quan-tri',           'QuanTriController', 'tongQuan'),
