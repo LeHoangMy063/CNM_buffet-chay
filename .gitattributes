@@ -1,0 +1,14 @@
+# Keep GitHub language stats focused on the PHP application code.
+public/assets/css/** linguist-vendored
+public/assets/js/** linguist-vendored
+public/assets/icons/** linguist-vendored
+public/offline.html linguist-vendored
+public/manifest.webmanifest linguist-vendored
+service-worker.js linguist-vendored
+
+# Local/dev tooling and deployment helpers are not the main app language.
+docker/** linguist-vendored
+Dockerfile linguist-vendored
+docker-compose.yml linguist-vendored
+.htaccess linguist-vendored
+database.sql linguist-vendored
