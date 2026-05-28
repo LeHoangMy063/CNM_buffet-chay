@@ -10,7 +10,6 @@ $accessCode = isset($table['access_code'])
     ? $table['access_code']
     : (isset($table['ma_phien_goi_mon']) ? $table['ma_phien_goi_mon'] : (isset($ma) ? $ma : ''));
 $orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/order.css');
-$orderJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/order.js');
 $menuItemsFlat = array();
 foreach ($menuByCategory as $cat => $items) {
     foreach ($items as $item) {
@@ -246,8 +245,22 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
         var BASE = '<?php echo BASE_URL ?>';
         var PUBLIC_BASE = '<?php echo PUBLIC_BASE_URL ?>';
         var MENU_ITEMS = <?php echo $menuItemsJson ? $menuItemsJson : '[]'; ?>;
+        window.esc = function(s) {
+            return String(s || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
     </script>
-    <script src="<?php echo BASE_URL ?>/public/assets/js/order.js?v=<?php echo $orderJsVersion ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-state.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-utils.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-sidebar.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-suggestions-local.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-recommendation-api.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-cart-modal.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-orders.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL ?>/public/assets/js/order-init.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

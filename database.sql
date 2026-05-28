@@ -90,15 +90,108 @@ CREATE TABLE `hoa_don_phien` (
   `so_tre_em` int(11) NOT NULL default '0',
   `tong_tien` decimal(12,0) NOT NULL default '0',
   `ghi_chu` text,
-  `tich_diem_luc` datetime default NULL,
-  `tich_diem_tai_khoan_id` int(11) default NULL,
-  `diem_da_cong` int(11) NOT NULL default '0',
-  `phuong_thuc_thanh_toan` varchar(30) default NULL,
-  `thanh_toan_luc` datetime default NULL,
   `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `phien_goi_mon_id` (`phien_goi_mon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Table structure for table `thanh_toan_phien`
+--
+
+CREATE TABLE `thanh_toan_phien` (
+  `id` int(11) NOT NULL auto_increment,
+  `hoa_don_phien_id` int(11) NOT NULL,
+  `phuong_thuc` varchar(30) default NULL,
+  `thanh_toan_luc` datetime default NULL,
+  `tich_diem_luc` datetime default NULL,
+  `tich_diem_tai_khoan_id` int(11) default NULL,
+  `diem_da_cong` int(11) NOT NULL default '0',
+  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hoa_don_phien_id` (`hoa_don_phien_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Sample April revenue data through real paid sessions
+--
+
+CREATE TEMPORARY TABLE `seed_apr_revenue` (
+  `ngay` date NOT NULL,
+  `so_khach` int(11) NOT NULL,
+  `so_phien` int(11) NOT NULL
+);
+
+INSERT INTO `seed_apr_revenue` (`ngay`, `so_khach`, `so_phien`) VALUES
+('2026-04-01', 34, 9),  ('2026-04-02', 41, 11), ('2026-04-03', 48, 12), ('2026-04-04', 76, 18),
+('2026-04-05', 69, 17), ('2026-04-06', 32, 8),  ('2026-04-07', 37, 9),  ('2026-04-08', 45, 11),
+('2026-04-09', 43, 10), ('2026-04-10', 52, 13), ('2026-04-11', 82, 20), ('2026-04-12', 74, 18),
+('2026-04-13', 35, 9),  ('2026-04-14', 39, 10), ('2026-04-15', 47, 12), ('2026-04-16', 44, 11),
+('2026-04-17', 58, 14), ('2026-04-18', 88, 21), ('2026-04-19', 79, 19), ('2026-04-20', 36, 9),
+('2026-04-21', 42, 10), ('2026-04-22', 49, 12), ('2026-04-23', 46, 11), ('2026-04-24', 57, 14),
+('2026-04-25', 91, 22), ('2026-04-26', 84, 20), ('2026-04-27', 38, 9),  ('2026-04-28', 44, 11),
+('2026-04-29', 63, 15), ('2026-04-30', 96, 23);
+
+CREATE TEMPORARY TABLE `seed_nums` (`n` int(11) NOT NULL);
+
+INSERT INTO `seed_nums` (`n`) VALUES
+(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),
+(13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23);
+
+INSERT INTO `phien_goi_mon`
+  (`id`, `ban_id`, `ma_phien`, `bat_dau_luc`, `het_han_luc`, `ket_thuc_luc`, `trang_thai`, `ngay_tao`)
+SELECT
+  900000 + DAY(r.ngay) * 100 + n.n AS id,
+  MOD(n.n - 1, 8) + 1 AS ban_id,
+  CONCAT('APR-', DATE_FORMAT(r.ngay, '%Y%m%d'), '-', LPAD(n.n, 2, '0')) AS ma_phien,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE) AS bat_dau_luc,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 100) MINUTE) AS het_han_luc,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 85) MINUTE) AS ket_thuc_luc,
+  'da_ket_thuc' AS trang_thai,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE) AS ngay_tao
+FROM `seed_apr_revenue` r
+JOIN `seed_nums` n ON n.n <= r.so_phien;
+
+INSERT INTO `hoa_don_phien`
+  (`id`, `phien_goi_mon_id`, `ten_khach`, `sdt_khach`, `so_nguoi_lon`, `so_tre_em`, `tong_tien`, `ghi_chu`, `ngay_tao`)
+SELECT
+  900000 + DAY(r.ngay) * 100 + n.n AS id,
+  900000 + DAY(r.ngay) * 100 + n.n AS phien_goi_mon_id,
+  CASE MOD(DAY(r.ngay) + n.n, 12)
+    WHEN 0 THEN 'Nguyen Minh Anh'
+    WHEN 1 THEN 'Tran Hoai Nam'
+    WHEN 2 THEN 'Le Thanh Truc'
+    WHEN 3 THEN 'Pham Gia Han'
+    WHEN 4 THEN 'Vo Quoc Bao'
+    WHEN 5 THEN 'Dang My Linh'
+    WHEN 6 THEN 'Bui Hoang Phuc'
+    WHEN 7 THEN 'Huynh Ngoc Mai'
+    WHEN 8 THEN 'Do Anh Khoa'
+    WHEN 9 THEN 'Phan Tuong Vy'
+    WHEN 10 THEN 'Ngo Bao Chau'
+    ELSE 'Khach vang lai'
+  END AS ten_khach,
+  CASE WHEN MOD(n.n, 5) = 0 THEN ''
+    ELSE CONCAT('09', LPAD(30000000 + DAY(r.ngay) * 1000 + n.n * 17, 8, '0'))
+  END AS sdt_khach,
+  FLOOR(r.so_khach / r.so_phien) + IF(n.n <= MOD(r.so_khach, r.so_phien), 1, 0) AS so_nguoi_lon,
+  0 AS so_tre_em,
+  (FLOOR(r.so_khach / r.so_phien) + IF(n.n <= MOD(r.so_khach, r.so_phien), 1, 0)) * 199000 AS tong_tien,
+  NULL AS ghi_chu,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE) AS ngay_tao
+FROM `seed_apr_revenue` r
+JOIN `seed_nums` n ON n.n <= r.so_phien;
+
+INSERT INTO `thanh_toan_phien`
+  (`id`, `hoa_don_phien_id`, `phuong_thuc`, `thanh_toan_luc`, `ngay_tao`)
+SELECT
+  900000 + DAY(r.ngay) * 100 + n.n AS id,
+  900000 + DAY(r.ngay) * 100 + n.n AS hoa_don_phien_id,
+  IF(MOD(n.n, 3) = 0, 'chuyen_khoan', 'tien_mat') AS phuong_thuc,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 90) MINUTE) AS thanh_toan_luc,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE) AS ngay_tao
+FROM `seed_apr_revenue` r
+JOIN `seed_nums` n ON n.n <= r.so_phien;
 
 -- --------------------------------------------------------
 
@@ -239,12 +332,41 @@ CREATE TABLE `don_mon` (
 -- Dumping data for table `don_mon`
 --
 
-INSERT INTO `don_mon` (`id`, `ban_id`, `trang_thai`, `tong_tien`, `ngay_tao`) VALUES
-(3, 1, 'da_phuc_vu', '0.00', '2026-04-28 22:14:43'),
-(4, 1, 'da_phuc_vu', '0.00', '2026-04-28 22:15:25'),
-(5, 1, 'da_phuc_vu', '0.00', '2026-04-28 22:15:52'),
-(6, 1, 'da_phuc_vu', '0.00', '2026-04-28 22:16:09'),
-(7, 1, 'da_phuc_vu', '0.00', '2026-04-30 22:51:13');
+INSERT INTO `don_mon` (`id`, `ban_id`, `phien_goi_mon_id`, `trang_thai`, `tong_tien`, `ngay_tao`) VALUES
+(3, 1, 902801, 'da_phuc_vu', '0.00', '2026-04-28 22:14:43'),
+(4, 1, 902801, 'da_phuc_vu', '0.00', '2026-04-28 22:15:25'),
+(5, 1, 902801, 'da_phuc_vu', '0.00', '2026-04-28 22:15:52'),
+(6, 1, 902801, 'da_phuc_vu', '0.00', '2026-04-28 22:16:09'),
+(7, 1, 903001, 'da_phuc_vu', '0.00', '2026-04-30 22:51:13');
+
+INSERT INTO `don_mon`
+  (`id`, `ban_id`, `phien_goi_mon_id`, `trang_thai`, `tong_tien`, `ngay_tao`)
+SELECT
+  910000 + DAY(r.ngay) * 100 + n.n AS id,
+  MOD(n.n - 1, 8) + 1 AS ban_id,
+  900000 + DAY(r.ngay) * 100 + n.n AS phien_goi_mon_id,
+  'da_phuc_vu' AS trang_thai,
+  0 AS tong_tien,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 15) MINUTE) AS ngay_tao
+FROM `seed_apr_revenue` r
+JOIN `seed_nums` n ON n.n <= r.so_phien;
+
+INSERT INTO `chitiet_donmon`
+  (`id`, `don_mon_id`, `mon_an_id`, `so_luong`, `ghi_chu`, `trang_thai`, `ngay_tao`)
+SELECT
+  920000 + DAY(r.ngay) * 1000 + n.n * 10 + k.k AS id,
+  910000 + DAY(r.ngay) * 100 + n.n AS don_mon_id,
+  MOD(DAY(r.ngay) + n.n + k.k * 7, 42) + 1 AS mon_an_id,
+  1 + MOD(DAY(r.ngay) + n.n + k.k, 2) AS so_luong,
+  '' AS ghi_chu,
+  'da_phuc_vu' AS trang_thai,
+  DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 20 + k.k * 5) MINUTE) AS ngay_tao
+FROM `seed_apr_revenue` r
+JOIN `seed_nums` n ON n.n <= r.so_phien
+JOIN (SELECT 1 AS k UNION ALL SELECT 2 UNION ALL SELECT 3) k;
+
+DROP TEMPORARY TABLE `seed_nums`;
+DROP TEMPORARY TABLE `seed_apr_revenue`;
 
 -- --------------------------------------------------------
 

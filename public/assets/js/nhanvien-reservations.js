@@ -239,7 +239,7 @@
         if (!isDone) {
           html += '<button type="button" class="btn secondary" onclick="StaffReservations.doiBan(' + r.id + ')">&#8644; Đổi bàn</button>';
           if (choDuyetBan) {
-            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + r.id + ')">&#10003; Xác nhận đặt bàn</button>';
+            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + r.id + ')">&#10003; Duyệt đặt bàn</button>';
           } else {
             html += this.actionBtn(r.id, "da_xac_nhan", "&#10003; Xác nhận ĐB", r.trang_thai, "");
           }
@@ -335,7 +335,7 @@
       var self = this;
       postForm(BASE_URL + "/nhan-vien/dat-ban/xac-nhan-gan-ban", { id: id }, function (res) {
         if (res.success) {
-          toast(res.thong_bao || "Đã xác nhận đặt bàn");
+          toast(res.thong_bao || "Đã duyệt đặt bàn");
           self.load();
         } else {
           toast(res.thong_bao || "Không thể xác nhận bàn", "err");

@@ -45,6 +45,11 @@ define('VIETQR_ACCOUNT_NO', getenv('VIETQR_ACCOUNT_NO') ? getenv('VIETQR_ACCOUNT
 define('VIETQR_ACCOUNT_NAME', getenv('VIETQR_ACCOUNT_NAME') ? getenv('VIETQR_ACCOUNT_NAME') : '');
 define('VIETQR_TEMPLATE', getenv('VIETQR_TEMPLATE') ? getenv('VIETQR_TEMPLATE') : 'compact2');
 
+// MongoDB analytics mirror settings
+define('MONGO_ENABLED', getenv('MONGO_ENABLED') ? getenv('MONGO_ENABLED') : '0');
+define('MONGO_URI', getenv('MONGO_URI') ? getenv('MONGO_URI') : 'mongodb://localhost:27017');
+define('MONGO_DB', getenv('MONGO_DB') ? getenv('MONGO_DB') : 'buffet_chay_analytics');
+
 define('SESSION_LIFETIME', 28800); // 8 gio
 
 // Timezone

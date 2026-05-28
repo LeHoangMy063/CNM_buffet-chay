@@ -2,12 +2,12 @@
 <div class="table-work-pane<?php echo $laBep ? ' active' : ''; ?>" id="pane-xac-nhan-mon" style="<?php echo $laBep ? 'display:block' : 'display:none'; ?>">
     <div class="section-intro compact-intro">
         <div>
-            <p class="eyebrow"><?php echo $laBep ? 'Xem đơn món' : 'Xác nhận món theo bàn'; ?></p>
-            <h3><?php echo $laBep ? 'Xem đơn món' : 'Xác nhận món theo bàn'; ?></h3>
+            <p class="eyebrow"><?php echo $laBep ? 'Xem đơn món' : 'Quản lý gọi món'; ?></p>
+            <h3><?php echo $laBep ? 'Xem đơn món' : 'Quản lý gọi món'; ?></h3>
             <span>
                 <?php echo $laBep
                     ? 'Chọn bàn để xem các đơn món đang chờ xử lý.'
-                    : 'Chọn bàn để xem đơn đang chờ phục vụ, xác nhận từng đơn hoặc toàn bộ bàn sau khi đã mang món ra.'; ?>
+                    : 'Chọn bàn để xem đơn đang chờ phục vụ, quản lý từng đơn hoặc toàn bộ bàn sau khi đã mang món ra.'; ?>
             </span>
         </div>
         <button class="btn btn-icon" type="button" onclick="StaffOrders.loadTables()">&#8635; Làm mới</button>

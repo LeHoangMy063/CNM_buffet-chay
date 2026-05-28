@@ -463,7 +463,7 @@ textarea:focus-visible {
 }
 
 .report-toolbar {
-    grid-template-columns: 170px 170px auto auto;
+    grid-template-columns: 170px 170px auto auto auto;
     align-items: center;
     justify-content: start;
 }

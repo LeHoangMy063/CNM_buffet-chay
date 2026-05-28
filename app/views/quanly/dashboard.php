@@ -78,8 +78,8 @@ $khachMoiPhien = $soPhien > 0 ? round($tongKhach / $soPhien, 1) : 0;
     <div class="panel active chart-panel">
         <div class="panel-head">
             <div>
-                <h3>Mức tiêu thụ theo nhóm món</h3>
-                <p>Nhóm nguyên liệu cần chuẩn bị nhiều hơn.</p>
+                <h3>Cơ cấu món theo nhóm</h3>
+                <p>So sánh lượng món đã phục vụ theo từng nhóm.</p>
             </div>
         </div>
         <div class="panel-body chart-body">

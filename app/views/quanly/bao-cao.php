@@ -47,6 +47,7 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
             <input class="input" type="date" name="den_ngay" value="<?php echo htmlspecialchars($denNgay, ENT_QUOTES, 'UTF-8'); ?>">
             <button class="btn" type="submit">Xem báo cáo</button>
             <a class="btn secondary" href="#revenue-dashboard">Xem dashboard</a>
+            <a class="btn secondary" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao/xuat?tu_ngay=<?php echo urlencode($tuNgay); ?>&den_ngay=<?php echo urlencode($denNgay); ?>">Xuất Excel</a>
         </form>
 
         <div id="revenue-dashboard" class="report-dashboard">
@@ -85,8 +86,8 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
                 <div class="panel active chart-panel">
                     <div class="panel-head">
                         <div>
-                            <h3>Lượt gọi theo nhóm món</h3>
-                            <p>Nhóm món nào đang được gọi nhiều trong khoảng đã chọn.</p>
+                            <h3>Cơ cấu món theo nhóm</h3>
+                            <p>So sánh lượng món đã phục vụ theo từng nhóm trong khoảng đã chọn.</p>
                         </div>
                     </div>
                     <div class="panel-body chart-body">

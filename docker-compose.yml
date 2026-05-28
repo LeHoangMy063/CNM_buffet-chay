@@ -16,10 +16,14 @@ services:
       VIETQR_ACCOUNT_NO: ${VIETQR_ACCOUNT_NO:-}
       VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME:-}
       VIETQR_TEMPLATE: ${VIETQR_TEMPLATE:-compact2}
+      MONGO_ENABLED: ${MONGO_ENABLED:-1}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DB: ${MONGO_DB:-buffet_chay_analytics}
     volumes:
       - ./:/var/www/html/buffet-chay
     depends_on:
       - db
+      - mongo
 
   db:
     image: mariadb:10.5
@@ -46,5 +50,13 @@ services:
     depends_on:
       - db
 
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+
 volumes:
   db_data:
+  mongo_data:

@@ -20,6 +20,7 @@ require_once dirname(__FILE__) . '/app/controllers/QuanLyController.php';
 require_once dirname(__FILE__) . '/app/controllers/QuanTriController.php';
 require_once dirname(__FILE__) . '/app/controllers/NhanVienController.php';
 require_once dirname(__FILE__) . '/app/controllers/XacThucController.php';
+require_once dirname(__FILE__) . '/app/controllers/GoiYMonController.php';
 
 // ===== PARSE URI =====
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -56,6 +57,9 @@ $routes = array(
 
     // KHACH HANG - GOI MON
     array('GET',  '/goi-mon',             'KhachHangController', 'trangGoiMon'),
+    array('GET',  '/goi-y-mon',                'GoiYMonController', 'layGoiY'),
+    array('POST', '/goi-y-mon/hanh-vi',        'GoiYMonController', 'ghiHanhVi'),
+    array('GET',  '/goi-y-mon/cap-nhat-batch', 'GoiYMonController', 'capNhatBatch'),
     array('POST', '/goi-mon/dat',         'KhachHangController', 'datMon'),
     array('POST', '/goi-mon/huy',         'KhachHangController', 'huyMon'),
     array('GET',  '/goi-mon/danh-sach',   'KhachHangController', 'layDonHienTai'),
@@ -88,6 +92,7 @@ $routes = array(
     array('POST', '/quan-ly/nhan-vien/luu', 'QuanLyController', 'luuNhanVien'),
     array('POST', '/quan-ly/nhan-vien/xoa', 'QuanLyController', 'xoaNhanVien'),
     array('GET',  '/quan-ly/bao-cao',       'QuanLyController', 'baoCaoDoanhThu'),
+    array('GET',  '/quan-ly/bao-cao/xuat',  'QuanLyController', 'xuatBaoCaoDoanhThu'),
 
     // QUAN TRI
     array('GET', '/quan-tri',           'QuanTriController', 'tongQuan'),

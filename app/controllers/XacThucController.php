@@ -24,7 +24,7 @@ class XacThucController extends BoieuKhienCo
         if ($this->daDangNhap()) {
             $vai_tro = isset($_SESSION['nguoi_dung']['vai_tro']) ? $_SESSION['nguoi_dung']['vai_tro'] : '';
             if ($vai_tro === 'quanly') {
-                $this->chuyenHuong(BASE_URL . '/quan-ly/thuc-don');
+                $this->chuyenHuong(BASE_URL . '/quan-ly/bao-cao');
             } elseif ($vai_tro === 'nhanvien' || $vai_tro === 'bep') {
                 $this->chuyenHuong(BASE_URL . '/nhan-vien/tong-quan');
             }
@@ -100,7 +100,7 @@ class XacThucController extends BoieuKhienCo
 
         $vai_tro = $tai_khoan['vai_tro'];
         if ($vai_tro === 'quanly') {
-            $url = BASE_URL . '/quan-ly/thuc-don';
+            $url = BASE_URL . '/quan-ly/bao-cao';
         } else {
             $url = BASE_URL . '/nhan-vien/tong-quan';
         }

@@ -50,13 +50,13 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                     </button>
                     <div class="side-subnav" id="tableSubnav" style="display:none">
                         <button type="button" class="side-sub-link active" data-pane="xac-nhan-dat-ban" onclick="StaffTableManager.showPane('xac-nhan-dat-ban')">
-                            Xác nhận đặt bàn
+                            Duyệt đặt bàn
                         </button>
                         <button type="button" class="side-sub-link" data-pane="cap-nhat-trang-thai-ban" onclick="StaffTableManager.showPane('cap-nhat-trang-thai-ban')">
-                            Cập nhật trạng thái bàn
+                            Điều phối bàn
                         </button>
                         <button type="button" class="side-sub-link" data-pane="xac-nhan-mon" onclick="StaffTableManager.showPane('xac-nhan-mon')">
-                            Xác nhận món theo bàn
+                            Quản lý gọi món
                         </button>
                     </div>
                     <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem" onclick="window.location.href='<?php echo BASE_URL; ?>/nhan-vien/tich-diem'; return false;">
@@ -104,7 +104,7 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                         <button type="button" class="feature-card" onclick="StaffTabs.show('dat-ban')">
                             <div class="feature-icon">&#129681;</div>
                             <strong>Quản lý bàn</strong>
-                            <small>Xác nhận đặt bàn, cập nhật trạng thái bàn và xác nhận món theo bàn trong cùng một màn hình.</small>
+                            <small>Duyệt đặt bàn, điều phối bàn và quản lý gọi món trong cùng một màn hình.</small>
                         </button>
                         <a class="feature-card" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem" onclick="window.location.href='<?php echo BASE_URL; ?>/nhan-vien/tich-diem'; return false;">
                             <div class="feature-icon">&#11088;</div>

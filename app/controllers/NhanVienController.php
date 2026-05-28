@@ -192,7 +192,7 @@ class NhanVienController extends BoieuKhienCo
         }
 
         if ($ok) {
-            $thongBao = 'Đã cập nhật trạng thái bàn';
+            $thongBao = 'Đã điều phối bàn';
             if ($trangThai === 'dang_dung' && $banSauCapNhat && !empty($banSauCapNhat['ma_phien_goi_mon'])) {
                 $thongBao = 'Đã mở phiên gọi món. Mã tạm thời: ' . $banSauCapNhat['ma_phien_goi_mon'];
             } elseif ($trangThai === 'trong' && $phuongThucThanhToan === 'tien_mat') {
@@ -206,7 +206,7 @@ class NhanVienController extends BoieuKhienCo
                 'du_lieu' => $banSauCapNhat
             ));
         } else {
-            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi cập nhật trạng thái bàn'));
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi điều phối bàn'));
         }
     }
 
@@ -286,7 +286,7 @@ class NhanVienController extends BoieuKhienCo
 
         $ok = $this->moHinhDatBan->xacNhanGanBan($id);
         if ($ok) {
-            $this->json(array('success' => true, 'thong_bao' => 'Đã xác nhận đặt bàn'));
+            $this->json(array('success' => true, 'thong_bao' => 'Đã duyệt đặt bàn'));
         } else {
             $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xác nhận'));
         }

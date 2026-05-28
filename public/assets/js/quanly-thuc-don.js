@@ -510,7 +510,7 @@ function initDashboardCharts() {
       : "so_khach";
   drawLineChart("revenueCanvas", typeof REVENUE_CHART === "undefined" ? [] : REVENUE_CHART, revenueKey, "ngay");
   drawBarChart("topDishCanvas", typeof TOP_DISH_CHART === "undefined" ? [] : TOP_DISH_CHART, "tong_ban", "ten", "Chua co du lieu mon duoc goi");
-  drawBarChart("categoryCanvas", typeof CATEGORY_CHART === "undefined" ? [] : CATEGORY_CHART, "tong_ban", "danh_muc", "Chua co du lieu nhom mon");
+  drawBarChart("categoryCanvas", typeof CATEGORY_CHART === "undefined" ? [] : CATEGORY_CHART, "tong_ban", "danh_muc", "Chua co du lieu co cau nhom mon");
   drawHourChart();
 }
 

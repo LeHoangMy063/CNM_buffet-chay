@@ -7,7 +7,7 @@
             <div class="reservation-panel-head">
                 <div>
                     <p class="eyebrow">Buffet Chay</p>
-                    <h2>Xác nhận đặt bàn</h2>
+                    <h2>Duyệt đặt bàn</h2>
                     <p>Duyệt bàn tự gán, đổi bàn nếu cần, hoặc hủy đặt bàn.</p>
                 </div>
                 <div id="pendingApprovalBanner" class="pending-banner compact-pending" style="display:none">
@@ -60,8 +60,8 @@
         <div class="panel">
             <div class="panel-head panel-head-wrap">
                 <div>
-                    <h2>Sơ đồ bàn</h2>
-                    <p class="panel-sub">Theo dõi bàn trống, sức chứa và mã bàn. Bàn có đơn chờ sẽ hiển thị là đang dùng.</p>
+                    <h2>Điều phối bàn</h2>
+                    <p class="panel-sub">Theo dõi bàn trống, sức chứa, mã bàn và xử lý thanh toán để trả bàn.</p>
                 </div>
                 <button class="btn secondary btn-sm" type="button" onclick="StaffTableStatus.load()">&#8635; Làm mới</button>
             </div>

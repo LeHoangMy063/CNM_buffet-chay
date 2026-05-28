@@ -1,8 +1,10 @@
 <?php
 
-require_once dirname(__FILE__) . '/../models/MoHinhCo.php';
-require_once dirname(__FILE__) . '/../models/MoHinh.php';
-require_once dirname(__FILE__) . '/BoieuKhienCo.php';
+require_once __DIR__ . '/../models/MoHinhCo.php';
+require_once __DIR__ . '/../models/MoHinh.php';
+require_once __DIR__ . '/../core/MongoKetNoi.php';
+require_once __DIR__ . '/BoieuKhienCo.php';
+require_once __DIR__ . '/XuatBaoCaoController.php';
 
 class QuanLyController extends BoieuKhienCo
 {
@@ -43,6 +45,13 @@ class QuanLyController extends BoieuKhienCo
         $this->hienThiTrangQuanLy('bao-cao');
     }
 
+    // Delegate sang XuatBaoCaoController
+    public function xuatBaoCaoDoanhThu()
+    {
+        $xuatBaoCao = new XuatBaoCaoController();
+        $xuatBaoCao->xuatBaoCaoDoanhThu();
+    }
+
     private function hienThiTrangQuanLy($bangDangMo)
     {
         $this->yeuCauQuanLy();
@@ -54,42 +63,54 @@ class QuanLyController extends BoieuKhienCo
             ? $_GET['den_ngay']
             : date('Y-m-d');
 
-        $topMonBanChay = $this->moHinhDon->topMonBanChayTrongKhoang(6, $tuNgay, $denNgay);
-        $thongKeDanhMuc = $this->moHinhDon->thongKeDanhMucTrongKhoang($tuNgay, $denNgay);
-        $thongKeTheoGio = $this->moHinhDon->thongKeDonTheoGio($tuNgay, $denNgay);
-        $monCanDay = $this->moHinhDon->monItBanTrongKhoang(5, $tuNgay, $denNgay);
+        $topMonBanChay    = $this->moHinhDon->topMonBanChayTrongKhoang(6, $tuNgay, $denNgay);
+        $thongKeDanhMuc   = $this->moHinhDon->thongKeDanhMucTrongKhoang($tuNgay, $denNgay);
+        $thongKeTheoGio   = $this->moHinhDon->thongKeDonTheoGio($tuNgay, $denNgay);
+        $monCanDay        = $this->moHinhDon->monItBanTrongKhoang(5, $tuNgay, $denNgay);
         $tongQuanDoanhThu = $this->moHinhDon->tongQuanDoanhThu($tuNgay, $denNgay);
+        $baoCaoDoanhThu   = $this->moHinhDon->thongKeDoanThu($tuNgay, $denNgay);
+        $chiTietDoanhThu  = $this->moHinhDon->chiTietDoanhThu($tuNgay, $denNgay);
+
+        if ($bangDangMo === 'bao-cao') {
+            $this->dongBoMongoBaoCaoTuDong($tuNgay, $denNgay, $tongQuanDoanhThu, $chiTietDoanhThu, $topMonBanChay, $thongKeDanhMuc, $thongKeTheoGio);
+        }
 
         $this->view('quanly/thuc-don', array(
-            'nguoiDung' => $this->layNguoiDung(),
-            'danhSachMon' => $this->moHinhThucDon->layTatCa(),
+            'nguoiDung'        => $this->layNguoiDung(),
+            'danhSachMon'      => $this->moHinhThucDon->layTatCa(),
             'danhSachNhanVien' => $this->moHinhTaiKhoan->layNhanVienQuanLy(),
-            'tuNgay' => $tuNgay,
-            'denNgay' => $denNgay,
+            'tuNgay'           => $tuNgay,
+            'denNgay'          => $denNgay,
             'tongQuanDoanhThu' => $tongQuanDoanhThu,
-            'baoCaoDoanhThu' => $this->moHinhDon->thongKeDoanThu($tuNgay, $denNgay),
-            'chiTietDoanhThu' => $this->moHinhDon->chiTietDoanhThu($tuNgay, $denNgay),
-            'topMonBanChay' => $topMonBanChay,
-            'thongKeDanhMuc' => $thongKeDanhMuc,
-            'thongKeTheoGio' => $thongKeTheoGio,
-            'monCanDay' => $monCanDay,
-            'goiYMonAi' => $this->taoGoiYMonAi($topMonBanChay, $thongKeDanhMuc, $monCanDay, $tongQuanDoanhThu),
-            'bangDangMo' => $bangDangMo
+            'baoCaoDoanhThu'   => $baoCaoDoanhThu,
+            'chiTietDoanhThu'  => $chiTietDoanhThu,
+            'topMonBanChay'    => $topMonBanChay,
+            'thongKeDanhMuc'   => $thongKeDanhMuc,
+            'thongKeTheoGio'   => $thongKeTheoGio,
+            'monCanDay'        => $monCanDay,
+            'goiYMonAi'        => $this->taoGoiYMonAi($topMonBanChay, $thongKeDanhMuc, $monCanDay, $tongQuanDoanhThu),
+            'bangDangMo'       => $bangDangMo
         ));
+    }
+
+    private function dongBoMongoBaoCaoTuDong($tuNgay, $denNgay, $tongQuan, $doanhThuNgay, $topMon, $danhMuc, $theoGio)
+    {
+        $mongo = new MongoKetNoi();
+        $mongo->dongBoBaoCaoDoanhThu($tuNgay, $denNgay, $tongQuan, $doanhThuNgay, $topMon, $danhMuc, $theoGio);
     }
 
     private function taoGoiYMonAi($topMon, $danhMuc, $monCanDay, $tongQuan)
     {
-        $goiY = array();
-        $soPhien = isset($tongQuan['so_phien']) ? (int)$tongQuan['so_phien'] : 0;
+        $goiY      = array();
+        $soPhien   = isset($tongQuan['so_phien'])   ? (int)$tongQuan['so_phien']   : 0;
         $tongKhach = isset($tongQuan['tong_khach']) ? (int)$tongQuan['tong_khach'] : 0;
 
         if (!empty($topMon)) {
             $mon = $topMon[0];
             $goiY[] = array(
-                'nhan' => 'Món được gọi nhiều',
-                'tieu_de' => 'Chuẩn bị sẵn "' . $mon['ten'] . '" trước giờ đông khách',
-                'mo_ta' => 'Món này có lượng gọi cao nhất trong buffet. Nên sơ chế trước theo mẻ nhỏ để ra món nhanh mà vẫn giữ chất lượng.',
+                'nhan'      => 'Món được gọi nhiều',
+                'tieu_de'   => 'Chuẩn bị sẵn "' . $mon['ten'] . '" trước giờ đông khách',
+                'mo_ta'     => 'Món này có lượng gọi cao nhất trong buffet. Nên sơ chế trước theo mẻ nhỏ để ra món nhanh mà vẫn giữ chất lượng.',
                 'hanh_dong' => 'Tăng định mức sơ chế cho ca cao điểm.'
             );
         }
@@ -97,9 +118,9 @@ class QuanLyController extends BoieuKhienCo
         if (!empty($danhMuc)) {
             $dm = $danhMuc[0];
             $goiY[] = array(
-                'nhan' => 'Nhóm món hút khách',
-                'tieu_de' => 'Ưu tiên quay vòng nhóm ' . $dm['danh_muc'],
-                'mo_ta' => 'Nhóm này đang được gọi nhiều trong buffet. Nên bố trí nguyên liệu và nhân sự bếp theo nhóm này để tránh trễ món.',
+                'nhan'      => 'Nhóm món hút khách',
+                'tieu_de'   => 'Ưu tiên quay vòng nhóm ' . $dm['danh_muc'],
+                'mo_ta'     => 'Nhóm này đang được gọi nhiều trong buffet. Nên bố trí nguyên liệu và nhân sự bếp theo nhóm này để tránh trễ món.',
                 'hanh_dong' => 'Kiểm tra tồn kho và lịch sơ chế theo nhóm.'
             );
         }
@@ -107,9 +128,9 @@ class QuanLyController extends BoieuKhienCo
         if (!empty($monCanDay)) {
             $monCham = $monCanDay[0];
             $goiY[] = array(
-                'nhan' => 'Món ít được gọi',
-                'tieu_de' => 'Xem lại vị trí hiển thị của "' . $monCham['ten'] . '"',
-                'mo_ta' => 'Món còn phục vụ nhưng ít khách chọn. Nên đổi ảnh, tên gọi, mô tả hoặc đưa vào vị trí dễ thấy hơn trên màn hình gọi món.',
+                'nhan'      => 'Món ít được gọi',
+                'tieu_de'   => 'Xem lại vị trí hiển thị của "' . $monCham['ten'] . '"',
+                'mo_ta'     => 'Món còn phục vụ nhưng ít khách chọn. Nên đổi ảnh, tên gọi, mô tả hoặc đưa vào vị trí dễ thấy hơn trên màn hình gọi món.',
                 'hanh_dong' => 'Thử hiển thị nổi bật trong 1 ca phục vụ.'
             );
         }
@@ -117,18 +138,18 @@ class QuanLyController extends BoieuKhienCo
         if ($soPhien > 0 && $tongKhach > 0) {
             $khachMoiPhien = round($tongKhach / $soPhien, 1);
             $goiY[] = array(
-                'nhan' => 'Tải bếp',
-                'tieu_de' => 'Trung bình ' . $khachMoiPhien . ' khách mỗi phiên buffet',
-                'mo_ta' => 'Khi số khách mỗi phiên cao, nên đưa các món ra nhanh như khai vị, rau và topping lên trước để giảm áp lực bếp nóng.',
+                'nhan'      => 'Tải bếp',
+                'tieu_de'   => 'Trung bình ' . $khachMoiPhien . ' khách mỗi phiên buffet',
+                'mo_ta'     => 'Khi số khách mỗi phiên cao, nên đưa các món ra nhanh như khai vị, rau và topping lên trước để giảm áp lực bếp nóng.',
                 'hanh_dong' => 'Sắp xếp màn hình gọi món theo tốc độ ra món.'
             );
         }
 
         if (empty($goiY)) {
             $goiY[] = array(
-                'nhan' => 'Khởi động',
-                'tieu_de' => 'Cần thêm dữ liệu gọi món để AI gợi ý tốt hơn',
-                'mo_ta' => 'Hãy phục vụ vài phiên buffet đầu tiên, sau đó dashboard sẽ nhìn được món được gọi nhiều, giờ cao điểm và món ít được chọn.',
+                'nhan'      => 'Khởi động',
+                'tieu_de'   => 'Cần thêm dữ liệu gọi món để AI gợi ý tốt hơn',
+                'mo_ta'     => 'Hãy phục vụ vài phiên buffet đầu tiên, sau đó dashboard sẽ nhìn được món được gọi nhiều, giờ cao điểm và món ít được chọn.',
                 'hanh_dong' => 'Tiếp tục ghi nhận đơn món.'
             );
         }
@@ -143,7 +164,7 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
-        $ten = trim($this->post('ten', ''));
+        $ten     = trim($this->post('ten', ''));
         $danhMuc = trim($this->post('danh_muc', ''));
         if ($ten === '' || $danhMuc === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Vui lòng nhập tên món và danh mục'));
@@ -151,7 +172,7 @@ class QuanLyController extends BoieuKhienCo
 
         $ok = $this->moHinhThucDon->luu($_POST);
         $this->json(array(
-            'success' => (bool)$ok,
+            'success'   => (bool)$ok,
             'thong_bao' => $ok ? 'Đã lưu món ăn' : 'Không thể lưu món ăn'
         ));
     }
@@ -170,7 +191,7 @@ class QuanLyController extends BoieuKhienCo
 
         $ok = $this->moHinhThucDon->xoa($id);
         $this->json(array(
-            'success' => (bool)$ok,
+            'success'   => (bool)$ok,
             'thong_bao' => $ok ? 'Đã xóa món ăn' : 'Không thể xóa món ăn'
         ));
     }
@@ -182,15 +203,15 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
-        $id = intval($this->post('id', 0));
+        $id     = intval($this->post('id', 0));
         $duLieu = array(
-            'ten_dang_nhap' => trim($this->post('ten_dang_nhap', '')),
-            'mat_khau' => $this->post('mat_khau', ''),
-            'vai_tro' => $this->post('vai_tro', 'nhanvien'),
+            'ten_dang_nhap'  => trim($this->post('ten_dang_nhap', '')),
+            'mat_khau'       => $this->post('mat_khau', ''),
+            'vai_tro'        => $this->post('vai_tro', 'nhanvien'),
             'dang_hoat_dong' => intval($this->post('dang_hoat_dong', 1)),
-            'ho_ten' => trim($this->post('ho_ten', '')),
-            'email' => trim($this->post('email', '')),
-            'so_dien_thoai' => trim($this->post('so_dien_thoai', ''))
+            'ho_ten'         => trim($this->post('ho_ten', '')),
+            'email'          => trim($this->post('email', '')),
+            'so_dien_thoai'  => trim($this->post('so_dien_thoai', ''))
         );
 
         $vaiTroHopLe = array('quanly', 'nhanvien', 'bep');
@@ -220,17 +241,17 @@ class QuanLyController extends BoieuKhienCo
             if (!$taiKhoan || !in_array($taiKhoan['vai_tro'], $vaiTroHopLe)) {
                 $this->json(array('success' => false, 'thong_bao' => 'Không tìm thấy nhân viên'));
             }
-            $ok = $this->moHinhTaiKhoan->capNhatNhanVien($id, $duLieu);
+            $ok                = $this->moHinhTaiKhoan->capNhatNhanVien($id, $duLieu);
             $thongBaoThanhCong = 'Đã cập nhật nhân viên';
-            $thongBaoLoi = 'Không thể cập nhật nhân viên';
+            $thongBaoLoi       = 'Không thể cập nhật nhân viên';
         } else {
-            $ok = $this->moHinhTaiKhoan->themNhanVien($duLieu);
+            $ok                = $this->moHinhTaiKhoan->themNhanVien($duLieu);
             $thongBaoThanhCong = 'Đã thêm nhân viên';
-            $thongBaoLoi = 'Không thể thêm nhân viên';
+            $thongBaoLoi       = 'Không thể thêm nhân viên';
         }
 
         $this->json(array(
-            'success' => (bool)$ok,
+            'success'   => (bool)$ok,
             'thong_bao' => $ok ? $thongBaoThanhCong : $thongBaoLoi
         ));
     }
@@ -259,7 +280,7 @@ class QuanLyController extends BoieuKhienCo
 
         $ok = $this->moHinhTaiKhoan->xoaNhanVien($id);
         $this->json(array(
-            'success' => (bool)$ok,
+            'success'   => (bool)$ok,
             'thong_bao' => $ok ? 'Đã xóa nhân viên' : 'Không thể xóa nhân viên'
         ));
     }

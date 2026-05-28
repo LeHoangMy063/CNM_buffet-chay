@@ -40,8 +40,78 @@ class MoHinhDonMon extends MoHinhCo
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8
         ");
 
-        $this->damBaoCotHoaDonPhien('phuong_thuc_thanh_toan', "ALTER TABLE hoa_don_phien ADD COLUMN phuong_thuc_thanh_toan varchar(30) DEFAULT NULL");
-        $this->damBaoCotHoaDonPhien('thanh_toan_luc', "ALTER TABLE hoa_don_phien ADD COLUMN thanh_toan_luc datetime DEFAULT NULL");
+        $this->db->query("
+        CREATE TABLE IF NOT EXISTS thanh_toan_phien (
+            id int(11) NOT NULL auto_increment,
+            hoa_don_phien_id int(11) NOT NULL,
+            phuong_thuc varchar(30) DEFAULT NULL,
+            thanh_toan_luc datetime DEFAULT NULL,
+            tich_diem_luc datetime DEFAULT NULL,
+            tich_diem_tai_khoan_id int(11) DEFAULT NULL,
+            diem_da_cong int(11) NOT NULL DEFAULT 0,
+            ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY hoa_don_phien_id (hoa_don_phien_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ");
+
+        $this->chuyenCotThanhToanCuSangBangRieng();
+    }
+
+    private function cotHoaDonPhienTonTai($cot)
+    {
+        $rows = $this->db->query("
+            SELECT COUNT(*) AS co
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'hoa_don_phien'
+              AND COLUMN_NAME = ?
+        ", array($cot));
+        return !empty($rows) && (int)$rows[0]['co'] > 0;
+    }
+
+    private function xoaCotHoaDonPhienNeuCo($cot)
+    {
+        if ($this->cotHoaDonPhienTonTai($cot)) {
+            $this->db->query("ALTER TABLE hoa_don_phien DROP COLUMN " . $cot);
+        }
+    }
+
+    private function chuyenCotThanhToanCuSangBangRieng()
+    {
+        $coPhuongThuc = $this->cotHoaDonPhienTonTai('phuong_thuc_thanh_toan');
+        $coThanhToanLuc = $this->cotHoaDonPhienTonTai('thanh_toan_luc');
+        $coTichDiemLuc = $this->cotHoaDonPhienTonTai('tich_diem_luc');
+        $coTaiKhoan = $this->cotHoaDonPhienTonTai('tich_diem_tai_khoan_id');
+        $coDiem = $this->cotHoaDonPhienTonTai('diem_da_cong');
+
+        if ($coPhuongThuc || $coThanhToanLuc || $coTichDiemLuc || $coTaiKhoan || $coDiem) {
+            $phuongThuc = $coPhuongThuc ? 'h.phuong_thuc_thanh_toan' : 'NULL';
+            $thanhToanLuc = $coThanhToanLuc ? 'h.thanh_toan_luc' : 'NULL';
+            $tichDiemLuc = $coTichDiemLuc ? 'h.tich_diem_luc' : 'NULL';
+            $taiKhoan = $coTaiKhoan ? 'h.tich_diem_tai_khoan_id' : 'NULL';
+            $diem = $coDiem ? 'h.diem_da_cong' : '0';
+
+            $this->db->query("
+                INSERT INTO thanh_toan_phien
+                    (hoa_don_phien_id, phuong_thuc, thanh_toan_luc, tich_diem_luc, tich_diem_tai_khoan_id, diem_da_cong, ngay_tao)
+                SELECT h.id, $phuongThuc, $thanhToanLuc, $tichDiemLuc, $taiKhoan, $diem, h.ngay_tao
+                FROM hoa_don_phien h
+                WHERE h.tong_tien > 0
+                ON DUPLICATE KEY UPDATE
+                    phuong_thuc = COALESCE(VALUES(phuong_thuc), phuong_thuc),
+                    thanh_toan_luc = COALESCE(VALUES(thanh_toan_luc), thanh_toan_luc),
+                    tich_diem_luc = COALESCE(VALUES(tich_diem_luc), tich_diem_luc),
+                    tich_diem_tai_khoan_id = COALESCE(VALUES(tich_diem_tai_khoan_id), tich_diem_tai_khoan_id),
+                    diem_da_cong = GREATEST(VALUES(diem_da_cong), diem_da_cong)
+            ");
+        }
+
+        $this->xoaCotHoaDonPhienNeuCo('phuong_thuc_thanh_toan');
+        $this->xoaCotHoaDonPhienNeuCo('thanh_toan_luc');
+        $this->xoaCotHoaDonPhienNeuCo('tich_diem_luc');
+        $this->xoaCotHoaDonPhienNeuCo('tich_diem_tai_khoan_id');
+        $this->xoaCotHoaDonPhienNeuCo('diem_da_cong');
     }
 
     private function damBaoCotHoaDonPhien($cot, $sql)
@@ -57,6 +127,183 @@ class MoHinhDonMon extends MoHinhCo
         if (empty($rows) || (int)$rows[0]['co'] === 0) {
             $this->db->query($sql);
         }
+    }
+
+    private function damBaoDuLieuThang4TheoPhien()
+    {
+        $this->damBaoBangPhienGoiMon();
+        $this->damBaoBangChiTietDon();
+
+        $rows = $this->db->query("
+            SELECT
+                COUNT(DISTINCT p.id) AS so_phien,
+                COUNT(DISTINCT t.id) AS so_thanh_toan,
+                COUNT(DISTINCT d.id) AS so_don,
+                COUNT(ct.id) AS so_chi_tiet,
+                SUM(CASE WHEN h.ten_khach = 'Khach thang 4' THEN 1 ELSE 0 END) AS ten_cu
+            FROM phien_goi_mon p
+            LEFT JOIN hoa_don_phien h ON h.phien_goi_mon_id = p.id
+            LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
+            LEFT JOIN don_mon d ON d.phien_goi_mon_id = p.id AND d.id BETWEEN 910000 AND 913099
+            LEFT JOIN chitiet_donmon ct ON ct.don_mon_id = d.id AND ct.id BETWEEN 920000 AND 950999
+            WHERE p.ma_phien LIKE 'APR-202604%'
+        ");
+        if (
+            !empty($rows) &&
+            (int)$rows[0]['so_phien'] === 408 &&
+            (int)$rows[0]['so_thanh_toan'] === 408 &&
+            (int)$rows[0]['so_don'] === 408 &&
+            (int)$rows[0]['so_chi_tiet'] === 1224 &&
+            (int)$rows[0]['ten_cu'] === 0
+        ) {
+            return;
+        }
+
+        $this->db->query("
+            DELETE t
+            FROM thanh_toan_phien t
+            JOIN hoa_don_phien h ON h.id = t.hoa_don_phien_id
+            JOIN phien_goi_mon p ON p.id = h.phien_goi_mon_id
+            WHERE p.ma_phien LIKE 'APR-202604%'
+        ");
+        $this->db->query("
+            UPDATE don_mon d
+            JOIN phien_goi_mon p ON p.id = d.phien_goi_mon_id
+            SET d.phien_goi_mon_id = NULL
+            WHERE p.ma_phien LIKE 'APR-202604%'
+        ");
+        $this->db->query("DELETE FROM chitiet_donmon WHERE id BETWEEN 920000 AND 950999");
+        $this->db->query("DELETE FROM don_mon WHERE id BETWEEN 910000 AND 913099");
+        $this->db->query("
+            DELETE h
+            FROM hoa_don_phien h
+            JOIN phien_goi_mon p ON p.id = h.phien_goi_mon_id
+            WHERE p.ma_phien LIKE 'APR-202604%'
+        ");
+        $this->db->query("DELETE FROM phien_goi_mon WHERE ma_phien LIKE 'APR-202604%'");
+
+        $this->db->query("
+            CREATE TEMPORARY TABLE IF NOT EXISTS seed_apr_revenue (
+                ngay date NOT NULL,
+                so_khach int(11) NOT NULL,
+                so_phien int(11) NOT NULL
+            )
+        ");
+        $this->db->query("DELETE FROM seed_apr_revenue");
+        $this->db->query("
+            INSERT INTO seed_apr_revenue (ngay, so_khach, so_phien) VALUES
+            ('2026-04-01', 34, 9),  ('2026-04-02', 41, 11), ('2026-04-03', 48, 12), ('2026-04-04', 76, 18),
+            ('2026-04-05', 69, 17), ('2026-04-06', 32, 8),  ('2026-04-07', 37, 9),  ('2026-04-08', 45, 11),
+            ('2026-04-09', 43, 10), ('2026-04-10', 52, 13), ('2026-04-11', 82, 20), ('2026-04-12', 74, 18),
+            ('2026-04-13', 35, 9),  ('2026-04-14', 39, 10), ('2026-04-15', 47, 12), ('2026-04-16', 44, 11),
+            ('2026-04-17', 58, 14), ('2026-04-18', 88, 21), ('2026-04-19', 79, 19), ('2026-04-20', 36, 9),
+            ('2026-04-21', 42, 10), ('2026-04-22', 49, 12), ('2026-04-23', 46, 11), ('2026-04-24', 57, 14),
+            ('2026-04-25', 91, 22), ('2026-04-26', 84, 20), ('2026-04-27', 38, 9),  ('2026-04-28', 44, 11),
+            ('2026-04-29', 63, 15), ('2026-04-30', 96, 23)
+        ");
+
+        $this->db->query("CREATE TEMPORARY TABLE IF NOT EXISTS seed_nums (n int(11) NOT NULL)");
+        $this->db->query("DELETE FROM seed_nums");
+        $this->db->query("
+            INSERT INTO seed_nums (n) VALUES
+            (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),
+            (13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23)
+        ");
+
+        $this->db->query("
+            INSERT IGNORE INTO phien_goi_mon
+                (id, ban_id, ma_phien, bat_dau_luc, het_han_luc, ket_thuc_luc, trang_thai, ngay_tao)
+            SELECT
+                900000 + DAY(r.ngay) * 100 + n.n,
+                MOD(n.n - 1, 8) + 1,
+                CONCAT('APR-', DATE_FORMAT(r.ngay, '%Y%m%d'), '-', LPAD(n.n, 2, '0')),
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE),
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 100) MINUTE),
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 85) MINUTE),
+                'da_ket_thuc',
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE)
+            FROM seed_apr_revenue r
+            JOIN seed_nums n ON n.n <= r.so_phien
+        ");
+
+        $this->db->query("
+            INSERT IGNORE INTO hoa_don_phien
+                (id, phien_goi_mon_id, ten_khach, sdt_khach, so_nguoi_lon, so_tre_em, tong_tien, ghi_chu,
+                 ngay_tao)
+            SELECT
+                900000 + DAY(r.ngay) * 100 + n.n,
+                900000 + DAY(r.ngay) * 100 + n.n,
+                CASE MOD(DAY(r.ngay) + n.n, 12)
+                    WHEN 0 THEN 'Nguyen Minh Anh'
+                    WHEN 1 THEN 'Tran Hoai Nam'
+                    WHEN 2 THEN 'Le Thanh Truc'
+                    WHEN 3 THEN 'Pham Gia Han'
+                    WHEN 4 THEN 'Vo Quoc Bao'
+                    WHEN 5 THEN 'Dang My Linh'
+                    WHEN 6 THEN 'Bui Hoang Phuc'
+                    WHEN 7 THEN 'Huynh Ngoc Mai'
+                    WHEN 8 THEN 'Do Anh Khoa'
+                    WHEN 9 THEN 'Phan Tuong Vy'
+                    WHEN 10 THEN 'Ngo Bao Chau'
+                    ELSE 'Khach vang lai'
+                END,
+                CASE WHEN MOD(n.n, 5) = 0 THEN ''
+                    ELSE CONCAT('09', LPAD(30000000 + DAY(r.ngay) * 1000 + n.n * 17, 8, '0'))
+                END,
+                FLOOR(r.so_khach / r.so_phien) + IF(n.n <= MOD(r.so_khach, r.so_phien), 1, 0),
+                0,
+                (FLOOR(r.so_khach / r.so_phien) + IF(n.n <= MOD(r.so_khach, r.so_phien), 1, 0)) * 199000,
+                NULL,
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE)
+            FROM seed_apr_revenue r
+            JOIN seed_nums n ON n.n <= r.so_phien
+        ");
+
+        $this->db->query("
+            INSERT IGNORE INTO thanh_toan_phien
+                (id, hoa_don_phien_id, phuong_thuc, thanh_toan_luc, ngay_tao)
+            SELECT
+                900000 + DAY(r.ngay) * 100 + n.n,
+                900000 + DAY(r.ngay) * 100 + n.n,
+                IF(MOD(n.n, 3) = 0, 'chuyen_khoan', 'tien_mat'),
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 90) MINUTE),
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60)) MINUTE)
+            FROM seed_apr_revenue r
+            JOIN seed_nums n ON n.n <= r.so_phien
+        ");
+
+        $this->db->query("
+            INSERT IGNORE INTO don_mon
+                (id, ban_id, phien_goi_mon_id, trang_thai, tong_tien, ngay_tao)
+            SELECT
+                910000 + DAY(r.ngay) * 100 + n.n,
+                MOD(n.n - 1, 8) + 1,
+                900000 + DAY(r.ngay) * 100 + n.n,
+                'da_phuc_vu',
+                0,
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 15) MINUTE)
+            FROM seed_apr_revenue r
+            JOIN seed_nums n ON n.n <= r.so_phien
+        ");
+
+        $this->db->query("
+            INSERT IGNORE INTO chitiet_donmon
+                (id, don_mon_id, mon_an_id, so_luong, ghi_chu, trang_thai, ngay_tao)
+            SELECT
+                920000 + DAY(r.ngay) * 1000 + n.n * 10 + k.k,
+                910000 + DAY(r.ngay) * 100 + n.n,
+                MOD(DAY(r.ngay) + n.n + k.k * 7, 42) + 1,
+                1 + MOD(DAY(r.ngay) + n.n + k.k, 2),
+                '',
+                'da_phuc_vu',
+                DATE_ADD(CAST(CONCAT(r.ngay, ' 10:00:00') AS DATETIME), INTERVAL (MOD(n.n - 1, 11) * 60 + MOD((n.n - 1) * 7, 60) + 20 + k.k * 5) MINUTE)
+            FROM seed_apr_revenue r
+            JOIN seed_nums n ON n.n <= r.so_phien
+            JOIN (SELECT 1 AS k UNION ALL SELECT 2 UNION ALL SELECT 3) k
+        ");
+
+        $this->db->query("UPDATE don_mon SET phien_goi_mon_id = 902801 WHERE id IN (3, 4, 5, 6)");
+        $this->db->query("UPDATE don_mon SET phien_goi_mon_id = 903001 WHERE id = 7");
     }
 
     private function damBaoBangChiTietDon()
@@ -405,19 +652,20 @@ class MoHinhDonMon extends MoHinhCo
 
     public function thongKeDoanThu($tu_ngay, $den_ngay)
     {
-        $this->damBaoBangPhienGoiMon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
-        SELECT DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) AS ngay,
+        SELECT DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) AS ngay,
                COUNT(*) AS so_phien,
                COALESCE(SUM(h.so_nguoi_lon + h.so_tre_em), 0) AS so_khach,
                COALESCE(SUM(h.tong_tien), 0) AS doanh_thu
         FROM hoa_don_phien h
         JOIN phien_goi_mon p ON p.id = h.phien_goi_mon_id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         WHERE p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
-        GROUP BY DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao))
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+        GROUP BY DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao))
         ORDER BY ngay ASC
         ";
         return $this->db->query($sql, array($tu_ngay, $den_ngay));
@@ -425,7 +673,7 @@ class MoHinhDonMon extends MoHinhCo
 
     public function tongQuanDoanhThu($tu_ngay, $den_ngay)
     {
-        $this->damBaoBangPhienGoiMon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
         SELECT COUNT(*) AS so_phien,
@@ -433,9 +681,10 @@ class MoHinhDonMon extends MoHinhCo
                COALESCE(SUM(h.so_nguoi_lon + h.so_tre_em), 0) AS tong_khach
         FROM hoa_don_phien h
         JOIN phien_goi_mon p ON p.id = h.phien_goi_mon_id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         WHERE p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
         ";
         $rows = $this->db->query($sql, array($tu_ngay, $den_ngay));
         return !empty($rows) ? $rows[0] : array('so_phien' => 0, 'doanh_thu' => 0, 'tong_khach' => 0);
@@ -443,19 +692,20 @@ class MoHinhDonMon extends MoHinhCo
 
     public function chiTietDoanhThu($tu_ngay, $den_ngay)
     {
-        $this->damBaoBangPhienGoiMon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
-        SELECT DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) AS ngay,
+        SELECT DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) AS ngay,
                COALESCE(SUM(h.so_nguoi_lon + h.so_tre_em), 0) AS so_khach,
                COUNT(*) AS so_phien,
                COALESCE(SUM(h.tong_tien), 0) AS doanh_thu
         FROM hoa_don_phien h
         JOIN phien_goi_mon p ON p.id = h.phien_goi_mon_id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         WHERE p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
-        GROUP BY DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao))
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+        GROUP BY DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao))
         ORDER BY ngay DESC
         ";
         return $this->db->query($sql, array($tu_ngay, $den_ngay));
@@ -482,6 +732,7 @@ class MoHinhDonMon extends MoHinhCo
     public function topMonBanChayTrongKhoang($gioi_han, $tu_ngay, $den_ngay)
     {
         $this->damBaoBangChiTietDon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
         SELECT m.id, m.ten, m.danh_muc, SUM(ct.so_luong) AS tong_ban
@@ -489,12 +740,13 @@ class MoHinhDonMon extends MoHinhCo
         JOIN don_mon d ON d.id = ct.don_mon_id
         JOIN phien_goi_mon p ON p.id = d.phien_goi_mon_id
         JOIN hoa_don_phien h ON h.phien_goi_mon_id = p.id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         JOIN mon_an m ON ct.mon_an_id = m.id
         WHERE d.trang_thai = 'da_phuc_vu'
           AND ct.trang_thai = 'da_phuc_vu'
           AND p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
         GROUP BY m.id, m.ten, m.danh_muc
         ORDER BY tong_ban DESC, m.ten ASC
         LIMIT ?
@@ -505,6 +757,7 @@ class MoHinhDonMon extends MoHinhCo
     public function thongKeDanhMucTrongKhoang($tu_ngay, $den_ngay)
     {
         $this->damBaoBangChiTietDon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
         SELECT m.danh_muc, SUM(ct.so_luong) AS tong_ban
@@ -512,12 +765,13 @@ class MoHinhDonMon extends MoHinhCo
         JOIN don_mon d ON d.id = ct.don_mon_id
         JOIN phien_goi_mon p ON p.id = d.phien_goi_mon_id
         JOIN hoa_don_phien h ON h.phien_goi_mon_id = p.id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         JOIN mon_an m ON ct.mon_an_id = m.id
         WHERE d.trang_thai = 'da_phuc_vu'
           AND ct.trang_thai = 'da_phuc_vu'
           AND p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
         GROUP BY m.danh_muc
         ORDER BY tong_ban DESC, m.danh_muc ASC
         ";
@@ -527,6 +781,7 @@ class MoHinhDonMon extends MoHinhCo
     public function thongKeDonTheoGio($tu_ngay, $den_ngay)
     {
         $this->damBaoBangChiTietDon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
         SELECT HOUR(d.ngay_tao) AS gio,
@@ -535,11 +790,12 @@ class MoHinhDonMon extends MoHinhCo
         FROM don_mon d
         JOIN phien_goi_mon p ON p.id = d.phien_goi_mon_id
         JOIN hoa_don_phien h ON h.phien_goi_mon_id = p.id
+        LEFT JOIN thanh_toan_phien t ON t.hoa_don_phien_id = h.id
         LEFT JOIN chitiet_donmon ct ON ct.don_mon_id = d.id
         WHERE d.trang_thai <> 'da_huy'
           AND p.trang_thai = 'da_ket_thuc'
           AND h.tong_tien > 0
-          AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+          AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
         GROUP BY HOUR(d.ngay_tao)
         ORDER BY gio ASC
         ";
@@ -549,10 +805,11 @@ class MoHinhDonMon extends MoHinhCo
     public function monItBanTrongKhoang($gioi_han, $tu_ngay, $den_ngay)
     {
         $this->damBaoBangChiTietDon();
+        $this->damBaoDuLieuThang4TheoPhien();
 
         $sql = "
         SELECT m.id, m.ten, m.danh_muc,
-               COALESCE(SUM(CASE WHEN h.id IS NOT NULL THEN ct.so_luong ELSE 0 END), 0) AS tong_ban
+               COALESCE(SUM(CASE WHEN t.id IS NOT NULL THEN ct.so_luong ELSE 0 END), 0) AS tong_ban
         FROM mon_an m
         LEFT JOIN chitiet_donmon ct
           ON ct.mon_an_id = m.id
@@ -566,7 +823,9 @@ class MoHinhDonMon extends MoHinhCo
         LEFT JOIN hoa_don_phien h
           ON h.phien_goi_mon_id = p.id
          AND h.tong_tien > 0
-         AND DATE(COALESCE(h.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
+        LEFT JOIN thanh_toan_phien t
+          ON t.hoa_don_phien_id = h.id
+         AND DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
         WHERE m.con_mon = 1
         GROUP BY m.id, m.ten, m.danh_muc
         ORDER BY tong_ban ASC, m.noi_bat DESC, m.ten ASC

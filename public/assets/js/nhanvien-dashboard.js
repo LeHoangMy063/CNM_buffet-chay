@@ -170,9 +170,9 @@
         ? STAFF_DEFAULT_PANE
         : "xac-nhan-dat-ban",
     paneTitles: {
-      "xac-nhan-dat-ban": "Xác nhận đặt bàn",
-      "cap-nhat-trang-thai-ban": "Cập nhật trạng thái bàn",
-      "xac-nhan-mon": "Xác nhận món theo bàn",
+      "xac-nhan-dat-ban": "Duyệt đặt bàn",
+      "cap-nhat-trang-thai-ban": "Điều phối bàn",
+      "xac-nhan-mon": "Quản lý gọi món",
     },
     openMenu: function () {
       var menu = el("tableSubnav");
@@ -982,10 +982,10 @@
         data,
         function (res) {
           if (res.success) {
-            toast(res.thong_bao || "Đã cập nhật trạng thái bàn");
+            toast(res.thong_bao || "Đã điều phối bàn");
             self.load();
           } else {
-            toast(res.thong_bao || "Không thể cập nhật trạng thái bàn", "err");
+            toast(res.thong_bao || "Không thể điều phối bàn", "err");
           }
         },
       );
