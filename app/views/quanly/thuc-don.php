@@ -7,7 +7,7 @@ $vaiTroQuanLy = isset($nguoiDung['vai_tro']) ? $nguoiDung['vai_tro'] : '';
 $danhSachMon = isset($danhSachMon) ? $danhSachMon : array();
 $danhSachNhanVien = isset($danhSachNhanVien) ? $danhSachNhanVien : array();
 $bangDangMo = isset($bangDangMo) ? $bangDangMo : 'thuc-don';
-$laTrangDashboard = $bangDangMo === 'dashboard';
+$laTrangDashboard = false;
 $laTrangNhanVien = $bangDangMo === 'nhan-vien';
 $laTrangBaoCao = $bangDangMo === 'bao-cao';
 
@@ -116,7 +116,7 @@ $jsonBaoCao = json_encode(managerCleanJsonData(isset($baoCaoDoanhThu) ? $baoCaoD
 $jsonTopMon = json_encode(managerCleanJsonData(isset($topMonBanChay) ? $topMonBanChay : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $jsonDanhMuc = json_encode(managerCleanJsonData(isset($thongKeDanhMuc) ? $thongKeDanhMuc : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $jsonTheoGio = json_encode(managerCleanJsonData(isset($thongKeTheoGio) ? $thongKeTheoGio : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-$tieuDeQuanLy = $laTrangDashboard ? 'Dashboard vận hành' : ($laTrangBaoCao ? 'Báo cáo doanh thu' : ($laTrangNhanVien ? 'Quản lý nhân viên' : 'Quản lý thực đơn'));
+$tieuDeQuanLy = $laTrangBaoCao ? 'Báo cáo doanh thu' : ($laTrangNhanVien ? 'Quản lý nhân viên' : 'Quản lý thực đơn');
 $managerViewPath = dirname(__FILE__);
 ?>
 <!DOCTYPE html>
@@ -142,15 +142,11 @@ $managerViewPath = dirname(__FILE__);
             </div>
 
             <nav class="nav">
-                <a class="side-link <?php echo $laTrangDashboard ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/dashboard">
-                    <span class="side-icon">&#128202;</span>
-                    <span>Dashboard</span>
-                </a>
                 <a class="side-link <?php echo $laTrangBaoCao ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao">
                     <span class="side-icon">&#128200;</span>
                     <span>Báo cáo doanh thu</span>
                 </a>
-                <a class="nav-parent side-link <?php echo (!$laTrangDashboard && !$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
+                <a class="nav-parent side-link <?php echo (!$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
                     <span class="side-icon">&#127858;</span>
                     <span>Quản lý thực đơn</span>
                 </a>
@@ -180,9 +176,7 @@ $managerViewPath = dirname(__FILE__);
                 </div>
             </div>
 
-            <?php if ($laTrangDashboard) : ?>
-                <?php include $managerViewPath . '/dashboard.php'; ?>
-            <?php elseif ($laTrangBaoCao) : ?>
+            <?php if ($laTrangBaoCao) : ?>
                 <?php include $managerViewPath . '/bao-cao.php'; ?>
             <?php elseif ($laTrangNhanVien) : ?>
                 <?php include $managerViewPath . '/nhan-vien/danh-sach.php'; ?>
@@ -201,7 +195,7 @@ $managerViewPath = dirname(__FILE__);
         var ITEM_COUNT = <?php echo (int)$tongMon; ?>;
         var ITEMS = <?php echo $jsonMon ? $jsonMon : '[]'; ?>;
         var STAFF_ITEMS = <?php echo $jsonNhanVien ? $jsonNhanVien : '[]'; ?>;
-        var MANAGER_SECTION = '<?php echo $laTrangDashboard ? 'dashboard' : ($laTrangBaoCao ? 'bao-cao' : ($laTrangNhanVien ? 'nhan-vien' : 'thuc-don')); ?>';
+        var MANAGER_SECTION = '<?php echo $laTrangBaoCao ? 'bao-cao' : ($laTrangNhanVien ? 'nhan-vien' : 'thuc-don'); ?>';
         var REVENUE_CHART = <?php echo $jsonBaoCao ? $jsonBaoCao : '[]'; ?>;
         var TOP_DISH_CHART = <?php echo $jsonTopMon ? $jsonTopMon : '[]'; ?>;
         var CATEGORY_CHART = <?php echo $jsonDanhMuc ? $jsonDanhMuc : '[]'; ?>;

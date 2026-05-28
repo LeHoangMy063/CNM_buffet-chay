@@ -20,12 +20,12 @@ class QuanLyController extends BoieuKhienCo
 
     public function trangChu()
     {
-        $this->chuyenHuong(BASE_URL . '/quan-ly/dashboard');
+        $this->chuyenHuong(BASE_URL . '/quan-ly/bao-cao');
     }
 
     public function dashboard()
     {
-        $this->hienThiTrangQuanLy('dashboard');
+        $this->chuyenHuong(BASE_URL . '/quan-ly/bao-cao');
     }
 
     public function thucDon()
@@ -49,10 +49,10 @@ class QuanLyController extends BoieuKhienCo
 
         $tuNgay = isset($_GET['tu_ngay']) && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $_GET['tu_ngay'])
             ? $_GET['tu_ngay']
-            : date('Y-m-01', strtotime('first day of previous month'));
+            : date('Y-m-d');
         $denNgay = isset($_GET['den_ngay']) && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $_GET['den_ngay'])
             ? $_GET['den_ngay']
-            : date('Y-m-t', strtotime('last day of previous month'));
+            : date('Y-m-d');
 
         $topMonBanChay = $this->moHinhDon->topMonBanChayTrongKhoang(6, $tuNgay, $denNgay);
         $thongKeDanhMuc = $this->moHinhDon->thongKeDanhMucTrongKhoang($tuNgay, $denNgay);

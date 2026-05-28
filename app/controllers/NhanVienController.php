@@ -150,6 +150,7 @@ class NhanVienController extends BoieuKhienCo
         }
 
         $thongTinBill = array();
+        $phuongThucThanhToan = '';
         if ($trangThai === 'dang_dung') {
             $tenKhach = trim($this->post('ten_khach', ''));
             $sdtKhach = trim($this->post('sdt_khach', ''));
@@ -174,9 +175,15 @@ class NhanVienController extends BoieuKhienCo
                 'tre_em'    => $treEm,
                 'tong_tien' => $tongTien
             );
+        } else {
+            $phuongThucThanhToan = trim($this->post('phuong_thuc_thanh_toan', ''));
+            $hopLeThanhToan = array('', 'tien_mat', 'chuyen_khoan');
+            if (!in_array($phuongThucThanhToan, $hopLeThanhToan)) {
+                $this->json(array('success' => false, 'thong_bao' => 'Phương thức thanh toán không hợp lệ'));
+            }
         }
 
-        $ok = $this->moHinhBan->capNhatTrangThai($banId, $trangThai);
+        $ok = $this->moHinhBan->capNhatTrangThai($banId, $trangThai, $phuongThucThanhToan);
         $banSauCapNhat = null;
         if ($ok && $trangThai === 'dang_dung') {
             $banSauCapNhat = $this->moHinhBan->taoPhienGoiMon($banId, $thongTinBill);
@@ -188,6 +195,10 @@ class NhanVienController extends BoieuKhienCo
             $thongBao = 'Đã cập nhật trạng thái bàn';
             if ($trangThai === 'dang_dung' && $banSauCapNhat && !empty($banSauCapNhat['ma_phien_goi_mon'])) {
                 $thongBao = 'Đã mở phiên gọi món. Mã tạm thời: ' . $banSauCapNhat['ma_phien_goi_mon'];
+            } elseif ($trangThai === 'trong' && $phuongThucThanhToan === 'tien_mat') {
+                $thongBao = 'Đã thu tiền mặt và trả bàn';
+            } elseif ($trangThai === 'trong' && $phuongThucThanhToan === 'chuyen_khoan') {
+                $thongBao = 'Đã xác nhận chuyển khoản và trả bàn';
             }
             $this->json(array(
                 'success' => true,

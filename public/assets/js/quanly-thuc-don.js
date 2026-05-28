@@ -504,7 +504,11 @@ function drawHourChart() {
 }
 
 function initDashboardCharts() {
-  drawLineChart("revenueCanvas", typeof REVENUE_CHART === "undefined" ? [] : REVENUE_CHART, "so_khach", "ngay");
+  var revenueKey =
+    typeof MANAGER_SECTION !== "undefined" && MANAGER_SECTION === "bao-cao"
+      ? "doanh_thu"
+      : "so_khach";
+  drawLineChart("revenueCanvas", typeof REVENUE_CHART === "undefined" ? [] : REVENUE_CHART, revenueKey, "ngay");
   drawBarChart("topDishCanvas", typeof TOP_DISH_CHART === "undefined" ? [] : TOP_DISH_CHART, "tong_ban", "ten", "Chua co du lieu mon duoc goi");
   drawBarChart("categoryCanvas", typeof CATEGORY_CHART === "undefined" ? [] : CATEGORY_CHART, "tong_ban", "danh_muc", "Chua co du lieu nhom mon");
   drawHourChart();
@@ -746,12 +750,15 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-if (typeof MANAGER_SECTION !== "undefined" && MANAGER_SECTION === "dashboard") {
+if (
+  typeof MANAGER_SECTION !== "undefined" &&
+  (MANAGER_SECTION === "dashboard" || MANAGER_SECTION === "bao-cao")
+) {
   initDashboardCharts();
   window.addEventListener("resize", initDashboardCharts);
 } else if (typeof MANAGER_SECTION === "undefined" || MANAGER_SECTION === "thuc-don") {
   initCategories();
   renderList();
-} else {
+} else if (MANAGER_SECTION === "nhan-vien") {
   renderStaffList();
 }

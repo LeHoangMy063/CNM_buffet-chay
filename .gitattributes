@@ -1,3 +1,4 @@
+
 # Keep GitHub language stats focused on the PHP application code.
 public/assets/css/** linguist-vendored
 public/assets/js/** linguist-vendored

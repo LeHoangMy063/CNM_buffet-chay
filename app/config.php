@@ -38,6 +38,13 @@ define('PRICE_CHILD', 0);
 define('RESTAURANT_CAPACITY', 40);
 define('BUFFET_SESSION_MINUTES', 90);
 
+// VietQR direct bank transfer settings
+define('VIETQR_ENABLED', getenv('VIETQR_ENABLED') ? getenv('VIETQR_ENABLED') : '0');
+define('VIETQR_BANK_ID', getenv('VIETQR_BANK_ID') ? getenv('VIETQR_BANK_ID') : '');
+define('VIETQR_ACCOUNT_NO', getenv('VIETQR_ACCOUNT_NO') ? getenv('VIETQR_ACCOUNT_NO') : '');
+define('VIETQR_ACCOUNT_NAME', getenv('VIETQR_ACCOUNT_NAME') ? getenv('VIETQR_ACCOUNT_NAME') : '');
+define('VIETQR_TEMPLATE', getenv('VIETQR_TEMPLATE') ? getenv('VIETQR_TEMPLATE') : 'compact2');
+
 define('SESSION_LIFETIME', 28800); // 8 gio
 
 // Timezone

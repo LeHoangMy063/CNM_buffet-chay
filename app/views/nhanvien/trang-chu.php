@@ -130,6 +130,13 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
         var STAFF_ROLE = '<?php echo htmlspecialchars($vaiTro, ENT_QUOTES, 'UTF-8'); ?>';
         var STAFF_DEFAULT_PANE = '<?php echo $laBep ? 'xac-nhan-mon' : 'xac-nhan-dat-ban'; ?>';
         var STAFF_MENU_ITEMS = <?php echo $jsonDanhSachMon ? $jsonDanhSachMon : '[]'; ?>;
+        var VIETQR = {
+            enabled: <?php echo (defined('VIETQR_ENABLED') && VIETQR_ENABLED === '1') ? 'true' : 'false'; ?>,
+            bankId: '<?php echo defined('VIETQR_BANK_ID') ? htmlspecialchars(VIETQR_BANK_ID, ENT_QUOTES, 'UTF-8') : ''; ?>',
+            accountNo: '<?php echo defined('VIETQR_ACCOUNT_NO') ? htmlspecialchars(VIETQR_ACCOUNT_NO, ENT_QUOTES, 'UTF-8') : ''; ?>',
+            accountName: '<?php echo defined('VIETQR_ACCOUNT_NAME') ? htmlspecialchars(VIETQR_ACCOUNT_NAME, ENT_QUOTES, 'UTF-8') : ''; ?>',
+            template: '<?php echo defined('VIETQR_TEMPLATE') ? htmlspecialchars(VIETQR_TEMPLATE, ENT_QUOTES, 'UTF-8') : 'compact2'; ?>'
+        };
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register(BASE_URL + '/service-worker.js', {

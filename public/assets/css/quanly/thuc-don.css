@@ -463,7 +463,7 @@ textarea:focus-visible {
 }
 
 .report-toolbar {
-    grid-template-columns: 170px 170px auto;
+    grid-template-columns: 170px 170px auto auto;
     align-items: center;
     justify-content: start;
 }
@@ -474,6 +474,32 @@ textarea:focus-visible {
 
 .report-detail-panel {
     margin-top: 18px;
+}
+
+.report-dashboard {
+    margin: 14px 0 16px;
+}
+
+.report-dashboard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.report-dashboard-head h3 {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.report-dashboard-head p {
+    color: var(--text-soft);
+    font-size: 13px;
+}
+
+.report-dashboard-grid {
+    gap: 14px;
 }
 
 .dashboard-filter {

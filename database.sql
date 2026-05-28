@@ -93,65 +93,12 @@ CREATE TABLE `hoa_don_phien` (
   `tich_diem_luc` datetime default NULL,
   `tich_diem_tai_khoan_id` int(11) default NULL,
   `diem_da_cong` int(11) NOT NULL default '0',
+  `phuong_thuc_thanh_toan` varchar(30) default NULL,
+  `thanh_toan_luc` datetime default NULL,
   `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `phien_goi_mon_id` (`phien_goi_mon_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `doanh_thu_ngay`
---
-
-CREATE TABLE `doanh_thu_ngay` (
-  `id` int(11) NOT NULL auto_increment,
-  `ngay` date NOT NULL,
-  `so_khach` int(11) NOT NULL default '0',
-  `so_phien` int(11) NOT NULL default '0',
-  `doanh_thu` decimal(12,0) NOT NULL default '0',
-  `nguon` varchar(30) NOT NULL default 'he_thong',
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  `ngay_cap_nhat` datetime default NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_doanh_thu_ngay` (`ngay`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=31 ;
-
---
--- Dumping data for table `doanh_thu_ngay`
---
-
-INSERT INTO `doanh_thu_ngay` (`id`, `ngay`, `so_khach`, `so_phien`, `doanh_thu`, `nguon`, `ngay_cap_nhat`) VALUES
-(1, '2026-04-01', 34, 9, '6766000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(2, '2026-04-02', 41, 11, '8159000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(3, '2026-04-03', 48, 12, '9552000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(4, '2026-04-04', 76, 18, '15124000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(5, '2026-04-05', 69, 17, '13731000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(6, '2026-04-06', 32, 8, '6368000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(7, '2026-04-07', 37, 9, '7363000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(8, '2026-04-08', 45, 11, '8955000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(9, '2026-04-09', 43, 10, '8557000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(10, '2026-04-10', 52, 13, '10348000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(11, '2026-04-11', 82, 20, '16318000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(12, '2026-04-12', 74, 18, '14726000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(13, '2026-04-13', 35, 9, '6965000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(14, '2026-04-14', 39, 10, '7761000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(15, '2026-04-15', 47, 12, '9353000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(16, '2026-04-16', 44, 11, '8756000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(17, '2026-04-17', 58, 14, '11542000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(18, '2026-04-18', 88, 21, '17512000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(19, '2026-04-19', 79, 19, '15721000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(20, '2026-04-20', 36, 9, '7164000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(21, '2026-04-21', 42, 10, '8358000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(22, '2026-04-22', 49, 12, '9751000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(23, '2026-04-23', 46, 11, '9154000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(24, '2026-04-24', 57, 14, '11343000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(25, '2026-04-25', 91, 22, '18109000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(26, '2026-04-26', 84, 20, '16716000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(27, '2026-04-27', 38, 9, '7562000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(28, '2026-04-28', 44, 11, '8756000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(29, '2026-04-29', 63, 15, '12537000', 'du_lieu_mau', '2026-05-01 00:00:00'),
-(30, '2026-04-30', 96, 23, '19104000', 'du_lieu_mau', '2026-05-01 00:00:00');
 
 -- --------------------------------------------------------
 

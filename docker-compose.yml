@@ -11,6 +11,11 @@ services:
       DB_CHARSET: utf8
       BASE_URL: ${BASE_URL:-http://localhost:8080/buffet-chay}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080/buffet-chay}
+      VIETQR_ENABLED: ${VIETQR_ENABLED:-0}
+      VIETQR_BANK_ID: ${VIETQR_BANK_ID:-}
+      VIETQR_ACCOUNT_NO: ${VIETQR_ACCOUNT_NO:-}
+      VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME:-}
+      VIETQR_TEMPLATE: ${VIETQR_TEMPLATE:-compact2}
     volumes:
       - ./:/var/www/html/buffet-chay
     depends_on:

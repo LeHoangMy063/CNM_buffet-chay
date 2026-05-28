@@ -10,9 +10,7 @@ $accessCode = isset($table['access_code'])
     ? $table['access_code']
     : (isset($table['ma_phien_goi_mon']) ? $table['ma_phien_goi_mon'] : (isset($ma) ? $ma : ''));
 $orderCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/order.css');
-$checkoutCssVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/css/customer/checkout.css');
 $orderJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/order.js');
-$checkoutJsVersion = filemtime(dirname(__FILE__) . '/../../../public/assets/js/checkout.js');
 $menuItemsFlat = array();
 foreach ($menuByCategory as $cat => $items) {
     foreach ($items as $item) {
@@ -33,7 +31,6 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/customer/order.css?v=<?php echo $orderCssVersion ?>">
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/customer/checkout.css?v=<?php echo $checkoutCssVersion ?>">
 </head>
 
 <body>
@@ -64,9 +61,33 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
             <section class="combo-suggest" id="comboSuggest">
                 <div class="combo-suggest-head">
                     <div>
-                        <span>AI gợi ý set món</span>
-                        <h2>Chọn nhanh theo kiểu buffet</h2>
+                        <span>AI gợi ý món</span>
+                        <h2>Ăn theo gu hôm nay</h2>
                     </div>
+                    <button class="combo-refresh" type="button" onclick="shuffleSuggestions()">Đổi gợi ý</button>
+                </div>
+                <div class="combo-controls" aria-label="Tùy chỉnh gợi ý món">
+                    <div class="combo-control-group">
+                        <span class="combo-control-label">Khẩu vị</span>
+                        <button class="combo-pill active" type="button" data-suggest-mode="balanced">Cân bằng</button>
+                        <button class="combo-pill" type="button" data-suggest-mode="light">Thanh nhẹ</button>
+                        <button class="combo-pill" type="button" data-suggest-mode="warm">Ấm nóng</button>
+                        <button class="combo-pill" type="button" data-suggest-mode="fast">Ra nhanh</button>
+                    </div>
+                    <label class="combo-people">
+                        <span>Số người</span>
+                        <select id="suggestPeople">
+                            <option value="1">1</option>
+                            <option value="2" selected>2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="6">5+</option>
+                        </select>
+                    </label>
+                    <label class="combo-intent">
+                        <span>Gu của bạn</span>
+                        <input id="suggestIntent" type="text" placeholder="VD: ít dầu, thích lẩu, không cay">
+                    </label>
                 </div>
                 <div class="combo-list" id="comboList"></div>
             </section>
@@ -188,13 +209,6 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                     <div class="orders-list" id="completedList"></div>
                 </div>
 
-                <!-- Checkout -->
-                <div class="sb-divider" id="sbCheckoutDivider" style="display:none"></div>
-                <div id="checkoutSection" style="display:none">
-                    <button class="checkout-btn" onclick="handleCheckout()">
-                        💳 Thanh Toán - Kết Thúc
-                    </button>
-                </div>
             </div><!-- /sb-body -->
         </div><!-- /sidebar -->
 
@@ -234,7 +248,6 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
         var MENU_ITEMS = <?php echo $menuItemsJson ? $menuItemsJson : '[]'; ?>;
     </script>
     <script src="<?php echo BASE_URL ?>/public/assets/js/order.js?v=<?php echo $orderJsVersion ?>"></script>
-    <script src="<?php echo BASE_URL ?>/public/assets/js/checkout.js?v=<?php echo $checkoutJsVersion ?>"></script>
 </body>
 
 </html>

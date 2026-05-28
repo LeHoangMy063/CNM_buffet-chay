@@ -238,6 +238,17 @@
     source: null,
     version: "",
     enabled: !!window.EventSource,
+    audioCtx: null,
+    audioReady: false,
+    unlockAudio: function () {
+      try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!this.audioCtx) this.audioCtx = new AudioCtx();
+        if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+        this.audioReady = true;
+      } catch (e) {}
+    },
     connect: function () {
       if (!this.enabled) return;
       if (this.source) {
@@ -303,19 +314,27 @@
       try {
         var AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
-        var ctx = new AudioCtx();
-        var osc = ctx.createOscillator();
+        if (!this.audioCtx) this.audioCtx = new AudioCtx();
+        var ctx = this.audioCtx;
+        if (ctx.state === "suspended") ctx.resume();
+
         var gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = 880;
-        gain.gain.value = 0.04;
-        osc.connect(gain);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.42);
         gain.connect(ctx.destination);
-        osc.start();
+
+        [880, 1175].forEach(function (freq, idx) {
+          var osc = ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          osc.connect(gain);
+          osc.start(ctx.currentTime + idx * 0.16);
+          osc.stop(ctx.currentTime + idx * 0.16 + 0.14);
+        });
         setTimeout(function () {
-          osc.stop();
-          ctx.close();
-        }, 180);
+          gain.disconnect();
+        }, 520);
       } catch (e) {}
     },
   };
@@ -385,6 +404,12 @@
     }
     StaffOrders.loadTables();
     StaffRealtime.connect();
+    document.addEventListener("click", function () {
+      StaffRealtime.unlockAudio();
+    }, { once: true });
+    document.addEventListener("touchstart", function () {
+      StaffRealtime.unlockAudio();
+    }, { once: true });
 
     setInterval(function () {
       StaffOrders.loadTables();
@@ -470,109 +495,6 @@
     }
     return names;
   }
-
-  window.StaffMealSuggest = {
-    currentSets: [],
-    buildSets: function (orders) {
-      var items = menuItems();
-      if (!items.length) return [];
-
-      var orderText = normalizeText(JSON.stringify(orders || []));
-      var hasHotpot = orderText.indexOf("lau") !== -1 || orderText.indexOf("nuoc lau") !== -1;
-      var hasManyOrders = orders && orders.length >= 2;
-      var sets = [];
-
-      var usedStarter = {};
-      var starter = [];
-      starter = starter.concat(pickBy(items, ["khai vi", "goi", "cha gio", "salad", "sup"], 3, usedStarter));
-      starter = starter.concat(pickBy(items, ["do uong", "tra", "nuoc", "ep"], 1, usedStarter));
-      fillAny(items, starter, 4, usedStarter);
-      sets.push({ title: "Set nhập tiệc", note: "Dễ giới thiệu cho bàn mới ngồi, ưu tiên món ra nhanh.", items: starter, priority: !orders || !orders.length ? 1 : 4 });
-
-      var usedHotpot = {};
-      var hotpot = [];
-      hotpot = hotpot.concat(pickBy(items, ["nuoc lau", "lau"], 1, usedHotpot));
-      hotpot = hotpot.concat(pickBy(items, ["rau", "nam", "topping", "dau hu", "tau hu"], 4, usedHotpot));
-      fillAny(items, hotpot, 5, usedHotpot);
-      sets.push({ title: "Set lẩu cân bằng", note: "Có nước lẩu, rau, nấm và topping để bàn gọi đủ nhóm.", items: hotpot, priority: hasHotpot ? 1 : 2 });
-
-      var usedFull = {};
-      var full = [];
-      full = full.concat(pickBy(items, ["mon chinh", "com", "mi", "bun", "dau hu", "nam"], 4, usedFull));
-      full = full.concat(pickBy(items, ["canh", "sup"], 1, usedFull));
-      fillAny(items, full, 5, usedFull);
-      sets.push({ title: "Set no bụng", note: "Phù hợp bàn đông khách hoặc khách muốn món chính chắc bụng.", items: full, priority: hasManyOrders ? 1 : 3 });
-
-      var usedLight = {};
-      var light = [];
-      light = light.concat(pickBy(items, ["salad", "sup", "rau", "luoc", "hap", "nam"], 4, usedLight));
-      fillAny(items, light, 4, usedLight);
-      sets.push({ title: "Set nhẹ thanh đạm", note: "Dành cho khách thích món nhẹ, ít dầu hoặc người lớn tuổi.", items: light, priority: 5 });
-
-      var usedFast = {};
-      var fast = [];
-      fast = fast.concat(pickBy(items, ["goi", "salad", "rau", "topping", "cha gio", "sup"], 4, usedFast));
-      fillAny(items, fast, 4, usedFast);
-      sets.push({ title: "Set bếp ra nhanh", note: "Dùng khi quán đông, giúp khách có món trước trong lúc chờ món nóng.", items: fast, priority: 2 });
-
-      sets.sort(function (a, b) {
-        return a.priority - b.priority;
-      });
-      return sets;
-    },
-    render: function (orders) {
-      var panel = el("mealSuggestPanel");
-      var list = el("mealSuggestList");
-      if (!panel || !list) return;
-      if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep") {
-        panel.style.display = "none";
-        return;
-      }
-      if (!StaffOrders.selectedTableId) {
-        panel.style.display = "none";
-        return;
-      }
-
-      panel.style.display = "block";
-      var sets = this.buildSets(orders || []);
-      if (!sets.length) {
-        list.innerHTML = '<div class="empty-state">Chưa có dữ liệu thực đơn để gợi ý set món.</div>';
-        return;
-      }
-
-      var html = "";
-      for (var i = 0; i < sets.length && i < 4; i++) {
-        var set = sets[i];
-        var names = dishNames(set.items);
-        html += '<article class="meal-set-card' + (i === 0 ? " featured" : "") + '">';
-        html += "<h4>" + esc(set.title) + "</h4>";
-        html += "<p>" + esc(set.note) + "</p>";
-        html += '<div class="meal-set-items">';
-        for (var j = 0; j < names.length; j++) {
-          html += "<span>" + esc(names[j]) + "</span>";
-        }
-        html += "</div>";
-        html += '<div class="meal-set-actions"><button class="btn secondary btn-sm" type="button" onclick="StaffMealSuggest.copySet(' + i + ')">Sao chép gợi ý</button></div>';
-        html += "</article>";
-      }
-      list.innerHTML = html;
-      this.currentSets = sets;
-    },
-    copySet: function (index) {
-      var set = this.currentSets && this.currentSets[index];
-      if (!set) return;
-      var text = set.title + ": " + dishNames(set.items).join(", ");
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function () {
-          toast("Đã sao chép set món gợi ý");
-        }, function () {
-          toast(text);
-        });
-      } else {
-        toast(text);
-      }
-    },
-  };
 
   window.StaffOrders = {
     tables: [],
@@ -750,13 +672,10 @@
       }
 
       if (!n) {
-        if (window.StaffMealSuggest) StaffMealSuggest.render([]);
         el("orders").innerHTML =
           '<div class="empty-state"><div style="font-size:32px;margin-bottom:8px">&#127860;</div><div>Bàn này không có đơn nào đang chờ phục vụ.</div></div>';
         return;
       }
-
-      if (window.StaffMealSuggest) StaffMealSuggest.render(orders);
 
       var html = "";
       for (var i = 0; i < orders.length; i++) {
@@ -863,6 +782,30 @@
   function money(v) {
     v = Number(v || 0);
     return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
+  }
+
+  function vietQrNote(t) {
+    var code = t && (t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban) ? (t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban) : "";
+    return ("BUFFET " + code).replace(/[^A-Za-z0-9 ]/g, " ").replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "");
+  }
+
+  function vietQrImageUrl(t) {
+    var cfg = typeof VIETQR !== "undefined" ? VIETQR : {};
+    var amount = Number(t && t.phien_tong_tien ? t.phien_tong_tien : 0);
+    var template = cfg.template || "compact2";
+    return "https://img.vietqr.io/image/" +
+      encodeURIComponent(cfg.bankId || "") + "-" +
+      encodeURIComponent(cfg.accountNo || "") + "-" +
+      encodeURIComponent(template) + ".png?amount=" +
+      encodeURIComponent(amount) +
+      "&addInfo=" + encodeURIComponent(vietQrNote(t)) +
+      "&accountName=" + encodeURIComponent(cfg.accountName || "");
+  }
+
+  function paymentMethodText(method) {
+    if (method === "tien_mat") return "Tiền mặt";
+    if (method === "chuyen_khoan") return "Chuyển khoản";
+    return "Thanh toán";
   }
 
   function priceAdult() {
@@ -978,16 +921,25 @@
             " đơn đang chờ phục vụ.</div>";
         }
 
-        html += '<div class="table-status-actions">';
-        html += this.statusButton(t.id, "trong", rawStatus, "Trống");
-        html += this.statusButton(t.id, "dang_dung", rawStatus, "Đang dùng");
-        html += "</div>";
-
         if (rawStatus === "dang_dung" && sessionCode) {
+          html += '<div class="table-status-actions">';
+          html +=
+            '<button type="button" class="table-status-btn" onclick="StaffTableStatus.openPaymentModal(' +
+            t.id +
+            ",'tien_mat')\">Tiền mặt</button>";
+          html +=
+            '<button type="button" class="table-status-btn active" onclick="StaffTableStatus.openPaymentModal(' +
+            t.id +
+            ",'chuyen_khoan')\">Chuyển khoản</button>";
+          html += "</div>";
           html +=
             '<button type="button" class="table-status-btn" style="width:100%;margin-top:6px" onclick="StaffTableStatus.inPhieu(' +
             t.id +
             ')">In phiếu gọi món</button>';
+        } else {
+          html += '<div class="table-status-actions">';
+          html += this.statusButton(t.id, "dang_dung", rawStatus, "Mở bàn");
+          html += "</div>";
         }
 
         html += "</div>"; // đóng table-status-card
@@ -1018,10 +970,16 @@
         this.openBillForm(id);
         return;
       }
+      this.completePayment(id, "");
+    },
+
+    completePayment: function (id, method) {
       var self = this;
+      var data = { ban_id: id, trang_thai: "trong" };
+      if (method) data.phuong_thuc_thanh_toan = method;
       postForm(
         BASE_URL + "/nhan-vien/cap-nhat-trang-thai-ban",
-        { ban_id: id, trang_thai: status },
+        data,
         function (res) {
           if (res.success) {
             toast(res.thong_bao || "Đã cập nhật trạng thái bàn");
@@ -1100,6 +1058,81 @@
     closeBillForm: function () {
       var box = el("tableBillModal");
       if (box) box.className = "bill-modal";
+    },
+
+    ensurePaymentModal: function () {
+      var box = el("staffPaymentModal");
+      if (box) return box;
+
+      box = document.createElement("div");
+      box.id = "staffPaymentModal";
+      box.className = "bill-modal";
+      box.innerHTML =
+        '<div class="bill-modal-card vietqr-staff-card">' +
+        '<div class="bill-modal-head"><div><p class="eyebrow">Thanh toán</p><h3 id="paymentModalTitle">Xác nhận thanh toán</h3></div><button type="button" onclick="StaffTableStatus.closePaymentModal()">×</button></div>' +
+        '<div class="vietqr-staff-body">' +
+        '<div id="paymentQrWrap" style="display:none"><img id="paymentQrImage" class="vietqr-staff-img" src="" alt="VietQR thanh toán"></div>' +
+        '<div class="vietqr-staff-info">' +
+        '<div><span>Phương thức</span><strong id="paymentMethodText"></strong></div>' +
+        '<div><span>Số tiền</span><strong id="paymentAmount"></strong></div>' +
+        '<div id="paymentNoteRow" style="display:none"><span>Nội dung</span><strong id="paymentNote"></strong></div>' +
+        '<div id="paymentAccountRow" style="display:none"><span>Tài khoản</span><strong id="paymentAccount"></strong></div>' +
+        '<div id="paymentNameRow" style="display:none"><span>Chủ TK</span><strong id="paymentName"></strong></div>' +
+        '</div>' +
+        '<p id="paymentHelpText" class="vietqr-staff-note"></p>' +
+        '<div class="bill-modal-actions"><button type="button" class="table-status-btn" onclick="StaffTableStatus.closePaymentModal()">Hủy</button><button id="paymentConfirmBtn" type="button" class="table-status-btn active">Xác nhận đã nhận tiền</button></div>' +
+        '</div>' +
+        '</div>';
+      document.body.appendChild(box);
+      return box;
+    },
+
+    closePaymentModal: function () {
+      var box = el("staffPaymentModal");
+      if (box) box.className = "bill-modal";
+    },
+
+    openPaymentModal: function (id, method) {
+      var cfg = typeof VIETQR !== "undefined" ? VIETQR : {};
+      var t = this.findTable(id);
+      var amount = Number(t && t.phien_tong_tien ? t.phien_tong_tien : 0);
+      var isTransfer = method === "chuyen_khoan";
+
+      if (!t) {
+        toast("Không tìm thấy thông tin bàn", "err");
+        return;
+      }
+      if (amount <= 0) {
+        toast("Bàn này chưa có số tiền bill", "err");
+        return;
+      }
+      if (isTransfer && (!cfg.enabled || !cfg.bankId || !cfg.accountNo)) {
+        toast("Chưa cấu hình VietQR trong .env", "err");
+        return;
+      }
+
+      var box = this.ensurePaymentModal();
+      el("paymentModalTitle").textContent = "Thanh toán Bàn " + (t.so_ban || id);
+      el("paymentMethodText").textContent = paymentMethodText(method);
+      el("paymentAmount").textContent = money(amount);
+      el("paymentQrWrap").style.display = isTransfer ? "" : "none";
+      el("paymentNoteRow").style.display = isTransfer ? "flex" : "none";
+      el("paymentAccountRow").style.display = isTransfer ? "flex" : "none";
+      el("paymentNameRow").style.display = isTransfer ? "flex" : "none";
+      if (isTransfer) {
+        el("paymentQrImage").src = vietQrImageUrl(t);
+        el("paymentNote").textContent = vietQrNote(t);
+        el("paymentAccount").textContent = cfg.accountNo || "-";
+        el("paymentName").textContent = cfg.accountName || "-";
+        el("paymentHelpText").textContent = "Cho khách quét QR/chuyển khoản, kiểm tra app ngân hàng. Khi tiền đã vào, bấm xác nhận để trả bàn.";
+      } else {
+        el("paymentHelpText").textContent = "Thu đủ tiền mặt từ khách. Khi đã nhận tiền, bấm xác nhận để trả bàn.";
+      }
+      el("paymentConfirmBtn").onclick = function () {
+        StaffTableStatus.closePaymentModal();
+        StaffTableStatus.completePayment(id, method);
+      };
+      box.className = "bill-modal show";
     },
 
     updateBillTotal: function () {

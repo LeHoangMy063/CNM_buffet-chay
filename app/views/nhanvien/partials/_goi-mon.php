@@ -86,21 +86,6 @@
                         <?php endif; ?>
                     </div>
 
-                    <?php if (!$laBep): ?>
-                        <div class="meal-suggest-panel" id="mealSuggestPanel" style="display:none">
-                            <div class="meal-suggest-head">
-                                <div>
-                                    <span class="badge blue">AI gợi ý set món</span>
-                                    <h3>Set gọi món cho khách buffet</h3>
-                                    <p>Chọn bàn để AI gợi ý các set dễ giới thiệu theo nhịp phục vụ.</p>
-                                </div>
-                            </div>
-                            <div id="mealSuggestList" class="meal-suggest-list">
-                                <div class="empty-state">Chọn bàn để xem gợi ý set món.</div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
                     <div id="orders" class="orders">
                         <div class="empty-state">
                             <div style="font-size:32px;margin-bottom:8px">&#127860;</div>

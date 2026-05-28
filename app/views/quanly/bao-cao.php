@@ -1,13 +1,14 @@
 <?php
-$tuNgay = isset($tuNgay) ? $tuNgay : date('Y-m-01');
+$tuNgay = isset($tuNgay) ? $tuNgay : date('Y-m-d');
 $denNgay = isset($denNgay) ? $denNgay : date('Y-m-d');
 $tongQuanDoanhThu = isset($tongQuanDoanhThu) ? $tongQuanDoanhThu : array();
-$baoCaoDoanhThu = isset($baoCaoDoanhThu) ? $baoCaoDoanhThu : array();
 $chiTietDoanhThu = isset($chiTietDoanhThu) ? $chiTietDoanhThu : array();
 
-function managerMoney($value)
-{
-    return number_format((float)$value, 0, ',', '.') . 'đ';
+if (!function_exists('managerMoney')) {
+    function managerMoney($value)
+    {
+        return number_format((float)$value, 0, ',', '.') . 'đ';
+    }
 }
 
 $tongDoanhThu = isset($tongQuanDoanhThu['doanh_thu']) ? (float)$tongQuanDoanhThu['doanh_thu'] : 0;
@@ -45,35 +46,66 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
             <input class="input" type="date" name="tu_ngay" value="<?php echo htmlspecialchars($tuNgay, ENT_QUOTES, 'UTF-8'); ?>">
             <input class="input" type="date" name="den_ngay" value="<?php echo htmlspecialchars($denNgay, ENT_QUOTES, 'UTF-8'); ?>">
             <button class="btn" type="submit">Xem báo cáo</button>
+            <a class="btn secondary" href="#revenue-dashboard">Xem dashboard</a>
         </form>
 
-        <div class="table-wrap report-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Lượt thanh toán</th>
-                        <th>Số khách thanh toán</th>
-                        <th>Doanh thu</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($baoCaoDoanhThu)) : ?>
-                        <tr>
-                            <td colspan="4" class="empty">Chưa có doanh thu trong khoảng ngày này.</td>
-                        </tr>
-                    <?php else : ?>
-                        <?php foreach ($baoCaoDoanhThu as $dong) : ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($dong['ngay'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo (int)$dong['so_phien']; ?></td>
-                                <td><?php echo (int)$dong['so_khach']; ?></td>
-                                <td><strong><?php echo managerMoney($dong['doanh_thu']); ?></strong></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+        <div id="revenue-dashboard" class="report-dashboard">
+            <div class="report-dashboard-head">
+                <div>
+                    <h3>Dashboard theo doanh thu đã chọn</h3>
+                    <p>Biểu đồ bên dưới dùng cùng khoảng ngày trong bộ lọc doanh thu.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid report-dashboard-grid">
+                <div class="panel active chart-panel chart-panel-wide">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Doanh thu theo ngày</h3>
+                            <p>Theo dõi nhịp tăng giảm doanh thu trong khoảng đã chọn.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body chart-body">
+                        <canvas id="revenueCanvas" width="980" height="320"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel active chart-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Món được gọi nhiều</h3>
+                            <p>Các món tạo nhiều lượt ra món trong khoảng doanh thu này.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body chart-body">
+                        <canvas id="topDishCanvas" width="520" height="320"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel active chart-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Lượt gọi theo nhóm món</h3>
+                            <p>Nhóm món nào đang được gọi nhiều trong khoảng đã chọn.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body chart-body">
+                        <canvas id="categoryCanvas" width="520" height="320"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel active chart-panel chart-panel-wide">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Giờ cao điểm gọi món</h3>
+                            <p>Xem bếp bận nhất vào khung giờ nào trong khoảng doanh thu này.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body chart-body">
+                        <canvas id="hourCanvas" width="980" height="320"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -93,14 +125,13 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
                         <th>Ngày</th>
                         <th>Lượt thanh toán</th>
                         <th>Số khách thanh toán</th>
-                        <th>Nguồn dữ liệu</th>
                         <th>Doanh thu</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($chiTietDoanhThu)) : ?>
                         <tr>
-                            <td colspan="5" class="empty">Chưa có dữ liệu thanh toán.</td>
+                            <td colspan="4" class="empty">Chưa có dữ liệu thanh toán.</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($chiTietDoanhThu as $phien) : ?>
@@ -108,7 +139,6 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
                                 <td><strong><?php echo htmlspecialchars($phien['ngay'], ENT_QUOTES, 'UTF-8'); ?></strong></td>
                                 <td><?php echo (int)$phien['so_phien']; ?></td>
                                 <td><?php echo (int)$phien['so_khach']; ?></td>
-                                <td><?php echo $phien['nguon'] === 'du_lieu_mau' ? 'Dữ liệu tháng 4 mẫu' : 'Hệ thống'; ?></td>
                                 <td><strong><?php echo managerMoney($phien['doanh_thu']); ?></strong></td>
                             </tr>
                         <?php endforeach; ?>

@@ -118,6 +118,8 @@ class MoHinhBan extends MoHinhCo
         $this->damBaoCotHoaDonPhien('tich_diem_luc', "ALTER TABLE hoa_don_phien ADD COLUMN tich_diem_luc datetime DEFAULT NULL");
         $this->damBaoCotHoaDonPhien('tich_diem_tai_khoan_id', "ALTER TABLE hoa_don_phien ADD COLUMN tich_diem_tai_khoan_id int(11) DEFAULT NULL");
         $this->damBaoCotHoaDonPhien('diem_da_cong', "ALTER TABLE hoa_don_phien ADD COLUMN diem_da_cong int(11) NOT NULL DEFAULT 0");
+        $this->damBaoCotHoaDonPhien('phuong_thuc_thanh_toan', "ALTER TABLE hoa_don_phien ADD COLUMN phuong_thuc_thanh_toan varchar(30) DEFAULT NULL");
+        $this->damBaoCotHoaDonPhien('thanh_toan_luc', "ALTER TABLE hoa_don_phien ADD COLUMN thanh_toan_luc datetime DEFAULT NULL");
     }
 
     private function damBaoBangDoanhThuNgay()
@@ -390,7 +392,7 @@ class MoHinhBan extends MoHinhCo
         return $this->layTheoId($id);
     }
 
-    private function capNhatKetThucPhienHienTai($id, $trangThaiPhien)
+    private function capNhatKetThucPhienHienTai($id, $trangThaiPhien, $phuongThucThanhToan = '')
     {
         $this->damBaoBangPhienGoiMon();
 
@@ -402,10 +404,18 @@ class MoHinhBan extends MoHinhCo
             h.sdt_khach = COALESCE(NULLIF(b.phien_sdt_khach, ''), h.sdt_khach),
             h.so_nguoi_lon = b.phien_nguoi_lon,
             h.so_tre_em = b.phien_tre_em,
-            h.tong_tien = b.phien_tong_tien
+            h.tong_tien = b.phien_tong_tien,
+            h.phuong_thuc_thanh_toan = CASE
+                WHEN ? <> '' THEN ?
+                ELSE h.phuong_thuc_thanh_toan
+            END,
+            h.thanh_toan_luc = CASE
+                WHEN ? <> '' THEN NOW()
+                ELSE h.thanh_toan_luc
+            END
         WHERE p.ban_id = ?
           AND p.trang_thai = 'dang_dung'
-        ", array((int)$id));
+        ", array($phuongThucThanhToan, $phuongThucThanhToan, $phuongThucThanhToan, (int)$id));
 
         $phienDoanhThu = array();
         if ($trangThaiPhien === 'da_ket_thuc') {
@@ -442,10 +452,10 @@ class MoHinhBan extends MoHinhCo
         return $ok;
     }
 
-    public function xoaPhienGoiMon($id)
+    public function xoaPhienGoiMon($id, $phuongThucThanhToan = '')
     {
         $this->damBaoMaPhienBan();
-        $this->capNhatKetThucPhienHienTai($id, 'da_ket_thuc');
+        $this->capNhatKetThucPhienHienTai($id, 'da_ket_thuc', $phuongThucThanhToan);
 
         $sql = "
         UPDATE ban
@@ -751,14 +761,14 @@ class MoHinhBan extends MoHinhCo
         return !empty($rows) ? (int)$rows[0]['tong'] : 0;
     }
 
-    public function capNhatTrangThai($id, $trang_thai)
+    public function capNhatTrangThai($id, $trang_thai, $phuongThucThanhToan = '')
     {
         $this->damBaoMaPhienBan();
 
         $sql = "UPDATE ban SET trang_thai = ? WHERE id = ?";
         $ok = $this->db->query($sql, array($trang_thai, (int)$id));
         if ($ok && $trang_thai !== 'dang_dung') {
-            $this->xoaPhienGoiMon($id);
+            $this->xoaPhienGoiMon($id, $phuongThucThanhToan);
         }
         return $ok;
     }

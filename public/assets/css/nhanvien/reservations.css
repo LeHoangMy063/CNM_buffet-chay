@@ -857,6 +857,52 @@
   gap: 8px;
 }
 
+.vietqr-staff-card {
+  width: min(440px, 100%);
+}
+
+.vietqr-staff-body {
+  padding: 16px;
+}
+
+.vietqr-staff-img {
+  display: block;
+  width: 260px;
+  max-width: 100%;
+  margin: 0 auto 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+.vietqr-staff-info {
+  display: grid;
+  gap: 8px;
+}
+
+.vietqr-staff-info div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: #fbf8ef;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.vietqr-staff-info strong {
+  color: var(--text);
+  text-align: right;
+}
+
+.vietqr-staff-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 @media (max-width: 1100px) {
   .table-function-tabs,
   .table-status-grid {
