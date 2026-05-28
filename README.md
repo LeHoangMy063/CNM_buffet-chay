@@ -16,39 +16,30 @@ Project mô phỏng quy trình vận hành thực tế của một nhà hàng bu
 
 * Xem thông tin nhà hàng và thực đơn món chay.
 * Đặt bàn theo ngày, giờ và số lượng khách.
-* Gọi món bằng mã bàn hoặc mã đặt bàn.
+* Gọi món bằng mã bàn tại hoặc mã qr.
 * Theo dõi danh sách món đã gọi.
-* Hủy món khi món còn ở trạng thái cho phép.
 * Đánh giá món ăn.
 * Đăng ký, đăng nhập tài khoản khách hàng để sử dụng chức năng tích điểm.
 
 ### Nhân viên phục vụ
 
-* Theo dõi danh sách bàn và trạng thái bàn.
-* Xem đơn món khách đã gọi theo từng bàn.
-* Xác nhận món đã phục vụ.
-* Xử lý danh sách đặt bàn.
-* Gán bàn cho khách đã đặt trước.
-* Cập nhật trạng thái bàn.
-* Hỗ trợ thanh toán bằng tiền mặt hoặc chuyển khoản.
-* Tích điểm cho khách hàng.
+* Theo dõi trạng thái các bàn trong nhà hàng và
+* Cập nhật tình trạng bàn khi có khách sử dụng hoặc sau khi thanh toán.
+* Xem danh sách đặt bàn, kiểm tra thông tin khách và gán bàn phù hợp cho từng lượt đặt.
+* Theo dõi các món khách đã gọi theo từng bàn để nắm được món đang chờ và món đã được phục vụ.
+* Xác nhận món đã phục vụ sau khi món được mang ra cho khách.
+* Hỗ trợ thanh toán cho bàn bằng tiền mặt hoặc chuyển khoản.
+* Ghi nhận điểm tích lũy cho khách hàng sau khi sử dụng dịch vụ.
 
 ### Nhân viên bếp
 
 * Xem danh sách món khách đã gọi.
-* Theo dõi các món cần chuẩn bị.
-* Cập nhật trạng thái xử lý món.
-* Phối hợp với nhân viên phục vụ trong quá trình ra món.
 
 ### Quản lý
 
-* Xem dashboard tổng quan.
-* Quản lý thực đơn.
-* Quản lý nhân viên.
-* Theo dõi doanh thu.
-* Xem thống kê món bán chạy.
-* Xuất báo cáo.
-* Theo dõi dữ liệu phân tích từ hệ thống.
+* Xem báo cáo doanh thu của nhà hàng.
+* Quản lý thực đơn, bao gồm danh sách món ăn và thông tin món.
+* Quản lý nhân viên, bao gồm tài khoản và vai trò làm việc trong hệ thống.
 
 ---
 
