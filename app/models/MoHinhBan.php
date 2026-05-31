@@ -89,6 +89,7 @@ class MoHinhBan extends MoHinhCo
         rs.dat_ban_gio AS dat_ban_sap_toi_gio,
         rs.dat_ban_so_khach AS dat_ban_sap_toi_so_khach,
         rs.dat_ban_trang_thai AS dat_ban_sap_toi_trang_thai,
+        rs.dat_ban_ghi_chu AS dat_ban_sap_toi_ghi_chu,
 
         CASE
             WHEN IFNULL(dm.so_don_cho, 0) > 0 THEN 'dang_dung'
@@ -116,7 +117,8 @@ class MoHinhBan extends MoHinhCo
             SUBSTRING_INDEX(GROUP_CONCAT(DATE_FORMAT(db.ngay_dat, '%Y-%m-%d') ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_ngay,
             SUBSTRING_INDEX(GROUP_CONCAT(DATE_FORMAT(db.gio_dat, '%H:%i') ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_gio,
             SUBSTRING_INDEX(GROUP_CONCAT((db.so_nguoi_lon + db.so_tre_em) ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_so_khach,
-            SUBSTRING_INDEX(GROUP_CONCAT(db.trang_thai ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_trang_thai
+            SUBSTRING_INDEX(GROUP_CONCAT(db.trang_thai ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_trang_thai,
+            SUBSTRING_INDEX(GROUP_CONCAT(COALESCE(db.ghi_chu, '') ORDER BY db.ngay_dat ASC, db.gio_dat ASC SEPARATOR '||'), '||', 1) AS dat_ban_ghi_chu
         FROM chitiet_datban ct
         JOIN dat_ban db ON db.id_dat_ban = ct.id_dat_ban
         WHERE db.trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')

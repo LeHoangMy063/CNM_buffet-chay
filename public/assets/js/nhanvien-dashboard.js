@@ -968,10 +968,11 @@
           Number(t.ma_phien_con_han || 0) === 1 ? t.ma_phien_goi_mon || "" : "";
         var name = "Bàn " + t.so_ban;
         var reservationText = reservationLabel(t);
+        var reservationNote = t.dat_ban_sap_toi_ghi_chu || "";
 
         if (
           keyword &&
-          (name + " " + code + " " + reservationText)
+          (name + " " + code + " " + reservationText + " " + reservationNote)
             .toLowerCase()
             .indexOf(keyword) === -1
         )
@@ -980,7 +981,7 @@
         visible++;
         var info = tableStatusInfo(effectiveStatus);
         var emptyText = effectiveStatus === "trong" ? "Bàn trống" : info.text;
-        var hasReservation = !!reservationText;
+        var hasReservation = !!t.dat_ban_sap_toi_id;
 
         html +=
           '<div class="table-status-card ' +
@@ -1018,6 +1019,12 @@
           html +=
             '<div class="table-status-note reservation-warning">' +
             esc(reservationText) +
+            "</div>";
+        }
+        if (reservationNote) {
+          html +=
+            '<div class="table-status-note reservation-note">Ghi chú: ' +
+            esc(reservationNote) +
             "</div>";
         }
         if (rawStatus === "dang_dung" && sessionCode) {
@@ -1137,6 +1144,7 @@
         '<form id="tableBillForm" class="bill-form">' +
         '<input type="hidden" id="billTableId">' +
         '<div id="billReservationWarning" class="table-status-note reservation-warning" style="display:none"></div>' +
+        '<div id="billReservationNote" class="table-status-note reservation-note" style="display:none"></div>' +
         '<label>Tên khách<input id="billCustomerName" type="text" autocomplete="off" required></label>' +
         '<label>SĐT <span>không bắt buộc</span><input id="billCustomerPhone" type="text" autocomplete="off"></label>' +
         '<div class="bill-form-grid">' +
@@ -1176,10 +1184,19 @@
       el("billModalTitle").textContent =
         "Mở " + (t && t.so_ban ? "Bàn " + t.so_ban : "bàn");
       var reservationText = reservationLabel(t);
+      var reservationNote =
+        t && t.dat_ban_sap_toi_ghi_chu ? t.dat_ban_sap_toi_ghi_chu : "";
       var reservationWarning = el("billReservationWarning");
       if (reservationWarning) {
         reservationWarning.style.display = reservationText ? "block" : "none";
         reservationWarning.textContent = reservationText || "";
+      }
+      var reservationNoteBox = el("billReservationNote");
+      if (reservationNoteBox) {
+        reservationNoteBox.style.display = reservationNote ? "block" : "none";
+        reservationNoteBox.textContent = reservationNote
+          ? "Ghi chú: " + reservationNote
+          : "";
       }
       el("billCustomerName").value =
         t && t.phien_ten_khach ? t.phien_ten_khach : "";

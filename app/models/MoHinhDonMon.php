@@ -42,7 +42,6 @@ class MoHinhDonMon extends MoHinhCo
                d.id_ban AS ban_id,
                d.id_phien_goi_mon AS phien_goi_mon_id,
                d.trang_thai,
-               d.tong_tien,
                d.ngay_tao,
                b.so_ban,
                COUNT(ct.id_chitiet_donmon) AS so_mon,
