@@ -35,7 +35,7 @@ Lỗi `Field 'id' doesn't have a default value` thường xảy ra khi các bả
 
 ### Nhân viên phục vụ
 
-- Theo dõi trạng thái các bàn trong nhà hàng và
+- Theo dõi trạng thái các bàn trong nhà hàng.
 - Cập nhật tình trạng bàn khi có khách sử dụng hoặc sau khi thanh toán.
 - Xem danh sách đặt bàn, kiểm tra thông tin khách và gán bàn phù hợp cho từng lượt đặt.
 - Theo dõi các món khách đã gọi theo từng bàn để nắm được món đang chờ và món đã được phục vụ.
