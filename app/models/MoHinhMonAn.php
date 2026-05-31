@@ -1,92 +1,16 @@
 <?php
 
 require_once dirname(__FILE__) . '/MoHinhCo.php';
+require_once dirname(__FILE__) . '/MoHinhDanhMucMon.php';
 
 class MoHinhMonAn extends MoHinhCo
 {
-    private function chuThuongKhongDau($value)
+    private $danhMuc;
+
+    public function __construct()
     {
-        $value = trim((string)$value);
-        $value = function_exists('mb_strtolower')
-            ? mb_strtolower($value, 'UTF-8')
-            : strtolower($value);
-
-        $from = array(
-            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
-            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
-            'ì', 'í', 'ị', 'ỉ', 'ĩ',
-            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
-            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
-            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
-            'đ'
-        );
-        $to = array(
-            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
-            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
-            'i', 'i', 'i', 'i', 'i',
-            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
-            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
-            'y', 'y', 'y', 'y', 'y',
-            'd'
-        );
-
-        return str_replace($from, $to, $value);
-    }
-
-    private function chuanHoaDanhMuc($danh_muc)
-    {
-        $danh_muc = trim((string)$danh_muc);
-        $key = $this->chuThuongKhongDau($danh_muc);
-
-        if (strpos($key, 'khai') !== false || strpos($key, 'vi') !== false) {
-            return 'Khai vi';
-        }
-        if (strpos($key, 'chinh') !== false || strpos($key, 'mon chinh') !== false) {
-            return 'Mon chinh';
-        }
-        if (strpos($key, 'lau') !== false || strpos($key, 'nuoc') !== false) {
-            return 'Nuoc lau';
-        }
-        if (strpos($key, 'uong') !== false || strpos($key, 'do uong') !== false) {
-            return 'Do uong';
-        }
-        if (strpos($key, 'topping') !== false) {
-            return 'Topping';
-        }
-        if (strpos($key, 'rau') !== false) {
-            return 'Rau';
-        }
-        if (strpos($key, 'trang') !== false) {
-            return 'Trang mieng';
-        }
-
-        return $danh_muc;
-    }
-
-    private function tenHienThiDanhMuc($danh_muc)
-    {
-        $labels = array(
-            'Khai vi' => 'Khai vị',
-            'Mon chinh' => 'Món chính',
-            'Nuoc lau' => 'Nước lẩu',
-            'Topping' => 'Topping',
-            'Rau' => 'Rau',
-            'Do uong' => 'Đồ uống',
-            'Trang mieng' => 'Tráng miệng',
-        );
-
-        $maDanhMuc = $this->chuanHoaDanhMuc($danh_muc);
-        return isset($labels[$maDanhMuc]) ? $labels[$maDanhMuc] : $maDanhMuc;
-    }
-
-    private function ganTenHienThiDanhMuc($rows)
-    {
-        for ($i = 0; $i < count($rows); $i++) {
-            if (isset($rows[$i]['danh_muc'])) {
-                $rows[$i]['danh_muc'] = $this->tenHienThiDanhMuc($rows[$i]['danh_muc']);
-            }
-        }
-        return $rows;
+        parent::__construct();
+        $this->danhMuc = new MoHinhDanhMucMon($this->db);
     }
 
     private function selectMonAn()
@@ -108,106 +32,84 @@ class MoHinhMonAn extends MoHinhCo
         ";
     }
 
-    private function idDanhMuc($danh_muc)
+    private function sapXepMacDinh()
     {
-        $ten = $this->chuanHoaDanhMuc($danh_muc);
-        $map = array(
-            'Khai vi' => 'DM-KHAIVI',
-            'Mon chinh' => 'DM-MONCHINH',
-            'Nuoc lau' => 'DM-NUOCLAU',
-            'Topping' => 'DM-TOPPING',
-            'Rau' => 'DM-RAU',
-            'Do uong' => 'DM-DOUONG',
-            'Trang mieng' => 'DM-TRANGMIENG'
-        );
-        if (isset($map[$ten])) {
-            return $map[$ten];
-        }
+        return " ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
+    }
 
-        $id = 'DM-' . strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $ten));
-        $this->db->query(
-            "INSERT IGNORE INTO danh_muc_mon (id_danh_muc_mon, ten_danh_muc, thu_tu, dang_hien_thi)
-             VALUES (?, ?, 99, 1)",
-            array($id, $ten)
-        );
-        return $id;
+    private function ganTenHienThiDanhMuc($rows)
+    {
+        return $this->danhMuc->ganTenHienThiChoDanhSach($rows);
     }
 
     public function layTatCa()
     {
-        $sql = $this->selectMonAn() . " ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
+        $sql = $this->selectMonAn() . $this->sapXepMacDinh();
         return $this->ganTenHienThiDanhMuc($this->db->query($sql));
     }
 
     public function layNhomTheoDanhMuc()
     {
-        $sql  = $this->selectMonAn() . " WHERE mon_an.con_mon = 1 ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
+        $sql = $this->selectMonAn() . "
+        WHERE mon_an.con_mon = 1
+        " . $this->sapXepMacDinh();
         $rows = $this->ganTenHienThiDanhMuc($this->db->query($sql));
 
         $nhom = array();
         foreach ($rows as $mon) {
-            $dm = $mon['danh_muc'];
-            if (!isset($nhom[$dm])) {
-                $nhom[$dm] = array();
+            $tenDanhMuc = isset($mon['danh_muc']) ? $mon['danh_muc'] : '';
+            if (!isset($nhom[$tenDanhMuc])) {
+                $nhom[$tenDanhMuc] = array();
             }
-            $nhom[$dm][] = $mon;
+            $nhom[$tenDanhMuc][] = $mon;
         }
         return $nhom;
     }
 
     public function demTatCa()
     {
-        $sql  = "SELECT COUNT(*) AS tong FROM mon_an";
-        $rows = $this->db->query($sql);
+        $rows = $this->db->query("SELECT COUNT(*) AS tong FROM mon_an");
         return !empty($rows) ? (int)$rows[0]['tong'] : 0;
     }
 
-    public function luu($du_lieu)
+    public function luu($duLieu)
     {
-        $id       = isset($du_lieu['id'])       ? trim($du_lieu['id'])       : '';
-        $ten      = isset($du_lieu['ten'])       ? trim($du_lieu['ten'])      : '';
-        $mo_ta    = isset($du_lieu['mo_ta'])     ? trim($du_lieu['mo_ta'])    : '';
-        $danh_muc = isset($du_lieu['danh_muc'])  ? $this->chuanHoaDanhMuc($du_lieu['danh_muc']) : '';
-        $anh_url  = isset($du_lieu['anh_url'])   ? trim($du_lieu['anh_url'])  : '';
-        $con_mon  = isset($du_lieu['con_mon'])   ? (int)$du_lieu['con_mon']   : 1;
-        $noi_bat  = isset($du_lieu['noi_bat'])   ? (int)$du_lieu['noi_bat']   : 0;
-
-        $idDanhMuc = $this->idDanhMuc($danh_muc);
+        $id = isset($duLieu['id']) ? trim($duLieu['id']) : '';
+        $ten = isset($duLieu['ten']) ? trim($duLieu['ten']) : '';
+        $moTa = isset($duLieu['mo_ta']) ? trim($duLieu['mo_ta']) : '';
+        $danhMuc = isset($duLieu['danh_muc']) ? $duLieu['danh_muc'] : '';
+        $anhUrl = isset($duLieu['anh_url']) ? trim($duLieu['anh_url']) : '';
+        $conMon = isset($duLieu['con_mon']) ? (int)$duLieu['con_mon'] : 1;
+        $noiBat = isset($duLieu['noi_bat']) ? (int)$duLieu['noi_bat'] : 0;
+        $idDanhMuc = $this->danhMuc->layHoacTaoId($danhMuc);
 
         if ($id !== '') {
-            $sql = "
-            UPDATE mon_an
-            SET ten_mon=?, mo_ta=?, id_danh_muc_mon=?, anh_url=?, con_mon=?, noi_bat=?
-            WHERE id_mon_an=?
-            ";
-            return $this->db->query($sql, array(
-                $ten,
-                $mo_ta,
-                $idDanhMuc,
-                $anh_url,
-                $con_mon,
-                $noi_bat,
-                $id
-            ));
-        } else {
-            $id = $this->taoId('MON');
-            $sql = "
-            INSERT INTO mon_an (id_mon_an, ten_mon, mo_ta, id_danh_muc_mon, anh_url, con_mon, noi_bat)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ";
-            return $this->db->query($sql, array(
-                $id,
-                $ten,
-                $mo_ta,
-                $idDanhMuc,
-                $anh_url,
-                $con_mon,
-                $noi_bat
-            ));
+            return $this->capNhat($id, $ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat);
         }
+        return $this->themMoi($ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat);
     }
 
-    public function layNoiBat($gioi_han)
+    private function capNhat($id, $ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat)
+    {
+        $sql = "
+        UPDATE mon_an
+        SET ten_mon = ?, mo_ta = ?, id_danh_muc_mon = ?, anh_url = ?, con_mon = ?, noi_bat = ?
+        WHERE id_mon_an = ?
+        ";
+        return $this->db->query($sql, array($ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat, $id));
+    }
+
+    private function themMoi($ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat)
+    {
+        $id = $this->taoId('MON');
+        $sql = "
+        INSERT INTO mon_an (id_mon_an, ten_mon, mo_ta, id_danh_muc_mon, anh_url, con_mon, noi_bat)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ";
+        return $this->db->query($sql, array($id, $ten, $moTa, $idDanhMuc, $anhUrl, $conMon, $noiBat));
+    }
+
+    public function layNoiBat($gioiHan)
     {
         $sql = "
         " . $this->selectMonAn() . "
@@ -215,24 +117,20 @@ class MoHinhMonAn extends MoHinhCo
         ORDER BY mon_an.noi_bat DESC, mon_an.ten_mon ASC
         LIMIT ?
         ";
-        return $this->ganTenHienThiDanhMuc($this->db->query($sql, array((int)$gioi_han)));
+        return $this->ganTenHienThiDanhMuc($this->db->query($sql, array((int)$gioiHan)));
     }
 
     public function xoa($id)
     {
-        $sql = "DELETE FROM mon_an WHERE id_mon_an = ?";
-        return $this->db->query($sql, array($id));
+        return $this->db->query("DELETE FROM mon_an WHERE id_mon_an = ?", array($id));
     }
 
-    public function timKiem($tu_khoa)
+    public function timKiem($tuKhoa)
     {
         $sql = "
         " . $this->selectMonAn() . "
         WHERE mon_an.con_mon = 1 AND mon_an.ten_mon LIKE ?
-        ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon
-        ";
-        return $this->ganTenHienThiDanhMuc($this->db->query($sql, array('%' . $tu_khoa . '%')));
+        " . $this->sapXepMacDinh();
+        return $this->ganTenHienThiDanhMuc($this->db->query($sql, array('%' . $tuKhoa . '%')));
     }
 }
-
-// ================= MO HINH DAT BAN =================

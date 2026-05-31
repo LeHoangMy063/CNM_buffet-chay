@@ -109,7 +109,28 @@ class NhanVienController extends BoieuKhienCo
 
     public function suKienDonMon()
     {
-        $this->yeuCauAdminHoacNhanVien();
+        if (!$this->daDangNhap()) {
+            header('Content-Type: text/event-stream');
+            header('Cache-Control: no-cache');
+            echo "event: auth\n";
+            echo "data: " . json_encode(array('chuyen_huong' => BASE_URL . '/dang-nhap')) . "\n\n";
+            @ob_flush();
+            @flush();
+            exit;
+        }
+
+        $vaiTro = isset($_SESSION['nguoi_dung']['vai_tro'])
+            ? $_SESSION['nguoi_dung']['vai_tro']
+            : '';
+        if ($vaiTro !== 'quanly' && $vaiTro !== 'nhanvien' && $vaiTro !== 'bep') {
+            header('Content-Type: text/event-stream');
+            header('Cache-Control: no-cache');
+            echo "event: auth\n";
+            echo "data: " . json_encode(array('chuyen_huong' => BASE_URL . '/dang-nhap')) . "\n\n";
+            @ob_flush();
+            @flush();
+            exit;
+        }
 
         if (function_exists('session_write_close')) {
             session_write_close();

@@ -334,6 +334,19 @@
         }, 250);
       });
 
+      this.source.addEventListener("auth", function (ev) {
+        var data = {};
+        try {
+          data = JSON.parse(ev.data || "{}");
+        } catch (e) {
+          data = {};
+        }
+        self.enabled = false;
+        if (self.source) self.source.close();
+        self.source = null;
+        if (data.chuyen_huong) window.location.href = data.chuyen_huong;
+      });
+
       this.source.onerror = function () {
         if (self.source) self.source.close();
         self.source = null;
