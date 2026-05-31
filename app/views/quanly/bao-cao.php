@@ -11,6 +11,17 @@ if (!function_exists('managerMoney')) {
     }
 }
 
+if (!function_exists('managerFormatDateShort')) {
+    function managerFormatDateShort($value)
+    {
+        if (!$value) {
+            return '';
+        }
+        $time = strtotime($value);
+        return $time ? date('d-m-y', $time) : $value;
+    }
+}
+
 $tongDoanhThu = isset($tongQuanDoanhThu['doanh_thu']) ? (float)$tongQuanDoanhThu['doanh_thu'] : 0;
 $soPhien = isset($tongQuanDoanhThu['so_phien']) ? (int)$tongQuanDoanhThu['so_phien'] : 0;
 $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['tong_khach'] : 0;
@@ -137,7 +148,7 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
                     <?php else : ?>
                         <?php foreach ($chiTietDoanhThu as $phien) : ?>
                             <tr>
-                                <td><strong><?php echo htmlspecialchars($phien['ngay'], ENT_QUOTES, 'UTF-8'); ?></strong></td>
+                                <td><strong><?php echo htmlspecialchars(managerFormatDateShort($phien['ngay']), ENT_QUOTES, 'UTF-8'); ?></strong></td>
                                 <td><?php echo (int)$phien['so_phien']; ?></td>
                                 <td><?php echo (int)$phien['so_khach']; ?></td>
                                 <td><strong><?php echo managerMoney($phien['doanh_thu']); ?></strong></td>

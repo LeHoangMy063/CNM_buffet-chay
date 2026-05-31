@@ -259,6 +259,12 @@
             return n < 10 ? '0' + n : '' + n;
         }
 
+        function formatDateShort(v) {
+            if (!v) return '';
+            var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            return m ? m[3] + '-' + m[2] + '-' + m[1].slice(2) : v;
+        }
+
         function buildTimeSlots() {
             var slots = [];
             for (var minutes = 10 * 60; minutes <= 21 * 60 + 30; minutes += 30) {
@@ -312,7 +318,7 @@
             var box = document.getElementById('reservationConfirmation');
             document.getElementById('confirmName').textContent = form.querySelector('[name=customer_name]').value || '';
             document.getElementById('confirmPhone').textContent = form.querySelector('[name=customer_phone]').value || '';
-            document.getElementById('confirmDate').textContent = form.querySelector('[name=reservation_date]').value;
+            document.getElementById('confirmDate').textContent = formatDateShort(form.querySelector('[name=reservation_date]').value);
             document.getElementById('confirmTime').textContent = form.querySelector('[name=reservation_time]').value;
             document.getElementById('confirmAdults').textContent = form.querySelector('[name=adult_count]').value;
             document.getElementById('confirmChildren').textContent = form.querySelector('[name=child_count]').value || '0';

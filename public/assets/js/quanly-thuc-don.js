@@ -7,6 +7,16 @@ function esc(v) {
     .replace(/'/g, "&#039;");
 }
 
+function formatDateShort(v) {
+  if (!v) return "";
+  var text = String(v);
+  var m = text.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
+  if (m) return m[3] + "-" + m[2] + "-" + m[1].slice(2) + m[4];
+  m = text.match(/^(\d{2})\/(\d{2})\/(\d{4})(.*)$/);
+  if (m) return m[1] + "-" + m[2] + "-" + m[3].slice(2) + m[4];
+  return text;
+}
+
 function categoryLabel(value) {
   var labels = {
     "Khai vi": "Khai vị",
@@ -434,7 +444,7 @@ function drawLineChart(canvasId, rows, valueKey, labelKey) {
   var step = Math.max(1, Math.ceil(data.length / 8));
   for (var l = 0; l < data.length; l += step) {
     var lx = pad.left + (data.length === 1 ? chartW / 2 : (chartW * l) / (data.length - 1));
-    ctx.fillText(String(data[l][labelKey] || "").slice(5), lx, height - 16);
+    ctx.fillText(formatDateShort(data[l][labelKey] || "").slice(0, 8), lx, height - 16);
   }
 }
 
@@ -545,7 +555,7 @@ function staffRowHtml(staff) {
     '">' +
     (active ? "Đang hoạt động" : "Đã khóa") +
     "</span></td>";
-  html += "<td>" + esc(staff.ngay_tao || "") + "</td>";
+  html += "<td>" + esc(formatDateShort(staff.ngay_tao || "")) + "</td>";
   html +=
     '<td><button class="btn secondary" type="button" onclick="editStaff(' +
     staff.id +
@@ -663,7 +673,7 @@ function viewStaff(id) {
     (Number(staff.dang_hoat_dong || 0) === 1 ? "Đang hoạt động" : "Đã khóa") +
     "</strong></div>" +
     '<div><span>Ngày tạo</span><strong>' +
-    esc(staff.ngay_tao || "-") +
+    esc(formatDateShort(staff.ngay_tao || "") || "-") +
     "</strong></div>" +
     "</div>";
   openModal("staffDetailModal");

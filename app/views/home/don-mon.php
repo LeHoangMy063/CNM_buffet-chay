@@ -34,7 +34,7 @@ require __DIR__ . '/_header.php'; ?>
                         <td style="color:#6b7280"><?php echo htmlspecialchars($o['category']) ?></td>
                         <td style="font-weight:700;font-size:1rem"><?php echo $o['quantity'] ?></td>
                         <td style="color:#6b7280;font-size:0.8rem"><?php echo htmlspecialchars($o['note'] ? $o['note'] : '-') ?></td>
-                        <td style="font-size:0.8rem;color:#6b7280"><?php echo date('H:i d/m', strtotime($o['created_at'])) ?></td>
+                        <td style="font-size:0.8rem;color:#6b7280"><?php echo date('H:i d-m-y', strtotime($o['created_at'])) ?></td>
                         <td>
                             <select class="inline" onchange="updateOrderStatus(<?php echo $o['id'] ?>, this.value)">
                                 <?php

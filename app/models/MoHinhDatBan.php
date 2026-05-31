@@ -71,6 +71,12 @@ class MoHinhDatBan extends MoHinhCo
         return " GROUP BY r.id_dat_ban " . $order;
     }
 
+    private function dieuKienChuaQuaGio($alias)
+    {
+        return "(" . $alias . ".trang_thai NOT IN ('cho_xac_nhan', 'da_xac_nhan')
+            OR TIMESTAMP(" . $alias . ".ngay_dat, " . $alias . ".gio_dat) >= ?)";
+    }
+
     public function layTatCa()
     {
         $sql = $this->selectDatBanVoiBan() . $this->nhomVaSapXep("ORDER BY r.ngay_dat DESC, r.gio_dat DESC");
@@ -374,9 +380,10 @@ class MoHinhDatBan extends MoHinhCo
     {
         $sql = $this->selectDatBanVoiBan() . "
         WHERE r.trang_thai = 'cho_xac_nhan'
+          AND " . $this->dieuKienChuaQuaGio('r') . "
           AND EXISTS (SELECT 1 FROM chitiet_datban ct WHERE ct.id_dat_ban = r.id_dat_ban)
         " . $this->nhomVaSapXep("ORDER BY r.ngay_dat ASC, r.gio_dat ASC");
-        return $this->db->query($sql);
+        return $this->db->query($sql, array(date('Y-m-d H:i:s')));
     }
 
     public function layDanhSachLocNang($trang_thai, $tu_khoa, $chi_chua_xac_nhan_ban, $ngay_dat)
@@ -412,6 +419,9 @@ class MoHinhDatBan extends MoHinhCo
             $where[] = "r.trang_thai = 'cho_xac_nhan'";
         }
 
+        $where[] = $this->dieuKienChuaQuaGio('r');
+        $params[] = date('Y-m-d H:i:s');
+
         $sql = $this->selectDatBanVoiBan();
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
@@ -427,10 +437,11 @@ class MoHinhDatBan extends MoHinhCo
         FROM dat_ban
         WHERE DATE_FORMAT(ngay_dat, '%Y-%m') = ?
           AND trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')
+          AND TIMESTAMP(ngay_dat, gio_dat) >= ?
         GROUP BY ngay_dat
         ORDER BY ngay_dat ASC
         ";
-        return $this->db->query($sql, array($thang));
+        return $this->db->query($sql, array($thang, date('Y-m-d H:i:s')));
     }
 
     public function layLichSuTheoSDT($sdt)

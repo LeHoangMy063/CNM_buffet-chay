@@ -5,6 +5,7 @@ $tenNhanVien = isset($nhanVien['ho_ten']) && $nhanVien['ho_ten'] !== ''
     : (isset($nhanVien['ten_dang_nhap']) ? $nhanVien['ten_dang_nhap'] : 'Nhân viên');
 $vaiTro = isset($nhanVien['vai_tro']) ? $nhanVien['vai_tro'] : '';
 $ngayTraCuu = isset($ngay) && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $ngay) ? $ngay : date('Y-m-d');
+$ngayTraCuuHienThi = date('d-m-y', strtotime($ngayTraCuu));
 $hoaDonTichDiem = isset($hoaDonTichDiem) && is_array($hoaDonTichDiem) ? $hoaDonTichDiem : null;
 $tongTienHoaDon = $hoaDonTichDiem && isset($hoaDonTichDiem['tong_tien']) ? (int)$hoaDonTichDiem['tong_tien'] : 0;
 $diemHoaDon = $hoaDonTichDiem && isset($hoaDonTichDiem['diem_quy_doi']) ? (int)$hoaDonTichDiem['diem_quy_doi'] : 0;
@@ -260,7 +261,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                         <div class="invoice-banner">
                                             <div>
                                                 <div style="font-weight:800; font-size:14px">Có hóa đơn chưa tích điểm</div>
-                                                <small><?php echo $soHoaDon; ?> hóa đơn ngày <?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?></small>
+                                                <small><?php echo $soHoaDon; ?> hóa đơn ngày <?php echo htmlspecialchars($ngayTraCuuHienThi, ENT_QUOTES, 'UTF-8') ?></small>
                                             </div>
                                             <div style="text-align:right">
                                                 <div class="amt"><?php echo number_format($tongTienHoaDon, 0, ',', '.'); ?>đ</div>
@@ -342,7 +343,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                     <?php if ($tongTienHoaDon > 0): ?>
                                         <div class="invoice-banner">
                                             <div>
-                                                <div style="font-weight:800; font-size:14px">Hóa đơn ngày <?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?></div>
+                                                <div style="font-weight:800; font-size:14px">Hóa đơn ngày <?php echo htmlspecialchars($ngayTraCuuHienThi, ENT_QUOTES, 'UTF-8') ?></div>
                                                 <small><?php echo $soHoaDon; ?> hóa đơn chưa tích điểm</small>
                                             </div>
                                             <div style="text-align:right">
@@ -352,7 +353,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                         </div>
                                     <?php elseif (isset($sdt) && $sdt !== ''): ?>
                                         <div class="no-invoice-banner">
-                                            Chưa có hóa đơn chưa tích điểm cho ngày <?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?>.
+                                            Chưa có hóa đơn chưa tích điểm cho ngày <?php echo htmlspecialchars($ngayTraCuuHienThi, ENT_QUOTES, 'UTF-8') ?>.
                                         </div>
                                     <?php endif; ?>
 
@@ -416,7 +417,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                                     <div style="font-weight:800">Hóa đơn #<?php echo intval($hd['id']); ?></div>
                                                     <div style="color:var(--muted); font-size:12px">
                                                         <?php echo !empty($hd['so_ban']) ? 'Bàn ' . htmlspecialchars($hd['so_ban'], ENT_QUOTES, 'UTF-8') . ' · ' : ''; ?>
-                                                        <?php echo htmlspecialchars(isset($hd['ngay_tao']) ? $hd['ngay_tao'] : '', ENT_QUOTES, 'UTF-8'); ?>
+                                                        <?php echo htmlspecialchars(isset($hd['ngay_tao']) && $hd['ngay_tao'] ? date('d-m-y H:i', strtotime($hd['ngay_tao'])) : '', ENT_QUOTES, 'UTF-8'); ?>
                                                     </div>
                                                 </div>
                                                 <div style="text-align:right">

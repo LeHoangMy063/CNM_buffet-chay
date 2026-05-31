@@ -28,7 +28,7 @@
             <td><strong><?php echo htmlspecialchars($r['customer_name']) ?></strong></td>
             <td style="color:#6b7280"><?php echo htmlspecialchars($r['customer_phone']) ?></td>
             <td><?php echo $r['table_number'] ? 'Ban '.$r['table_number'] : '-' ?></td>
-            <td><?php echo date('d/m/Y', strtotime($r['reservation_date'])) ?><br><span style="color:#6b7280;font-size:0.8rem"><?php echo $r['reservation_time'] ?></span></td>
+            <td><?php echo date('d-m-y', strtotime($r['reservation_date'])) ?><br><span style="color:#6b7280;font-size:0.8rem"><?php echo $r['reservation_time'] ?></span></td>
             <td><?php echo $r['adult_count'] ?> NL<?php echo $r['child_count'] ? ' + '.$r['child_count'].' TE' : '' ?></td>
             <td style="font-weight:600;color:#2d6a4f"><?php echo number_format($r['total_price'], 0, ',', '.') ?>d</td>
             <td>

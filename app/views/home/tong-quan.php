@@ -51,7 +51,7 @@ require(dirname(__FILE__) . '/_header.php'); ?>
                                 <div style="font-weight:600"><?php echo htmlspecialchars($r['customer_name']) ?></div>
                                 <div style="font-size:0.75rem;color:#6b7280"><?php echo $r['adult_count'] ?> NL<?php echo $r['child_count'] ? ' + ' . $r['child_count'] . ' TE' : '' ?></div>
                             </td>
-                            <td><?php echo date('d/m', strtotime($r['reservation_date'])) ?><br><span style="color:#6b7280;font-size:0.75rem"><?php echo $r['reservation_time'] ?></span></td>
+                            <td><?php echo date('d-m-y', strtotime($r['reservation_date'])) ?><br><span style="color:#6b7280;font-size:0.75rem"><?php echo $r['reservation_time'] ?></span></td>
                             <td><?php
                                 $statusMap = array('pending' => 'Cho', 'confirmed' => 'Xac nhan', 'cancelled' => 'Huy', 'completed' => 'Hoan thanh');
                                 echo '<span class="badge badge-' . $r['status'] . '">' . (isset($statusMap[$r['status']]) ? $statusMap[$r['status']] : $r['status']) . '</span>';

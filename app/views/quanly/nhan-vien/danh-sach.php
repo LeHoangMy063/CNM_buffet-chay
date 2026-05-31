@@ -52,7 +52,7 @@
                                         <span class="badge off">Đã khóa</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo htmlspecialchars(isset($nhanVien['ngay_tao']) ? $nhanVien['ngay_tao'] : '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars(isset($nhanVien['ngay_tao']) ? managerFormatDateShort($nhanVien['ngay_tao']) : '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <button class="btn secondary" type="button" onclick="editStaff(<?php echo (int)$nhanVien['id']; ?>)">Sửa</button>
                                     <button class="btn danger" type="button" onclick="deleteStaff(<?php echo (int)$nhanVien['id']; ?>)">Xóa</button>

@@ -110,6 +110,15 @@ function managerRoleText($value)
     return isset($labels[$value]) ? $labels[$value] : managerText($value);
 }
 
+function managerFormatDateShort($value)
+{
+    if (!$value) {
+        return '';
+    }
+    $time = strtotime($value);
+    return $time ? date('d-m-y', $time) . (strlen($value) > 10 ? date(' H:i', $time) : '') : managerText($value);
+}
+
 $jsonMon = json_encode(managerCleanJsonData($danhSachMon), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $jsonNhanVien = json_encode(managerCleanJsonData($danhSachNhanVien), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $jsonBaoCao = json_encode(managerCleanJsonData(isset($baoCaoDoanhThu) ? $baoCaoDoanhThu : array()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);

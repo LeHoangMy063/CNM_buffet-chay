@@ -94,7 +94,7 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                         <div>
                             <p class="eyebrow">Xin chào</p>
                             <h3><?php echo htmlspecialchars($tenNhanVien, ENT_QUOTES, 'UTF-8'); ?> &#128075;</h3>
-                            <p>Chào mừng trở lại. Hôm nay là <?php echo date('d/m/Y'); ?>.</p>
+                            <p>Chào mừng trở lại. Hôm nay là <?php echo date('d-m-y'); ?>.</p>
                         </div>
                     </div>
 
@@ -166,8 +166,20 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
             });
         }
     </script>
-    <script src="<?php echo BASE_URL; ?>/public/assets/js/nhanvien-dashboard.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/nhanvien-dashboard.js'); ?>"></script>
-    <script src="<?php echo BASE_URL; ?>/public/assets/js/nhanvien-reservations.js?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/js/nhanvien-reservations.js'); ?>"></script>
+    <?php
+    $staffScripts = array(
+        'nhanvien-dashboard-core.js',
+        'nhanvien-reservations-core.js',
+        'nhanvien-reservations-render.js',
+        'nhanvien-reservations-actions.js',
+        'nhanvien-orders.js',
+        'nhanvien-table-status.js'
+    );
+    foreach ($staffScripts as $staffScript) :
+        $staffScriptPath = dirname(__FILE__) . '/../../../public/assets/js/' . $staffScript;
+    ?>
+        <script src="<?php echo BASE_URL; ?>/public/assets/js/<?php echo $staffScript; ?>?v=<?php echo filemtime($staffScriptPath); ?>"></script>
+    <?php endforeach; ?>
 </body>
 
 </html>

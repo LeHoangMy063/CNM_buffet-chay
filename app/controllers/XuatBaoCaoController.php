@@ -101,7 +101,7 @@ class XuatBaoCaoController extends BoieuKhienCo
 
         $this->dong($out, array('Kỳ báo cáo', $this->formatNgay($tuNgay) . ' → ' . $this->formatNgay($denNgay)));
         $this->dong($out, array('Số ngày',    $this->demSoNgay($tuNgay, $denNgay) . ' ngày'));
-        $this->dong($out, array('Xuất lúc',   date('d/m/Y H:i:s')));
+        $this->dong($out, array('Xuất lúc',   date('d-m-y H:i:s')));
         $this->dong($out, array('Nguồn data', $nguonDuLieu));
         $this->dong($out, array('Phiên bản',  '2.0'));
         $this->dongTrong($out);
@@ -492,7 +492,7 @@ class XuatBaoCaoController extends BoieuKhienCo
     {
         if (!$ngay || $ngay === '---') return '—';
         $time = strtotime($ngay);
-        return $time ? date('d/m/Y', $time) : $ngay;
+        return $time ? date('d-m-y', $time) : $ngay;
     }
 
     private function layTenThu($ngay)
