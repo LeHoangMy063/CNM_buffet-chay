@@ -14,11 +14,6 @@ class MoHinhDatBan extends MoHinhCo
         return $this->taoId('PBD', 5, true);
     }
 
-    private function taoIdLichSuDieuPhoi()
-    {
-        return $this->taoId('LSDP', 5, true);
-    }
-
     private function chuanHoaIdBoQua($bo_qua_id)
     {
         $id = trim((string)$bo_qua_id);
@@ -324,30 +319,15 @@ class MoHinhDatBan extends MoHinhCo
             }
         }
 
-        $banCuRows = $this->db->query("SELECT id_ban FROM chitiet_datban WHERE id_dat_ban = ?", array($id));
         $this->db->query("DELETE FROM chitiet_datban WHERE id_dat_ban = ?", array($id));
-        foreach ($banCuRows as $row) {
-            if (!in_array($row['id_ban'], $danhSachHopLe)) {
-                $this->db->query("
-                    INSERT INTO lich_su_dieu_phoi_ban
-                        (id_lich_su_dieu_phoi, id_dat_ban, id_ban_cu, hanh_dong, ghi_chu)
-                    VALUES (?, ?, ?, 'HUY_GAN_BAN', 'Huy gan ban dat truoc')
-                ", array($this->taoIdLichSuDieuPhoi(), $id, $row['id_ban']));
-            }
-        }
         foreach ($danhSachHopLe as $ban_id) {
             $this->db->query(
                 "INSERT IGNORE INTO chitiet_datban
                     (id_chitiet_datban, id_dat_ban, id_ban, thoi_gian_bat_dau, thoi_gian_ket_thuc, trang_thai)
                  SELECT ?, id_dat_ban, ?, TIMESTAMP(ngay_dat, gio_dat), DATE_ADD(TIMESTAMP(ngay_dat, gio_dat), INTERVAL 90 MINUTE), 'dang_gan'
-                 FROM dat_ban WHERE id_dat_ban = ?",
+                FROM dat_ban WHERE id_dat_ban = ?",
                 array($this->taoIdChiTietDatBan(), $ban_id, $id)
             );
-            $this->db->query("
-                INSERT INTO lich_su_dieu_phoi_ban
-                    (id_lich_su_dieu_phoi, id_dat_ban, id_ban_moi, hanh_dong, ghi_chu)
-                VALUES (?, ?, ?, 'GAN_BAN', 'Gan ban cho dat truoc')
-            ", array($this->taoIdLichSuDieuPhoi(), $id, $ban_id));
         }
         return true;
     }

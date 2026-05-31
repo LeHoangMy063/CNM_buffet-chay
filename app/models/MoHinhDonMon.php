@@ -14,27 +14,6 @@ class MoHinhDonMon extends MoHinhCo
         return $this->taoId('CTDM', 5, true);
     }
 
-    private function taoIdLichSuTrangThaiMon()
-    {
-        return $this->taoId('LSTTM', 5, true);
-    }
-
-    private function ghiLichSuTrangThaiMon($chiTietId, $trangThai, $ghiChu = '')
-    {
-        $map = array(
-            'cho_phuc_vu' => 'CHO_CHE_BIEN',
-            'dang_che_bien' => 'DANG_CHE_BIEN',
-            'da_phuc_vu' => 'DA_PHUC_VU',
-            'da_huy' => 'DA_HUY'
-        );
-        $trangThaiLichSu = isset($map[$trangThai]) ? $map[$trangThai] : $trangThai;
-        return $this->db->query("
-            INSERT INTO lich_su_trang_thai_mon
-                (id_lich_su_trang_thai_mon, id_chitiet_donmon, trang_thai, ghi_chu)
-            VALUES (?, ?, ?, ?)
-        ", array($this->taoIdLichSuTrangThaiMon(), $chiTietId, $trangThaiLichSu, $ghiChu));
-    }
-
     private function selectDonTomTat()
     {
         return "
@@ -179,7 +158,6 @@ class MoHinhDonMon extends MoHinhCo
                     (id_chitiet_donmon, id_don_mon, id_mon_an, so_luong, ghi_chu, trang_thai_hien_tai)
                 VALUES (?, ?, ?, ?, ?, 'cho_phuc_vu')
             ", array($chiTietId, $donId, $monAnId, $soLuong, $ghiChu));
-            $this->ghiLichSuTrangThaiMon($chiTietId, 'cho_phuc_vu', 'Khach goi mon');
         }
 
         return $donId;
@@ -204,7 +182,6 @@ class MoHinhDonMon extends MoHinhCo
         ";
         $ok = $this->db->query($sql, $params);
         if ($ok) {
-            $this->ghiLichSuTrangThaiMon($chi_tiet_id, 'da_huy', 'Khach huy mon');
             $this->dongBoTrangThaiDonTheoChiTiet($chi_tiet_id);
         }
         return $ok;
@@ -221,10 +198,6 @@ class MoHinhDonMon extends MoHinhCo
                 "UPDATE chitiet_donmon SET trang_thai_hien_tai = ?, updated_at = NOW() WHERE id_don_mon = ?",
                 array($trang_thai, $id)
             );
-            $rows = $this->db->query("SELECT id_chitiet_donmon FROM chitiet_donmon WHERE id_don_mon = ?", array($id));
-            foreach ($rows as $row) {
-                $this->ghiLichSuTrangThaiMon($row['id_chitiet_donmon'], $trang_thai, 'Nhan vien cap nhat don');
-            }
         }
         return $ok;
     }

@@ -120,27 +120,13 @@ class MoHinhKhach extends MoHinhCo
         return $ok ? $id : false;
     }
 
-    public function congDiem($id, $diem, $ghiLichSu = true)
+    public function congDiem($id, $diem)
     {
         $this->damBaoBangKhachTaiKhoan();
 
         $diem = (int)$diem;
-        $rows = $this->db->query(
-            "SELECT diem_tich_luy FROM khach_tai_khoan WHERE id_khach_tai_khoan = ? LIMIT 1",
-            array($id)
-        );
-        $diemTruoc = !empty($rows) ? (int)$rows[0]['diem_tich_luy'] : 0;
-
         $sql = "UPDATE khach_tai_khoan SET diem_tich_luy = diem_tich_luy + ? WHERE id_khach_tai_khoan = ?";
-        $ok = $this->db->query($sql, array($diem, $id));
-        if ($ok && $ghiLichSu) {
-            $this->db->query("
-                INSERT INTO lich_su_diem
-                    (id_lich_su_diem, id_khach_tai_khoan, loai, so_diem, diem_truoc, diem_sau, ghi_chu)
-                VALUES (?, ?, 'CONG', ?, ?, ?, 'Cong diem thu cong')
-            ", array($this->taoId('LSD', 5, true), $id, $diem, $diemTruoc, $diemTruoc + $diem));
-        }
-        return $ok;
+        return $this->db->query($sql, array($diem, $id));
     }
 
     public function capNhatMatKhauDaMaHoa($id, $matKhauDaMaHoa)

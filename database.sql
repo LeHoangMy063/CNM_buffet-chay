@@ -16,14 +16,11 @@ USE `buffet_chay`;
 DROP TABLE IF EXISTS `goi_y_mon_batch`;
 DROP TABLE IF EXISTS `hanh_vi_goi_mon`;
 DROP TABLE IF EXISTS `danh_gia`;
-DROP TABLE IF EXISTS `lich_su_diem`;
-DROP TABLE IF EXISTS `lich_su_trang_thai_mon`;
 DROP TABLE IF EXISTS `chitiet_donmon`;
 DROP TABLE IF EXISTS `don_mon`;
 DROP TABLE IF EXISTS `chi_tiet_thanh_toan_phien`;
 DROP TABLE IF EXISTS `thanh_toan_phien`;
 DROP TABLE IF EXISTS `hoa_don_phien`;
-DROP TABLE IF EXISTS `lich_su_dieu_phoi_ban`;
 DROP TABLE IF EXISTS `phien_ban`;
 DROP TABLE IF EXISTS `phien_goi_mon`;
 DROP TABLE IF EXISTS `chitiet_datban`;
@@ -199,34 +196,6 @@ CREATE TABLE `phien_ban` (
     FOREIGN KEY (`id_ban`) REFERENCES `ban` (`id_ban`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `lich_su_dieu_phoi_ban` (
-  `id_lich_su_dieu_phoi` nvarchar(30) NOT NULL,
-  `id_phien_goi_mon` nvarchar(30) default NULL,
-  `id_dat_ban` nvarchar(30) default NULL,
-  `id_ban_cu` nvarchar(20) default NULL,
-  `id_ban_moi` nvarchar(20) default NULL,
-  `hanh_dong` enum('GAN_BAN','DOI_BAN','GOP_BAN','TACH_BAN','HUY_GAN_BAN') NOT NULL,
-  `id_tai_khoan` nvarchar(30) default NULL,
-  `ghi_chu` text,
-  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_lich_su_dieu_phoi`),
-  KEY `idx_lsdp_phien` (`id_phien_goi_mon`),
-  KEY `idx_lsdp_dat_ban` (`id_dat_ban`),
-  KEY `idx_lsdp_ban_cu` (`id_ban_cu`),
-  KEY `idx_lsdp_ban_moi` (`id_ban_moi`),
-  KEY `idx_lsdp_tai_khoan` (`id_tai_khoan`),
-  CONSTRAINT `fk_lsdp_phien`
-    FOREIGN KEY (`id_phien_goi_mon`) REFERENCES `phien_goi_mon` (`id_phien_goi_mon`) ON DELETE SET NULL,
-  CONSTRAINT `fk_lsdp_dat_ban`
-    FOREIGN KEY (`id_dat_ban`) REFERENCES `dat_ban` (`id_dat_ban`) ON DELETE SET NULL,
-  CONSTRAINT `fk_lsdp_ban_cu`
-    FOREIGN KEY (`id_ban_cu`) REFERENCES `ban` (`id_ban`) ON DELETE SET NULL,
-  CONSTRAINT `fk_lsdp_ban_moi`
-    FOREIGN KEY (`id_ban_moi`) REFERENCES `ban` (`id_ban`) ON DELETE SET NULL,
-  CONSTRAINT `fk_lsdp_tai_khoan`
-    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `hoa_don_phien` (
   `id_hoa_don_phien` nvarchar(30) NOT NULL,
   `ma_hoa_don` nvarchar(30) NOT NULL,
@@ -238,6 +207,7 @@ CREATE TABLE `hoa_don_phien` (
   `tong_tien` decimal(12,0) NOT NULL default '0',
   `giam_gia` decimal(12,0) NOT NULL default '0',
   `thanh_tien` decimal(12,0) NOT NULL default '0',
+  `da_tich_diem` tinyint(1) NOT NULL default '0',
   `trang_thai` enum('chua_thanh_toan','da_thanh_toan','da_huy') NOT NULL default 'chua_thanh_toan',
   `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL default NULL,
@@ -312,22 +282,6 @@ CREATE TABLE `chitiet_donmon` (
     FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `lich_su_trang_thai_mon` (
-  `id_lich_su_trang_thai_mon` nvarchar(30) NOT NULL,
-  `id_chitiet_donmon` nvarchar(30) NOT NULL,
-  `trang_thai` enum('CHO_CHE_BIEN','DANG_CHE_BIEN','DA_CHE_BIEN','DA_PHUC_VU','DA_HUY') NOT NULL,
-  `id_tai_khoan` nvarchar(30) default NULL,
-  `ghi_chu` text,
-  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_lich_su_trang_thai_mon`),
-  KEY `idx_lsttm_chi_tiet` (`id_chitiet_donmon`),
-  KEY `idx_lsttm_tai_khoan` (`id_tai_khoan`),
-  CONSTRAINT `fk_lsttm_chi_tiet`
-    FOREIGN KEY (`id_chitiet_donmon`) REFERENCES `chitiet_donmon` (`id_chitiet_donmon`) ON DELETE CASCADE,
-  CONSTRAINT `fk_lsttm_tai_khoan`
-    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `danh_gia` (
   `id_danh_gia` nvarchar(30) NOT NULL,
   `id_khach_tai_khoan` nvarchar(30) NOT NULL,
@@ -342,29 +296,6 @@ CREATE TABLE `danh_gia` (
     FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE CASCADE,
   CONSTRAINT `fk_danh_gia_mon`
     FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `lich_su_diem` (
-  `id_lich_su_diem` nvarchar(30) NOT NULL,
-  `id_khach_tai_khoan` nvarchar(30) NOT NULL,
-  `id_hoa_don_phien` nvarchar(30) default NULL,
-  `loai` enum('CONG','TRU','DIEU_CHINH') NOT NULL,
-  `so_diem` int(11) NOT NULL default '0',
-  `diem_truoc` int(11) default NULL,
-  `diem_sau` int(11) default NULL,
-  `ghi_chu` text,
-  `id_tai_khoan` nvarchar(30) default NULL,
-  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_lich_su_diem`),
-  KEY `idx_lsd_khach` (`id_khach_tai_khoan`),
-  KEY `idx_lsd_hoa_don` (`id_hoa_don_phien`),
-  KEY `idx_lsd_tai_khoan` (`id_tai_khoan`),
-  CONSTRAINT `fk_lsd_khach`
-    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE CASCADE,
-  CONSTRAINT `fk_lsd_hoa_don`
-    FOREIGN KEY (`id_hoa_don_phien`) REFERENCES `hoa_don_phien` (`id_hoa_don_phien`) ON DELETE SET NULL,
-  CONSTRAINT `fk_lsd_tai_khoan`
-    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `hanh_vi_goi_mon` (

@@ -14,11 +14,6 @@ class MoHinhBan extends MoHinhCo
         return $this->taoId('TT', 5, true);
     }
 
-    private function taoIdLichSuDieuPhoi()
-    {
-        return $this->taoId('LSDP', 5, true);
-    }
-
     private function capNhatPhienHetHan()
     {
         $this->db->query("
@@ -227,12 +222,6 @@ class MoHinhBan extends MoHinhCo
         ", array($this->taoId('PB', 5, true), $maPhien, $id));
 
         $this->db->query("
-            INSERT INTO lich_su_dieu_phoi_ban
-                (id_lich_su_dieu_phoi, id_phien_goi_mon, id_dat_ban, id_ban_moi, hanh_dong, ghi_chu)
-            VALUES (?, ?, ?, ?, 'GAN_BAN', 'Mo phien goi mon')
-        ", array($this->taoIdLichSuDieuPhoi(), $maPhien, $datBanId, $id));
-
-        $this->db->query("
             INSERT INTO hoa_don_phien
                 (id_hoa_don_phien, ma_hoa_don, id_phien_goi_mon, ten_khach, sdt_khach,
                  tong_tien_buffet, tong_tien, thanh_tien, trang_thai)
@@ -304,17 +293,6 @@ class MoHinhBan extends MoHinhCo
           AND p.trang_thai = 'dang_dung'
         ", array($id));
 
-        $this->db->query("
-        INSERT INTO lich_su_dieu_phoi_ban
-            (id_lich_su_dieu_phoi, id_phien_goi_mon, id_ban_cu, hanh_dong, ghi_chu)
-        SELECT ?, p.id_phien_goi_mon, ?, 'HUY_GAN_BAN', 'Tra ban/ket thuc phien'
-        FROM phien_goi_mon p
-        JOIN phien_ban pb ON pb.id_phien_goi_mon = p.id_phien_goi_mon
-        WHERE pb.id_ban = ?
-          AND p.trang_thai = 'dang_dung'
-        LIMIT 1
-        ", array($this->taoIdLichSuDieuPhoi(), $id, $id));
-
         return $this->db->query("
         UPDATE phien_goi_mon
         SET trang_thai = ?,
@@ -370,10 +348,7 @@ class MoHinhBan extends MoHinhCo
         WHERE h.sdt_khach = ?
           AND (DATE(h.created_at) = ? OR DATE(p.gio_bat_dau) = ? OR DATE(IFNULL(p.gio_ket_thuc, h.created_at)) = ?)
           AND h.thanh_tien > 0
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
+          AND h.da_tich_diem = 0
         ", array($sdt, $ngay, $ngay, $ngay));
 
         $row = !empty($rows) ? $rows[0] : array('tong_tien' => 0, 'so_hoa_don' => 0);
@@ -408,10 +383,7 @@ class MoHinhBan extends MoHinhCo
         WHERE (h.sdt_khach IS NULL OR h.sdt_khach = '')
           AND (DATE(h.created_at) = ? OR DATE(p.gio_bat_dau) = ? OR DATE(IFNULL(p.gio_ket_thuc, h.created_at)) = ?)
           AND h.thanh_tien > 0
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
+          AND h.da_tich_diem = 0
         ORDER BY h.created_at DESC, h.id_hoa_don_phien DESC
         ", array($ngay, $ngay, $ngay));
 
@@ -432,10 +404,7 @@ class MoHinhBan extends MoHinhCo
         LEFT JOIN phien_ban pb ON pb.id_phien_goi_mon = p.id_phien_goi_mon
         WHERE h.id_hoa_don_phien = ?
           AND h.thanh_tien > 0
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
+          AND h.da_tich_diem = 0
         LIMIT 1
         ", array($id));
 
@@ -455,10 +424,7 @@ class MoHinhBan extends MoHinhCo
         UPDATE hoa_don_phien h
         SET h.ten_khach = ?, h.sdt_khach = ?, h.updated_at = NOW()
         WHERE h.id_hoa_don_phien = ?
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
+          AND h.da_tich_diem = 0
         ", array($tenKhach, $sdt, $id));
     }
 
@@ -474,35 +440,29 @@ class MoHinhBan extends MoHinhCo
         }
 
         return $this->db->query("
-        INSERT INTO lich_su_diem
-            (id_lich_su_diem, id_khach_tai_khoan, id_hoa_don_phien, loai, so_diem, ghi_chu)
-        SELECT CONCAT('LSD-', LEFT(MD5(CONCAT(h.id_hoa_don_phien, NOW())), 20)),
-               ?, h.id_hoa_don_phien, 'CONG', ?, 'Tich diem tu hoa don'
-        FROM hoa_don_phien h
+        UPDATE hoa_don_phien h
+        JOIN phien_goi_mon p ON p.id_phien_goi_mon = h.id_phien_goi_mon
+        SET h.da_tich_diem = 1,
+            h.id_khach_tai_khoan = ?,
+            h.updated_at = NOW()
         WHERE h.sdt_khach = ?
-          AND DATE(h.created_at) = ?
+          AND (DATE(h.created_at) = ? OR DATE(p.gio_bat_dau) = ? OR DATE(IFNULL(p.gio_ket_thuc, h.created_at)) = ?)
           AND h.thanh_tien > 0
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
-        ", array($taiKhoanId, (int)$diem, $sdt, $ngay));
+          AND h.da_tich_diem = 0
+        ", array($taiKhoanId, $sdt, $ngay, $ngay, $ngay));
     }
 
     public function danhDauMotHoaDonDaTichDiem($id, $taiKhoanId, $diem)
     {
         return $this->db->query("
-        INSERT INTO lich_su_diem
-            (id_lich_su_diem, id_khach_tai_khoan, id_hoa_don_phien, loai, so_diem, ghi_chu)
-        SELECT ?, ?, h.id_hoa_don_phien, 'CONG', ?, 'Tich diem tu hoa don'
-        FROM hoa_don_phien h
-        WHERE h.id_hoa_don_phien = ?
-          AND h.thanh_tien > 0
-          AND NOT EXISTS (
-              SELECT 1 FROM lich_su_diem l
-              WHERE l.id_hoa_don_phien = h.id_hoa_don_phien AND l.loai = 'CONG'
-          )
-        ", array($this->taoId('LSD', 5, true), $taiKhoanId, (int)$diem, $id));
+        UPDATE hoa_don_phien
+        SET da_tich_diem = 1,
+            id_khach_tai_khoan = ?,
+            updated_at = NOW()
+        WHERE id_hoa_don_phien = ?
+          AND thanh_tien > 0
+          AND da_tich_diem = 0
+        ", array($taiKhoanId, $id));
     }
 
     public function demTatCa()
