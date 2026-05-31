@@ -682,6 +682,10 @@
 
     renderOrders: function (orders) {
       var n = orders.length;
+      var pendingCount = 0;
+      for (var pi = 0; pi < orders.length; pi++) {
+        if ((orders[pi].trang_thai || "") !== "da_phuc_vu") pendingCount++;
+      }
       var isKitchen = typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep";
       var actionBar = el("orderActionBar");
       var clearBtn = el("clearTableBtn");
@@ -690,21 +694,23 @@
       var lastUpd = el("lastUpdated");
 
       if (lastUpd) lastUpd.textContent = "Cập nhật lúc " + fmtTime();
-      this.renderStats(n);
+      this.renderStats(pendingCount);
 
       if (actionBar) actionBar.style.display = "flex";
 
       if (clearBtn) {
-        clearBtn.disabled = n > 0;
-        clearBtn.textContent =
-          n > 0 ? "Phục vụ hết đơn trước" : "Xác nhận bàn trống";
+        clearBtn.disabled = pendingCount > 0;
+        clearBtn.textContent = "Xác nhận bàn trống";
       }
       if (confirmAll)
-        confirmAll.style.display = !isKitchen && n > 0 ? "inline-flex" : "none";
+        confirmAll.style.display =
+          !isKitchen && pendingCount > 0 ? "inline-flex" : "none";
       if (countLabel) {
         countLabel.textContent =
-          n > 0 ? n + " đơn đang chờ" : "Không có đơn chờ";
-        countLabel.className = "badge " + (n > 0 ? "warn" : "ok");
+          pendingCount > 0
+            ? pendingCount + " đơn đang chờ"
+            : "Không có đơn chờ";
+        countLabel.className = "badge " + (pendingCount > 0 ? "warn" : "ok");
       }
 
       if (!n) {
@@ -716,14 +722,19 @@
       var html = "";
       for (var i = 0; i < orders.length; i++) {
         var item = orders[i];
-        html += '<div class="order-card">';
+        var served = (item.trang_thai || "") === "da_phuc_vu";
+        var orderStatusLabel = served ? "Đã phục vụ" : "Đang chờ";
+        var orderStatusClass = served ? " served" : " pending";
+        html += '<div class="order-card' + orderStatusClass + '">';
         html += '<div class="order-card-body">';
         html +=
           '<div class="order-name">Đơn #' +
           esc(item.id) +
           '<span class="order-qty">' +
           esc(item.tong_so_luong || item.so_mon || 0) +
-          " món</span></div>";
+          ' món</span><span class="order-status-mini">' +
+          esc(orderStatusLabel) +
+          "</span></div>";
         html +=
           '<div class="order-note"><span class="order-note-text">' +
           esc(item.mon_tom_tat || item.ten_mon || "-") +
@@ -735,15 +746,23 @@
             "</span></div>";
         }
         html += "</div>";
+        if (served) {
+          if (!isKitchen) {
+            html +=
+              '<button class="btn btn-sm" type="button" disabled aria-disabled="true">&#10003; Đã phục vụ</button>';
+          }
+          html += "</div>";
+          continue;
+        }
         html +=
           '<button class="btn btn-sm" type="button" onclick="StaffOrders.confirmDish(' +
-          item.id +
+          jsArg(item.id) +
           ')">&#10003; Đã phục vụ</button>';
         html += "</div>";
       }
       if (isKitchen) {
         html = html.replace(
-          /<button class="btn btn-sm" type="button" onclick="StaffOrders\.confirmDish\([0-9]+\)">[\s\S]*?<\/button>/g,
+          /<button class="btn btn-sm" type="button" onclick="StaffOrders\.confirmDish\([\s\S]*?\)">[\s\S]*?<\/button>/g,
           "",
         );
       }
@@ -877,8 +896,22 @@
     return String(v);
   }
 
+  function isReservationSoon(t) {
+    if (!t || !t.dat_ban_sap_toi_ngay || !t.dat_ban_sap_toi_gio) return false;
+    var date = String(t.dat_ban_sap_toi_ngay);
+    var time = String(t.dat_ban_sap_toi_gio);
+    if (time.length === 5) time += ":00";
+
+    var at = new Date(date + "T" + time);
+    if (isNaN(at.getTime())) return false;
+
+    var diffMinutes = (at.getTime() - new Date().getTime()) / 60000;
+    return diffMinutes >= 0 && diffMinutes <= 90;
+  }
+
   function reservationLabel(t) {
     if (!t || !t.dat_ban_sap_toi_id) return "";
+    if (!isReservationSoon(t)) return "";
 
     var time = t.dat_ban_sap_toi_gio ? t.dat_ban_sap_toi_gio + " " : "";
     var date = reservationDateText(t.dat_ban_sap_toi_ngay);

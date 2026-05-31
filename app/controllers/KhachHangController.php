@@ -338,10 +338,25 @@ class KhachHangController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Vui long dien day du thong tin'));
         }
 
+        if (!preg_match('/^[0-9]{10}$/', $sdt)) {
+            $this->json(array(
+                'success'   => false,
+                'thong_bao' => 'So dien thoai phai gom dung 10 chu so, khong chua ky tu dac biet'
+            ));
+        }
+
         if (!$this->gioDatBanHopLe($gio)) {
             $this->json(array(
                 'success'   => false,
                 'thong_bao' => 'Giờ đặt bàn phải thuộc các khung 10:00, 10:30, ..., 21:30'
+            ));
+        }
+
+        if ($this->moHinhDatBan->khachBiTrungLich($sdt, $ngay, $gio, 0)) {
+            $this->json(array(
+                'success'   => false,
+                'error'     => 'trung_sdt_khung_gio',
+                'thong_bao' => 'So dien thoai nay da co dat ban trong cung phien 90 phut'
             ));
         }
 
@@ -405,6 +420,14 @@ class KhachHangController extends BoieuKhienCo
         );
 
         $ketQua = $this->moHinhDatBan->them($duLieu);
+
+        if (is_array($ketQua) && isset($ketQua['success']) && !$ketQua['success']) {
+            $this->json(array(
+                'success'   => false,
+                'error'     => isset($ketQua['error']) ? $ketQua['error'] : '',
+                'thong_bao' => isset($ketQua['thong_bao']) ? $ketQua['thong_bao'] : 'Khong the dat ban'
+            ));
+        }
 
         if ($ketQua && isset($ketQua['id']) && isset($ketQua['ma_dat_ban'])) {
             $banIds = array();

@@ -19,6 +19,7 @@ foreach ($menuByCategory as $cat => $items) {
     }
 }
 $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -200,6 +201,16 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                 <div class="sb-divider" id="sbDivider2" style="display:none"></div>
 
                 <!-- Đơn hoàn thành -->
+                <div id="preparingSection" style="display:none">
+                    <div class="cart-label">
+                        <span>👨‍🍳 Đang làm</span>
+                        <button class="collapse-btn" onclick="togglePreparing()">∧</button>
+                    </div>
+                    <div class="orders-list" id="preparingList"></div>
+                </div>
+
+                <div class="sb-divider" id="sbDivider3" style="display:none"></div>
+
                 <div id="completedSection" style="display:none">
                     <div class="cart-label">
                         <span>✓ Hoàn thành</span>
@@ -245,6 +256,7 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
         var BASE = '<?php echo BASE_URL ?>';
         var PUBLIC_BASE = '<?php echo PUBLIC_BASE_URL ?>';
         var MENU_ITEMS = <?php echo $menuItemsJson ? $menuItemsJson : '[]'; ?>;
+        var INITIAL_ORDERS = <?php echo $currentOrdersJson ? $currentOrdersJson : '[]'; ?>;
         window.esc = function(s) {
             return String(s || "")
                 .replace(/&/g, "&amp;")

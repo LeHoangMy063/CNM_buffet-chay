@@ -6,6 +6,7 @@ var selId = null,
 
 var cart = [];
 var pendingCollapsed = false,
+  preparingCollapsed = false,
   completedCollapsed = false;
 
 var suggestionNonce = 0;

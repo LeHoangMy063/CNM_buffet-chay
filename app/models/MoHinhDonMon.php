@@ -14,6 +14,27 @@ class MoHinhDonMon extends MoHinhCo
         return $this->taoId('CTDM', 5, true);
     }
 
+    private function taoIdLichSuTrangThaiMon()
+    {
+        return $this->taoId('LSTTM', 5, true);
+    }
+
+    private function ghiLichSuTrangThaiMon($chiTietId, $trangThai, $ghiChu = '')
+    {
+        $map = array(
+            'cho_phuc_vu' => 'CHO_CHE_BIEN',
+            'dang_che_bien' => 'DANG_CHE_BIEN',
+            'da_phuc_vu' => 'DA_PHUC_VU',
+            'da_huy' => 'DA_HUY'
+        );
+        $trangThaiLichSu = isset($map[$trangThai]) ? $map[$trangThai] : $trangThai;
+        return $this->db->query("
+            INSERT INTO lich_su_trang_thai_mon
+                (id_lich_su_trang_thai_mon, id_chitiet_donmon, trang_thai, ghi_chu)
+            VALUES (?, ?, ?, ?)
+        ", array($this->taoIdLichSuTrangThaiMon(), $chiTietId, $trangThaiLichSu, $ghiChu));
+    }
+
     private function selectDonTomTat()
     {
         return "
@@ -60,7 +81,7 @@ class MoHinhDonMon extends MoHinhCo
         SELECT ct.id_chitiet_donmon AS id,
                ct.id_don_mon AS don_mon_id,
                ct.so_luong,
-               ct.trang_thai,
+               ct.trang_thai_hien_tai AS trang_thai,
                ct.ghi_chu,
                m.ten_mon AS ten,
                m.anh_url,
@@ -95,7 +116,7 @@ class MoHinhDonMon extends MoHinhCo
         $rows = $this->db->query("
         SELECT
             COUNT(DISTINCT CASE WHEN d.trang_thai = 'cho_phuc_vu' THEN d.id_don_mon END) AS don_cho,
-            COUNT(CASE WHEN ct.trang_thai = 'cho_phuc_vu' THEN ct.id_chitiet_donmon END) AS mon_cho,
+            COUNT(CASE WHEN ct.trang_thai_hien_tai = 'cho_phuc_vu' THEN ct.id_chitiet_donmon END) AS mon_cho,
             COALESCE(MAX(d.id_don_mon), '') AS don_cuoi,
             COALESCE(MAX(ct.id_chitiet_donmon), '') AS chi_tiet_cuoi,
             COALESCE(MAX(d.ngay_tao), '') AS tao_cuoi
@@ -153,11 +174,13 @@ class MoHinhDonMon extends MoHinhCo
                 $soLuong = 1;
             }
             $ghiChu = isset($mon['ghi_chu']) ? trim($mon['ghi_chu']) : '';
+            $chiTietId = $this->taoIdChiTiet();
             $this->db->query("
                 INSERT INTO chitiet_donmon
-                    (id_chitiet_donmon, id_don_mon, id_mon_an, so_luong, ghi_chu, trang_thai)
+                    (id_chitiet_donmon, id_don_mon, id_mon_an, so_luong, ghi_chu, trang_thai_hien_tai)
                 VALUES (?, ?, ?, ?, ?, 'cho_phuc_vu')
-            ", array($this->taoIdChiTiet(), $donId, $monAnId, $soLuong, $ghiChu));
+            ", array($chiTietId, $donId, $monAnId, $soLuong, $ghiChu));
+            $this->ghiLichSuTrangThaiMon($chiTietId, 'cho_phuc_vu', 'Khach goi mon');
         }
 
         return $donId;
@@ -175,12 +198,14 @@ class MoHinhDonMon extends MoHinhCo
         $sql = "
         UPDATE chitiet_donmon ct
         JOIN don_mon d ON d.id_don_mon = ct.id_don_mon
-        SET ct.trang_thai = 'da_huy'
-        WHERE ct.id_chitiet_donmon = ? AND d.id_ban = ? AND ct.trang_thai = 'cho_phuc_vu'
+        SET ct.trang_thai_hien_tai = 'da_huy',
+            ct.updated_at = NOW()
+        WHERE ct.id_chitiet_donmon = ? AND d.id_ban = ? AND ct.trang_thai_hien_tai = 'cho_phuc_vu'
         $wherePhien
         ";
         $ok = $this->db->query($sql, $params);
         if ($ok) {
+            $this->ghiLichSuTrangThaiMon($chi_tiet_id, 'da_huy', 'Khach huy mon');
             $this->dongBoTrangThaiDonTheoChiTiet($chi_tiet_id);
         }
         return $ok;
@@ -194,9 +219,13 @@ class MoHinhDonMon extends MoHinhCo
         );
         if ($ok) {
             $this->db->query(
-                "UPDATE chitiet_donmon SET trang_thai = ? WHERE id_don_mon = ?",
+                "UPDATE chitiet_donmon SET trang_thai_hien_tai = ?, updated_at = NOW() WHERE id_don_mon = ?",
                 array($trang_thai, $id)
             );
+            $rows = $this->db->query("SELECT id_chitiet_donmon FROM chitiet_donmon WHERE id_don_mon = ?", array($id));
+            foreach ($rows as $row) {
+                $this->ghiLichSuTrangThaiMon($row['id_chitiet_donmon'], $trang_thai, 'Nhan vien cap nhat don');
+            }
         }
         return $ok;
     }
@@ -225,7 +254,7 @@ class MoHinhDonMon extends MoHinhCo
         $donId = $rows[0]['don_mon_id'];
         $conCho = $this->db->query(
             "SELECT COUNT(*) AS tong FROM chitiet_donmon
-             WHERE id_don_mon = ? AND trang_thai <> 'da_huy'",
+             WHERE id_don_mon = ? AND trang_thai_hien_tai <> 'da_huy'",
             array($donId)
         );
         if (!empty($conCho) && (int)$conCho[0]['tong'] === 0) {
@@ -242,13 +271,13 @@ class MoHinhDonMon extends MoHinhCo
     {
         $rows = $this->db->query("
         SELECT COUNT(*) AS so_phien,
-               COALESCE(SUM(h.so_nguoi_lon + h.so_tre_em), 0) AS tong_khach,
-               COALESCE(SUM(h.tong_tien), 0) AS doanh_thu
+               COALESCE(SUM(p.so_nguoi_lon + p.so_tre_em), 0) AS tong_khach,
+               COALESCE(SUM(h.thanh_tien), 0) AS doanh_thu
         FROM hoa_don_phien h
         JOIN phien_goi_mon p ON p.id_phien_goi_mon = h.id_phien_goi_mon
         LEFT JOIN thanh_toan_phien t ON t.id_hoa_don_phien = h.id_hoa_don_phien
-        WHERE DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
-          AND h.tong_tien > 0
+        WHERE DATE(COALESCE(t.updated_at, p.gio_ket_thuc, h.created_at)) BETWEEN ? AND ?
+          AND h.thanh_tien > 0
         ", array($tu_ngay, $den_ngay));
         return !empty($rows) ? $rows[0] : array('so_phien' => 0, 'tong_khach' => 0, 'doanh_thu' => 0);
     }
@@ -256,16 +285,16 @@ class MoHinhDonMon extends MoHinhCo
     public function chiTietDoanhThu($tu_ngay, $den_ngay)
     {
         return $this->db->query("
-        SELECT DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) AS ngay,
+        SELECT DATE(COALESCE(t.updated_at, p.gio_ket_thuc, h.created_at)) AS ngay,
                COUNT(*) AS so_phien,
-               COALESCE(SUM(h.so_nguoi_lon + h.so_tre_em), 0) AS so_khach,
-               COALESCE(SUM(h.tong_tien), 0) AS doanh_thu
+               COALESCE(SUM(p.so_nguoi_lon + p.so_tre_em), 0) AS so_khach,
+               COALESCE(SUM(h.thanh_tien), 0) AS doanh_thu
         FROM hoa_don_phien h
         JOIN phien_goi_mon p ON p.id_phien_goi_mon = h.id_phien_goi_mon
         LEFT JOIN thanh_toan_phien t ON t.id_hoa_don_phien = h.id_hoa_don_phien
-        WHERE DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao)) BETWEEN ? AND ?
-          AND h.tong_tien > 0
-        GROUP BY DATE(COALESCE(t.thanh_toan_luc, p.ket_thuc_luc, h.ngay_tao))
+        WHERE DATE(COALESCE(t.updated_at, p.gio_ket_thuc, h.created_at)) BETWEEN ? AND ?
+          AND h.thanh_tien > 0
+        GROUP BY DATE(COALESCE(t.updated_at, p.gio_ket_thuc, h.created_at))
         ORDER BY ngay ASC
         ", array($tu_ngay, $den_ngay));
     }
@@ -285,7 +314,7 @@ class MoHinhDonMon extends MoHinhCo
         JOIN mon_an m ON m.id_mon_an = ct.id_mon_an
         LEFT JOIN danh_muc_mon dm ON dm.id_danh_muc_mon = m.id_danh_muc_mon
         WHERE DATE(d.ngay_tao) BETWEEN ? AND ?
-          AND ct.trang_thai <> 'da_huy'
+          AND ct.trang_thai_hien_tai <> 'da_huy'
         GROUP BY m.id_mon_an, m.ten_mon, dm.ten_danh_muc
         ORDER BY tong_ban DESC
         LIMIT " . (int)$gioi_han, array($tu_ngay, $den_ngay));
@@ -300,7 +329,7 @@ class MoHinhDonMon extends MoHinhCo
         JOIN mon_an m ON m.id_mon_an = ct.id_mon_an
         LEFT JOIN danh_muc_mon dm ON dm.id_danh_muc_mon = m.id_danh_muc_mon
         WHERE DATE(d.ngay_tao) BETWEEN ? AND ?
-          AND ct.trang_thai <> 'da_huy'
+          AND ct.trang_thai_hien_tai <> 'da_huy'
         GROUP BY dm.ten_danh_muc
         ORDER BY tong_ban DESC
         ", array($tu_ngay, $den_ngay));
@@ -324,7 +353,7 @@ class MoHinhDonMon extends MoHinhCo
     {
         return $this->db->query("
         SELECT m.id_mon_an AS id, m.ten_mon AS ten, dm.ten_danh_muc AS danh_muc,
-               COALESCE(SUM(CASE WHEN ct.trang_thai <> 'da_huy' THEN ct.so_luong ELSE 0 END), 0) AS tong_ban
+               COALESCE(SUM(CASE WHEN ct.trang_thai_hien_tai <> 'da_huy' THEN ct.so_luong ELSE 0 END), 0) AS tong_ban
         FROM mon_an m
         LEFT JOIN danh_muc_mon dm ON dm.id_danh_muc_mon = m.id_danh_muc_mon
         LEFT JOIN chitiet_donmon ct ON ct.id_mon_an = m.id_mon_an

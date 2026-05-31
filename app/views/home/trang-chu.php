@@ -206,7 +206,12 @@
                             name="customer_phone"
                             placeholder="0901234567"
                             value="<?php echo htmlspecialchars($sdtKhachHang, ENT_QUOTES, 'UTF-8'); ?>"
+                            inputmode="numeric"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                            title="Số điện thoại phải gồm đúng 10 chữ số"
                             required>
+                        <small id="phoneReservationError" style="display:none;margin-top:6px;color:#b3261e;font-weight:700"></small>
                     </div>
                 </div>
                 <div class="form-row">
@@ -336,6 +341,26 @@
             document.getElementById('totalDisplay').textContent = (n * PRICE).toLocaleString('vi-VN') + 'đ';
         }
 
+        function showPhoneReservationError(msg) {
+            var input = document.querySelector('[name=customer_phone]');
+            var box = document.getElementById('phoneReservationError');
+            if (!input || !box) return;
+            box.textContent = msg;
+            box.style.display = 'block';
+            input.setCustomValidity(msg);
+            input.focus();
+        }
+
+        function clearPhoneReservationError() {
+            var input = document.querySelector('[name=customer_phone]');
+            var box = document.getElementById('phoneReservationError');
+            if (box) {
+                box.textContent = '';
+                box.style.display = 'none';
+            }
+            if (input) input.setCustomValidity('');
+        }
+
         function goOrder() {
             var c = document.getElementById('codeInput').value.trim().toUpperCase();
             if (!c) {
@@ -350,7 +375,15 @@
 
         document.getElementById('resForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            clearPhoneReservationError();
+            var phone = e.target.querySelector('[name=customer_phone]').value.trim();
+            if (!/^[0-9]{10}$/.test(phone)) {
+                toast('Số điện thoại phải gồm đúng 10 chữ số, không chứa ký tự đặc biệt', 'err');
+                e.target.querySelector('[name=customer_phone]').focus();
+                return;
+            }
             var btn = e.target.querySelector('[type=submit]');
+            var originalBtnText = btn.textContent;
             btn.textContent = 'Đang gửi...';
             btn.disabled = true;
             var fd = new FormData(e.target);
@@ -359,6 +392,13 @@
             xhr.onload = function() {
                 try {
                     var d = JSON.parse(xhr.responseText);
+                    if (!d.success && d.error === 'trung_sdt_khung_gio') {
+                        showPhoneReservationError(d.thong_bao || 'So dien thoai nay da co dat ban trong cung phien 90 phut');
+                        toast(d.thong_bao || 'So dien thoai nay da co dat ban trong cung phien 90 phut', 'err');
+                        btn.textContent = originalBtnText;
+                        btn.disabled = false;
+                        return;
+                    }
                     if (d.success) {
                         showReservationConfirmation(d, e.target);
                         toast(d.thong_bao || 'Đặt bàn thành công', 'ok');
@@ -376,6 +416,10 @@
             };
             xhr.send(fd);
         });
+
+        document.querySelector('[name=customer_phone]').addEventListener('input', clearPhoneReservationError);
+        document.querySelector('[name=reservation_date]').addEventListener('change', clearPhoneReservationError);
+        document.querySelector('[name=reservation_time]').addEventListener('change', clearPhoneReservationError);
 
         function toast(msg, type) {
             var t = document.getElementById('toast');

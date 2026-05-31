@@ -4,6 +4,9 @@ setInterval(refreshOrders, 25000);
 
 document.addEventListener("DOMContentLoaded", function () {
   renderComboSets();
+  if (typeof INITIAL_ORDERS !== "undefined") {
+    renderOrderStatusSidebar(INITIAL_ORDERS || []);
+  }
   taiGoiYHybrid(0);
   updateVisibility();
   refreshOrders();

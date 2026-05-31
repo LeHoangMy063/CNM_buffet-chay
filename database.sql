@@ -16,10 +16,14 @@ USE `buffet_chay`;
 DROP TABLE IF EXISTS `goi_y_mon_batch`;
 DROP TABLE IF EXISTS `hanh_vi_goi_mon`;
 DROP TABLE IF EXISTS `danh_gia`;
+DROP TABLE IF EXISTS `lich_su_diem`;
+DROP TABLE IF EXISTS `lich_su_trang_thai_mon`;
 DROP TABLE IF EXISTS `chitiet_donmon`;
 DROP TABLE IF EXISTS `don_mon`;
+DROP TABLE IF EXISTS `chi_tiet_thanh_toan_phien`;
 DROP TABLE IF EXISTS `thanh_toan_phien`;
 DROP TABLE IF EXISTS `hoa_don_phien`;
+DROP TABLE IF EXISTS `lich_su_dieu_phoi_ban`;
 DROP TABLE IF EXISTS `phien_ban`;
 DROP TABLE IF EXISTS `phien_goi_mon`;
 DROP TABLE IF EXISTS `chitiet_datban`;
@@ -46,15 +50,8 @@ CREATE TABLE `ban` (
   `suc_chua` int(11) NOT NULL default '4',
   `trang_thai` enum('trong','dang_dung','bao_tri') NOT NULL default 'trong',
   `ma_truy_cap` nvarchar(20) default NULL,
-  `ma_phien_goi_mon` nvarchar(30) default NULL,
-  `ma_phien_het_han` datetime default NULL,
-  `phien_ten_khach` varchar(100) default NULL,
-  `phien_sdt_khach` varchar(20) default NULL,
-  `phien_nguoi_lon` int(11) NOT NULL default '0',
-  `phien_tre_em` int(11) NOT NULL default '0',
-  `phien_tong_tien` decimal(12,0) NOT NULL default '0',
-  `phien_bat_dau` datetime default NULL,
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
   PRIMARY KEY (`id_ban`),
   UNIQUE KEY `uq_ban_so_ban` (`so_ban`),
   UNIQUE KEY `uq_ban_ma_truy_cap` (`ma_truy_cap`)
@@ -120,20 +117,20 @@ CREATE TABLE `khach_tai_khoan` (
 
 CREATE TABLE `dat_ban` (
   `id_dat_ban` nvarchar(30) NOT NULL,
+  `ma_dat_ban` nvarchar(30) NOT NULL,
   `id_khach_tai_khoan` nvarchar(30) default NULL,
   `ten_khach` varchar(100) NOT NULL,
   `sdt_khach` varchar(20) NOT NULL,
-  `so_nguoi_lon` int(11) NOT NULL default '1',
-  `so_tre_em` int(11) NOT NULL default '0',
-  `tong_tien_du_kien` decimal(12,0) NOT NULL default '0',
   `ngay_dat` date NOT NULL,
   `gio_dat` time NOT NULL,
-  `gio_ket_thuc_du_kien` time default NULL,
+  `so_nguoi_lon` int(11) NOT NULL default '1',
+  `so_tre_em` int(11) NOT NULL default '0',
   `ghi_chu` text,
   `trang_thai` enum('cho_xac_nhan','da_xac_nhan','da_huy','expired','hoan_thanh') NOT NULL default 'cho_xac_nhan',
-  `ban_xac_nhan` tinyint(1) NOT NULL default '0',
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
   PRIMARY KEY (`id_dat_ban`),
+  UNIQUE KEY `uq_dat_ban_ma` (`ma_dat_ban`),
   KEY `idx_dat_ban_khach` (`id_khach_tai_khoan`),
   KEY `idx_dat_ban_sdt` (`sdt_khach`),
   KEY `idx_dat_ban_lich` (`ngay_dat`, `gio_dat`),
@@ -146,10 +143,13 @@ CREATE TABLE `chitiet_datban` (
   `id_chitiet_datban` nvarchar(30) NOT NULL,
   `id_dat_ban` nvarchar(30) NOT NULL,
   `id_ban` nvarchar(20) NOT NULL,
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `thoi_gian_bat_dau` datetime NOT NULL,
+  `thoi_gian_ket_thuc` datetime NOT NULL,
+  `trang_thai` enum('dang_gan','da_huy','hoan_thanh') NOT NULL default 'dang_gan',
   PRIMARY KEY (`id_chitiet_datban`),
   UNIQUE KEY `uq_chitiet_datban` (`id_dat_ban`, `id_ban`),
   KEY `idx_chitiet_datban_ban` (`id_ban`),
+  KEY `idx_chitiet_datban_lich` (`id_ban`, `thoi_gian_bat_dau`, `thoi_gian_ket_thuc`, `trang_thai`),
   CONSTRAINT `fk_chitiet_datban_dat_ban`
     FOREIGN KEY (`id_dat_ban`) REFERENCES `dat_ban` (`id_dat_ban`) ON DELETE CASCADE,
   CONSTRAINT `fk_chitiet_datban_ban`
@@ -158,70 +158,126 @@ CREATE TABLE `chitiet_datban` (
 
 CREATE TABLE `phien_goi_mon` (
   `id_phien_goi_mon` nvarchar(30) NOT NULL,
+  `ma_phien` nvarchar(30) NOT NULL,
   `id_dat_ban` nvarchar(30) default NULL,
+  `id_khach_tai_khoan` nvarchar(30) default NULL,
   `ten_khach` varchar(100) default NULL,
   `sdt_khach` varchar(20) default NULL,
   `so_nguoi_lon` int(11) NOT NULL default '0',
   `so_tre_em` int(11) NOT NULL default '0',
-  `tong_tien_du_kien` decimal(12,0) NOT NULL default '0',
-  `bat_dau_luc` datetime NOT NULL,
-  `het_han_luc` datetime NOT NULL,
-  `ket_thuc_luc` datetime default NULL,
+  `gio_bat_dau` datetime NOT NULL,
+  `gio_ket_thuc_du_kien` datetime NOT NULL,
+  `gio_ket_thuc` datetime default NULL,
   `trang_thai` enum('dang_dung','het_han','da_ket_thuc','da_huy') NOT NULL default 'dang_dung',
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `tong_tien_tam_tinh` decimal(12,0) NOT NULL default '0',
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
   PRIMARY KEY (`id_phien_goi_mon`),
+  UNIQUE KEY `uq_phien_ma` (`ma_phien`),
   KEY `idx_phien_dat_ban` (`id_dat_ban`),
+  KEY `idx_phien_khach` (`id_khach_tai_khoan`),
   KEY `idx_phien_trang_thai` (`trang_thai`),
   CONSTRAINT `fk_phien_goi_mon_dat_ban`
-    FOREIGN KEY (`id_dat_ban`) REFERENCES `dat_ban` (`id_dat_ban`) ON DELETE SET NULL
+    FOREIGN KEY (`id_dat_ban`) REFERENCES `dat_ban` (`id_dat_ban`) ON DELETE SET NULL,
+  CONSTRAINT `fk_phien_goi_mon_khach`
+    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `phien_ban` (
   `id_phien_ban` nvarchar(30) NOT NULL,
   `id_phien_goi_mon` nvarchar(30) NOT NULL,
   `id_ban` nvarchar(20) NOT NULL,
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `thoi_gian_gan` datetime NOT NULL,
+  `thoi_gian_roi_ban` datetime default NULL,
+  `trang_thai` enum('dang_gan','da_roi','da_huy') NOT NULL default 'dang_gan',
   PRIMARY KEY (`id_phien_ban`),
   UNIQUE KEY `uq_phien_ban` (`id_phien_goi_mon`, `id_ban`),
-  KEY `idx_phien_ban_ban` (`id_ban`),
+  KEY `idx_phien_ban_ban` (`id_ban`, `trang_thai`),
   CONSTRAINT `fk_phien_ban_phien`
     FOREIGN KEY (`id_phien_goi_mon`) REFERENCES `phien_goi_mon` (`id_phien_goi_mon`) ON DELETE CASCADE,
   CONSTRAINT `fk_phien_ban_ban`
     FOREIGN KEY (`id_ban`) REFERENCES `ban` (`id_ban`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `lich_su_dieu_phoi_ban` (
+  `id_lich_su_dieu_phoi` nvarchar(30) NOT NULL,
+  `id_phien_goi_mon` nvarchar(30) default NULL,
+  `id_dat_ban` nvarchar(30) default NULL,
+  `id_ban_cu` nvarchar(20) default NULL,
+  `id_ban_moi` nvarchar(20) default NULL,
+  `hanh_dong` enum('GAN_BAN','DOI_BAN','GOP_BAN','TACH_BAN','HUY_GAN_BAN') NOT NULL,
+  `id_tai_khoan` nvarchar(30) default NULL,
+  `ghi_chu` text,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_lich_su_dieu_phoi`),
+  KEY `idx_lsdp_phien` (`id_phien_goi_mon`),
+  KEY `idx_lsdp_dat_ban` (`id_dat_ban`),
+  KEY `idx_lsdp_ban_cu` (`id_ban_cu`),
+  KEY `idx_lsdp_ban_moi` (`id_ban_moi`),
+  KEY `idx_lsdp_tai_khoan` (`id_tai_khoan`),
+  CONSTRAINT `fk_lsdp_phien`
+    FOREIGN KEY (`id_phien_goi_mon`) REFERENCES `phien_goi_mon` (`id_phien_goi_mon`) ON DELETE SET NULL,
+  CONSTRAINT `fk_lsdp_dat_ban`
+    FOREIGN KEY (`id_dat_ban`) REFERENCES `dat_ban` (`id_dat_ban`) ON DELETE SET NULL,
+  CONSTRAINT `fk_lsdp_ban_cu`
+    FOREIGN KEY (`id_ban_cu`) REFERENCES `ban` (`id_ban`) ON DELETE SET NULL,
+  CONSTRAINT `fk_lsdp_ban_moi`
+    FOREIGN KEY (`id_ban_moi`) REFERENCES `ban` (`id_ban`) ON DELETE SET NULL,
+  CONSTRAINT `fk_lsdp_tai_khoan`
+    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `hoa_don_phien` (
   `id_hoa_don_phien` nvarchar(30) NOT NULL,
+  `ma_hoa_don` nvarchar(30) NOT NULL,
   `id_phien_goi_mon` nvarchar(30) NOT NULL,
+  `id_khach_tai_khoan` nvarchar(30) default NULL,
   `ten_khach` varchar(100) default NULL,
   `sdt_khach` varchar(20) default NULL,
-  `so_nguoi_lon` int(11) NOT NULL default '0',
-  `so_tre_em` int(11) NOT NULL default '0',
+  `tong_tien_mon` decimal(12,0) NOT NULL default '0',
+  `tong_tien_buffet` decimal(12,0) NOT NULL default '0',
   `tong_tien` decimal(12,0) NOT NULL default '0',
-  `ghi_chu` text,
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `giam_gia` decimal(12,0) NOT NULL default '0',
+  `thanh_tien` decimal(12,0) NOT NULL default '0',
+  `trang_thai` enum('chua_thanh_toan','da_thanh_toan','da_huy') NOT NULL default 'chua_thanh_toan',
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
   PRIMARY KEY (`id_hoa_don_phien`),
+  UNIQUE KEY `uq_hoa_don_ma` (`ma_hoa_don`),
   UNIQUE KEY `uq_hoa_don_phien` (`id_phien_goi_mon`),
+  KEY `idx_hoa_don_khach` (`id_khach_tai_khoan`),
   CONSTRAINT `fk_hoa_don_phien_phien`
-    FOREIGN KEY (`id_phien_goi_mon`) REFERENCES `phien_goi_mon` (`id_phien_goi_mon`) ON DELETE CASCADE
+    FOREIGN KEY (`id_phien_goi_mon`) REFERENCES `phien_goi_mon` (`id_phien_goi_mon`) ON DELETE CASCADE,
+  CONSTRAINT `fk_hoa_don_phien_khach`
+    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `thanh_toan_phien` (
-  `id_thanh_toan_phien` nvarchar(30) NOT NULL,
+  `id_thanh_toan` nvarchar(30) NOT NULL,
   `id_hoa_don_phien` nvarchar(30) NOT NULL,
-  `phuong_thuc` enum('tien_mat','chuyen_khoan') default NULL,
-  `thanh_toan_luc` datetime default NULL,
-  `id_khach_tai_khoan` nvarchar(30) default NULL,
-  `tich_diem_luc` datetime default NULL,
-  `diem_da_cong` int(11) NOT NULL default '0',
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_thanh_toan_phien`),
+  `tong_tien_can_thanh_toan` decimal(12,0) NOT NULL default '0',
+  `tong_tien_da_thanh_toan` decimal(12,0) NOT NULL default '0',
+  `trang_thai` enum('chua_thanh_toan','thanh_toan_mot_phan','da_thanh_toan','da_huy') NOT NULL default 'chua_thanh_toan',
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
+  PRIMARY KEY (`id_thanh_toan`),
   UNIQUE KEY `uq_thanh_toan_hoa_don` (`id_hoa_don_phien`),
-  KEY `idx_thanh_toan_khach` (`id_khach_tai_khoan`),
   CONSTRAINT `fk_thanh_toan_hoa_don`
-    FOREIGN KEY (`id_hoa_don_phien`) REFERENCES `hoa_don_phien` (`id_hoa_don_phien`) ON DELETE CASCADE,
-  CONSTRAINT `fk_thanh_toan_khach`
-    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE SET NULL
+    FOREIGN KEY (`id_hoa_don_phien`) REFERENCES `hoa_don_phien` (`id_hoa_don_phien`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `chi_tiet_thanh_toan_phien` (
+  `id_chi_tiet_thanh_toan` nvarchar(30) NOT NULL,
+  `id_thanh_toan` nvarchar(30) NOT NULL,
+  `phuong_thuc` enum('TIEN_MAT','CHUYEN_KHOAN') NOT NULL,
+  `so_tien` decimal(12,0) NOT NULL default '0',
+  `ma_giao_dich` varchar(100) default NULL,
+  `ghi_chu` text,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_chi_tiet_thanh_toan`),
+  KEY `idx_cttt_thanh_toan` (`id_thanh_toan`),
+  CONSTRAINT `fk_cttt_thanh_toan`
+    FOREIGN KEY (`id_thanh_toan`) REFERENCES `thanh_toan_phien` (`id_thanh_toan`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `don_mon` (
@@ -246,8 +302,9 @@ CREATE TABLE `chitiet_donmon` (
   `id_mon_an` nvarchar(30) NOT NULL,
   `so_luong` int(11) NOT NULL default '1',
   `ghi_chu` text,
-  `trang_thai` enum('cho_phuc_vu','dang_che_bien','da_phuc_vu','da_huy') NOT NULL default 'cho_phuc_vu',
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `trang_thai_hien_tai` enum('cho_phuc_vu','dang_che_bien','da_phuc_vu','da_huy') NOT NULL default 'cho_phuc_vu',
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL default NULL,
   PRIMARY KEY (`id_chitiet_donmon`),
   KEY `idx_chitiet_donmon_don` (`id_don_mon`),
   KEY `idx_chitiet_donmon_mon` (`id_mon_an`),
@@ -255,6 +312,22 @@ CREATE TABLE `chitiet_donmon` (
     FOREIGN KEY (`id_don_mon`) REFERENCES `don_mon` (`id_don_mon`) ON DELETE CASCADE,
   CONSTRAINT `fk_chitiet_donmon_mon`
     FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `lich_su_trang_thai_mon` (
+  `id_lich_su_trang_thai_mon` nvarchar(30) NOT NULL,
+  `id_chitiet_donmon` nvarchar(30) NOT NULL,
+  `trang_thai` enum('CHO_CHE_BIEN','DANG_CHE_BIEN','DA_CHE_BIEN','DA_PHUC_VU','DA_HUY') NOT NULL,
+  `id_tai_khoan` nvarchar(30) default NULL,
+  `ghi_chu` text,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_lich_su_trang_thai_mon`),
+  KEY `idx_lsttm_chi_tiet` (`id_chitiet_donmon`),
+  KEY `idx_lsttm_tai_khoan` (`id_tai_khoan`),
+  CONSTRAINT `fk_lsttm_chi_tiet`
+    FOREIGN KEY (`id_chitiet_donmon`) REFERENCES `chitiet_donmon` (`id_chitiet_donmon`) ON DELETE CASCADE,
+  CONSTRAINT `fk_lsttm_tai_khoan`
+    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `danh_gia` (
@@ -271,6 +344,29 @@ CREATE TABLE `danh_gia` (
     FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE CASCADE,
   CONSTRAINT `fk_danh_gia_mon`
     FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `lich_su_diem` (
+  `id_lich_su_diem` nvarchar(30) NOT NULL,
+  `id_khach_tai_khoan` nvarchar(30) NOT NULL,
+  `id_hoa_don_phien` nvarchar(30) default NULL,
+  `loai` enum('CONG','TRU','DIEU_CHINH') NOT NULL,
+  `so_diem` int(11) NOT NULL default '0',
+  `diem_truoc` int(11) default NULL,
+  `diem_sau` int(11) default NULL,
+  `ghi_chu` text,
+  `id_tai_khoan` nvarchar(30) default NULL,
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_lich_su_diem`),
+  KEY `idx_lsd_khach` (`id_khach_tai_khoan`),
+  KEY `idx_lsd_hoa_don` (`id_hoa_don_phien`),
+  KEY `idx_lsd_tai_khoan` (`id_tai_khoan`),
+  CONSTRAINT `fk_lsd_khach`
+    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE CASCADE,
+  CONSTRAINT `fk_lsd_hoa_don`
+    FOREIGN KEY (`id_hoa_don_phien`) REFERENCES `hoa_don_phien` (`id_hoa_don_phien`) ON DELETE SET NULL,
+  CONSTRAINT `fk_lsd_tai_khoan`
+    FOREIGN KEY (`id_tai_khoan`) REFERENCES `tai_khoan` (`id_tai_khoan`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `hanh_vi_goi_mon` (
@@ -328,15 +424,20 @@ INSERT INTO `bo_dem_ma` (`tien_to`, `gia_tri_hien_tai`, `mo_ta`) VALUES
 ('PBD', 6, 'Chi tiet dat ban'),
 ('PH', 0, 'Phien goi mon'),
 ('PB', 0, 'Ban trong phien'),
+('LSDP', 0, 'Lich su dieu phoi ban'),
 ('HD', 0, 'Hoa don phien'),
+('HDM', 0, 'Ma hoa don phien'),
 ('TT', 0, 'Thanh toan phien'),
+('CTTT', 0, 'Chi tiet thanh toan phien'),
 ('DMON', 0, 'Don mon'),
 ('CTDM', 0, 'Chi tiet don mon'),
+('LSTTM', 0, 'Lich su trang thai mon'),
 ('DG', 0, 'Danh gia'),
+('LSD', 0, 'Lich su diem'),
 ('HV', 0, 'Hanh vi goi mon'),
 ('GY', 0, 'Goi y mon batch');
 
-INSERT INTO `ban` (`id_ban`, `so_ban`, `khu_vuc`, `suc_chua`, `trang_thai`, `ma_truy_cap`, `ngay_tao`) VALUES
+INSERT INTO `ban` (`id_ban`, `so_ban`, `khu_vuc`, `suc_chua`, `trang_thai`, `ma_truy_cap`, `created_at`) VALUES
 ('BAN-A1', 'A1', 'Khu A', 4, 'trong', 'BAN-A1', '2026-04-21 18:03:24'),
 ('BAN-A2', 'A2', 'Khu A', 4, 'trong', 'BAN-A2', '2026-04-21 18:03:24'),
 ('BAN-A3', 'A3', 'Khu A', 6, 'trong', 'BAN-A3', '2026-04-21 18:03:24'),
@@ -387,19 +488,19 @@ INSERT INTO `khach_tai_khoan` (`id_khach_tai_khoan`, `ten_dang_nhap`, `mat_khau`
 ('KH-002', '01871638136', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
 ('KH-003', '0187193123', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39');
 
-INSERT INTO `dat_ban` (`id_dat_ban`, `id_khach_tai_khoan`, `ten_khach`, `sdt_khach`, `so_nguoi_lon`, `so_tre_em`, `tong_tien_du_kien`, `ngay_dat`, `gio_dat`, `gio_ket_thuc_du_kien`, `ghi_chu`, `trang_thai`, `ban_xac_nhan`, `ngay_tao`) VALUES
-('DB-20260430-52765', NULL, 'My', '0826893126', 13, 0, 2587000, '2026-05-01', '10:00:00', '11:30:00', '', 'expired', 0, '2026-04-30 21:43:39'),
-('DB-20260430-98422', NULL, 'Le Anh', '01827132', 20, 0, 3980000, '2026-05-01', '10:00:00', '11:30:00', '', 'da_xac_nhan', 1, '2026-04-30 21:44:18'),
-('DB-20260430-63833', NULL, 'Le Anh', '018271321', 10, 0, 1990000, '2026-05-01', '11:30:00', '13:00:00', '', 'da_huy', 0, '2026-04-30 21:45:33'),
-('DB-20260430-67602', NULL, 'My Mi', '01827132', 2, 0, 398000, '2026-05-01', '12:30:00', '14:00:00', '', 'cho_xac_nhan', 0, '2026-04-30 21:57:42'),
-('DB-20260430-60104', NULL, 'My MII', '01827132', 2, 0, 398000, '2026-05-01', '15:30:00', '17:00:00', '', 'cho_xac_nhan', 0, '2026-04-30 21:58:02');
+INSERT INTO `dat_ban` (`id_dat_ban`, `ma_dat_ban`, `id_khach_tai_khoan`, `ten_khach`, `sdt_khach`, `ngay_dat`, `gio_dat`, `so_nguoi_lon`, `so_tre_em`, `ghi_chu`, `trang_thai`, `created_at`) VALUES
+('DB-20260430-52765', 'DB-20260430-52765', NULL, 'My', '0826893126', '2026-05-01', '10:00:00', 13, 0, '', 'expired', '2026-04-30 21:43:39'),
+('DB-20260430-98422', 'DB-20260430-98422', NULL, 'Le Anh', '01827132', '2026-05-01', '10:00:00', 20, 0, '', 'da_xac_nhan', '2026-04-30 21:44:18'),
+('DB-20260430-63833', 'DB-20260430-63833', NULL, 'Le Anh', '018271321', '2026-05-01', '11:30:00', 10, 0, '', 'da_huy', '2026-04-30 21:45:33'),
+('DB-20260430-67602', 'DB-20260430-67602', NULL, 'My Mi', '01827132', '2026-05-01', '12:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:57:42'),
+('DB-20260430-60104', 'DB-20260430-60104', NULL, 'My MII', '01827132', '2026-05-01', '15:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:58:02');
 
-INSERT INTO `chitiet_datban` (`id_chitiet_datban`, `id_dat_ban`, `id_ban`, `ngay_tao`) VALUES
-('PBD-20260430-001', 'DB-20260430-98422', 'BAN-A1', '2026-04-30 21:44:18'),
-('PBD-20260430-002', 'DB-20260430-98422', 'BAN-A3', '2026-04-30 21:44:18'),
-('PBD-20260430-003', 'DB-20260430-98422', 'BAN-A4', '2026-04-30 21:44:18'),
-('PBD-20260430-004', 'DB-20260430-98422', 'BAN-B4', '2026-04-30 21:44:18'),
-('PBD-20260430-005', 'DB-20260430-67602', 'BAN-B1', '2026-04-30 21:57:42'),
-('PBD-20260430-006', 'DB-20260430-60104', 'BAN-B1', '2026-04-30 21:58:02');
+INSERT INTO `chitiet_datban` (`id_chitiet_datban`, `id_dat_ban`, `id_ban`, `thoi_gian_bat_dau`, `thoi_gian_ket_thuc`, `trang_thai`) VALUES
+('PBD-20260430-001', 'DB-20260430-98422', 'BAN-A1', '2026-05-01 10:00:00', '2026-05-01 11:30:00', 'dang_gan'),
+('PBD-20260430-002', 'DB-20260430-98422', 'BAN-A3', '2026-05-01 10:00:00', '2026-05-01 11:30:00', 'dang_gan'),
+('PBD-20260430-003', 'DB-20260430-98422', 'BAN-A4', '2026-05-01 10:00:00', '2026-05-01 11:30:00', 'dang_gan'),
+('PBD-20260430-004', 'DB-20260430-98422', 'BAN-B4', '2026-05-01 10:00:00', '2026-05-01 11:30:00', 'dang_gan'),
+('PBD-20260430-005', 'DB-20260430-67602', 'BAN-B1', '2026-05-01 12:30:00', '2026-05-01 14:00:00', 'dang_gan'),
+('PBD-20260430-006', 'DB-20260430-60104', 'BAN-B1', '2026-05-01 15:30:00', '2026-05-01 17:00:00', 'dang_gan');
 
 SET FOREIGN_KEY_CHECKS=1;

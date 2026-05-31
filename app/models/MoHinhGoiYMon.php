@@ -62,7 +62,7 @@ class MoHinhGoiYMon extends MoHinhCo
             JOIN chitiet_donmon ct ON ct.id_don_mon = d.id_don_mon
             WHERE d.id_phien_goi_mon = ?
               AND d.trang_thai <> 'da_huy'
-              AND ct.trang_thai <> 'da_huy'
+              AND ct.trang_thai_hien_tai <> 'da_huy'
         ", array($maPhien));
     }
 

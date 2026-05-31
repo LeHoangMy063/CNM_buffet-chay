@@ -32,7 +32,7 @@ window.getOrderQty = function (order) {
 };
 
 window.getOrderName = function (order) {
-  return order.item_name || order.ten_mon || "";
+  return order.item_name || order.ten_mon || order.ten || "";
 };
 
 window.getOrderNote = function (order) {

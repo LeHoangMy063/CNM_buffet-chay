@@ -629,7 +629,7 @@ class NhanVienController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Thông tin không hợp lệ'));
         }
 
-        $ok = $this->moHinhKhach->congDiem($taiKhoanId, $diem);
+        $ok = $this->moHinhKhach->congDiem($taiKhoanId, $diem, !$tuHoaDon);
         if ($ok) {
             if ($tuHoaDon && $hoaDonId !== '') {
                 $tenHoaDon = $tenKhachPost !== ''
