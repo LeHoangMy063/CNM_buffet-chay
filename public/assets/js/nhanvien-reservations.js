@@ -22,6 +22,10 @@
     calendarCounts: {},
     lockItems: [],
 
+    jsArg: function (value) {
+      return "'" + String(value == null ? "" : value).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'";
+    },
+
     loadTables: function (cb) {
       var self = this;
       if (self.tables.length) {
@@ -201,7 +205,8 @@
         }
 
         html += '<div class="' + cardCls + '">';
-        html += '<button type="button" class="reservation-summary" onclick="StaffReservations.toggle(' + r.id + ')">';
+        var rid = this.jsArg(r.id);
+        html += '<button type="button" class="reservation-summary" onclick="StaffReservations.toggle(' + rid + ')">';
         html += '<span class="reservation-caret">' + (expanded ? "&#9662;" : "&#9656;") + "</span>";
         html += '<span class="reservation-status-dot-mini ' + dotCls + '"></span>';
         html += '<span class="reservation-summary-name">' + esc(r.ten_khach || "-") + "</span>";
@@ -237,18 +242,18 @@
 
         html += '<div class="reservation-detail-actions">';
         if (!isDone) {
-          html += '<button type="button" class="btn secondary" onclick="StaffReservations.doiBan(' + r.id + ')">&#8644; Đổi bàn</button>';
+          html += '<button type="button" class="btn secondary" onclick="StaffReservations.doiBan(' + rid + ')">&#8644; Đổi bàn</button>';
           if (choDuyetBan) {
-            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + r.id + ')">&#10003; Duyệt đặt bàn</button>';
+            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + rid + ')">&#10003; Duyệt đặt bàn</button>';
           } else {
             html += this.actionBtn(r.id, "da_xac_nhan", "&#10003; Xác nhận ĐB", r.trang_thai, "");
           }
-          html += '<button type="button" class="btn danger" onclick="StaffReservations.toggleCancelChoices(' + r.id + ')">&#10007; Hủy đặt bàn</button>';
+          html += '<button type="button" class="btn danger" onclick="StaffReservations.toggleCancelChoices(' + rid + ')">&#10007; Hủy đặt bàn</button>';
         }
         html += "</div>";
         html += '<div class="reservation-cancel-choices" style="display:' + (String(this.cancelChoiceId) === String(r.id) ? "flex" : "none") + '">';
-        html += '<button type="button" class="btn danger btn-sm" onclick="StaffReservations.updateStatus(' + r.id + ",'cancelled'" + ')">Khách hủy</button>';
-        html += '<button type="button" class="btn secondary btn-sm" onclick="StaffReservations.updateStatus(' + r.id + ",'expired'" + ')">Khách không tới</button>';
+        html += '<button type="button" class="btn danger btn-sm" onclick="StaffReservations.updateStatus(' + rid + ",'cancelled'" + ')">Khách hủy</button>';
+        html += '<button type="button" class="btn secondary btn-sm" onclick="StaffReservations.updateStatus(' + rid + ",'expired'" + ')">Khách không tới</button>';
         html += "</div>";
         html += "</div>";
         html += "</div>";
@@ -325,8 +330,9 @@
       }
 
       html += "</select>";
-      html += '<button type="button" class="btn btn-sm" onclick="StaffReservations.doiBanTheoSelect(' + r.id + ')">' + buttonText + "</button>";
-      html += '<button type="button" class="btn-auto-assign" onclick="StaffReservations.assignTable(' + r.id + ', 0)">&#9881; Tự động</button>';
+      var rid = this.jsArg(r.id);
+      html += '<button type="button" class="btn btn-sm" onclick="StaffReservations.doiBanTheoSelect(' + rid + ')">' + buttonText + "</button>";
+      html += '<button type="button" class="btn-auto-assign" onclick="StaffReservations.assignTable(' + rid + ', 0)">&#9881; Tự động</button>';
       html += "</div></div>";
       return html;
     },
@@ -357,7 +363,7 @@
     actionBtn: function (id, status, label, current, variant) {
       var dis = current === status ? " disabled" : "";
       var cls = "btn btn-sm" + (variant ? " " + variant : "");
-      return '<button type="button" class="' + cls + '" onclick="StaffReservations.updateStatus(' + id + ",'" + status + "')" + '"' + dis + ">" + label + "</button>";
+      return '<button type="button" class="' + cls + '" onclick="StaffReservations.updateStatus(' + this.jsArg(id) + ",'" + status + "')" + '"' + dis + ">" + label + "</button>";
     },
 
     tableConflict: function (table, reservation, all) {

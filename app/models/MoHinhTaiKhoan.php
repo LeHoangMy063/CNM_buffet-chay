@@ -23,45 +23,6 @@ class MoHinhTaiKhoan extends MoHinhCo
 
     private function damBaoVaiTroQuanLy()
     {
-        $khachCu = $this->db->query("SELECT COUNT(*) AS tong FROM tai_khoan WHERE vai_tro = 'khach'");
-        if (!empty($khachCu) && (int)$khachCu[0]['tong'] > 0) {
-            $this->db->query("
-            CREATE TABLE IF NOT EXISTS khach_tai_khoan (
-                id int(11) NOT NULL auto_increment,
-                ten_dang_nhap varchar(50) DEFAULT NULL,
-                mat_khau varchar(255) DEFAULT NULL,
-                vai_tro enum('khach') NOT NULL default 'khach',
-                dang_hoat_dong tinyint(1) NOT NULL default 1,
-                ho_ten varchar(100) DEFAULT NULL,
-                email varchar(100) DEFAULT NULL,
-                so_dien_thoai varchar(20) DEFAULT NULL,
-                diem_tich_luy int(11) NOT NULL default 0,
-                ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                UNIQUE KEY ten_dang_nhap (ten_dang_nhap),
-                UNIQUE KEY so_dien_thoai (so_dien_thoai)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8
-            ");
-
-            $this->db->query("
-            INSERT IGNORE INTO khach_tai_khoan
-                (ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
-                 ho_ten, email, so_dien_thoai, diem_tich_luy, ngay_tao)
-            SELECT ten_dang_nhap, mat_khau, 'khach', dang_hoat_dong,
-                   ho_ten, email, so_dien_thoai, diem_tich_luy, ngay_tao
-            FROM tai_khoan
-            WHERE vai_tro = 'khach'
-              AND so_dien_thoai IS NOT NULL
-              AND so_dien_thoai <> ''
-            ");
-            $this->nangCapMatKhauMacDinhCu();
-            return;
-        }
-
-        $this->db->query("
-            ALTER TABLE tai_khoan
-            MODIFY vai_tro enum('quanly','nhanvien','bep') NOT NULL default 'nhanvien'
-        ");
         $this->nangCapMatKhauMacDinhCu();
     }
 
@@ -70,7 +31,9 @@ class MoHinhTaiKhoan extends MoHinhCo
     {
         $this->damBaoVaiTroQuanLy();
 
-        $sql  = "SELECT * FROM tai_khoan WHERE ten_dang_nhap = ? LIMIT 1";
+        $sql  = "SELECT id_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+                        ho_ten, email, so_dien_thoai, 0 AS diem_tich_luy, ngay_tao
+                 FROM tai_khoan WHERE ten_dang_nhap = ? LIMIT 1";
         $rows = $this->db->query($sql, array($ten_dang_nhap));
         return !empty($rows) ? $rows[0] : null;
     }
@@ -80,7 +43,7 @@ class MoHinhTaiKhoan extends MoHinhCo
         $this->damBaoVaiTroQuanLy();
 
         $rows = $this->db->query(
-            "SELECT id FROM tai_khoan WHERE ten_dang_nhap = ? LIMIT 1",
+            "SELECT id_tai_khoan AS id FROM tai_khoan WHERE ten_dang_nhap = ? LIMIT 1",
             array('nhanvien02')
         );
 
@@ -93,16 +56,18 @@ class MoHinhTaiKhoan extends MoHinhCo
 
         return $this->db->query(
             "INSERT INTO tai_khoan
-                (ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong, ho_ten, email, so_dien_thoai, diem_tich_luy)
-             VALUES (?, ?, 'bep', 1, ?, NULL, NULL, 0)",
-            array('nhanvien02', MatKhau::maHoa('123'), 'Nhan vien bep')
+                (id_tai_khoan, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong, ho_ten, email, so_dien_thoai)
+             VALUES (?, ?, ?, 'bep', 1, ?, NULL, NULL)",
+            array($this->taoId('TK-BEP'), 'nhanvien02', MatKhau::maHoa('123'), 'Nhan vien bep')
         );
     }
 
     // Tim tai khoan nhan su theo so dien thoai
     public function layTheoSDT($sdt)
     {
-        $sql  = "SELECT * FROM tai_khoan WHERE so_dien_thoai = ? LIMIT 1";
+        $sql  = "SELECT id_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+                        ho_ten, email, so_dien_thoai, 0 AS diem_tich_luy, ngay_tao
+                 FROM tai_khoan WHERE so_dien_thoai = ? LIMIT 1";
         $rows = $this->db->query($sql, array($sdt));
         return !empty($rows) ? $rows[0] : null;
     }
@@ -110,7 +75,9 @@ class MoHinhTaiKhoan extends MoHinhCo
     // Tim tai khoan nhan su theo email
     public function layTheoEmail($email)
     {
-        $sql  = "SELECT * FROM tai_khoan WHERE email = ? LIMIT 1";
+        $sql  = "SELECT id_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+                        ho_ten, email, so_dien_thoai, 0 AS diem_tich_luy, ngay_tao
+                 FROM tai_khoan WHERE email = ? LIMIT 1";
         $rows = $this->db->query($sql, array($email));
         return !empty($rows) ? $rows[0] : null;
     }
@@ -119,7 +86,9 @@ class MoHinhTaiKhoan extends MoHinhCo
     {
         $this->damBaoVaiTroQuanLy();
 
-        $sql = "SELECT * FROM tai_khoan ORDER BY vai_tro, ngay_tao DESC";
+        $sql = "SELECT id_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+                       ho_ten, email, so_dien_thoai, 0 AS diem_tich_luy, ngay_tao
+                FROM tai_khoan ORDER BY vai_tro, ngay_tao DESC";
         return $this->db->query($sql);
     }
 
@@ -128,7 +97,7 @@ class MoHinhTaiKhoan extends MoHinhCo
         $this->damBaoVaiTroQuanLy();
 
         $sql = "
-        SELECT id, ten_dang_nhap, vai_tro, dang_hoat_dong,
+        SELECT id_tai_khoan AS id, ten_dang_nhap, vai_tro, dang_hoat_dong,
                ho_ten, email, so_dien_thoai, ngay_tao
         FROM tai_khoan
         WHERE vai_tro IN ('quanly', 'nhanvien', 'bep')
@@ -141,8 +110,10 @@ class MoHinhTaiKhoan extends MoHinhCo
     {
         $this->damBaoVaiTroQuanLy();
 
-        $sql = "SELECT * FROM tai_khoan WHERE id = ? LIMIT 1";
-        $rows = $this->db->query($sql, array((int)$id));
+        $sql = "SELECT id_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+                       ho_ten, email, so_dien_thoai, 0 AS diem_tich_luy, ngay_tao
+                FROM tai_khoan WHERE id_tai_khoan = ? LIMIT 1";
+        $rows = $this->db->query($sql, array($id));
         return !empty($rows) ? $rows[0] : null;
     }
 
@@ -159,11 +130,14 @@ class MoHinhTaiKhoan extends MoHinhCo
 
         $sql = "
         INSERT INTO tai_khoan
-            (ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+            (id_tai_khoan, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
              ho_ten, email, so_dien_thoai)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ";
+        $prefix = $du_lieu['vai_tro'] === 'quanly' ? 'TK-QL' : ($du_lieu['vai_tro'] === 'bep' ? 'TK-BEP' : 'TK-NV');
+        $id = $this->taoId($prefix);
         $ok = $this->db->query($sql, array(
+            $id,
             $du_lieu['ten_dang_nhap'],
             MatKhau::maHoa($du_lieu['mat_khau']),
             $du_lieu['vai_tro'],
@@ -172,7 +146,7 @@ class MoHinhTaiKhoan extends MoHinhCo
             $du_lieu['email'],
             $du_lieu['so_dien_thoai']
         ));
-        return $ok ? $this->db->lastInsertId() : false;
+        return $ok ? $id : false;
     }
 
     public function capNhatNhanVien($id, $du_lieu)
@@ -203,8 +177,8 @@ class MoHinhTaiKhoan extends MoHinhCo
             $params[] = MatKhau::maHoa($du_lieu['mat_khau']);
         }
 
-        $sql .= " WHERE id = ?";
-        $params[] = (int)$id;
+        $sql .= " WHERE id_tai_khoan = ?";
+        $params[] = $id;
 
         return $this->db->query($sql, $params);
     }
@@ -213,15 +187,15 @@ class MoHinhTaiKhoan extends MoHinhCo
     {
         $this->damBaoVaiTroQuanLy();
 
-        $sql = "DELETE FROM tai_khoan WHERE id = ? AND vai_tro IN ('quanly', 'nhanvien', 'bep')";
-        return $this->db->query($sql, array((int)$id));
+        $sql = "DELETE FROM tai_khoan WHERE id_tai_khoan = ? AND vai_tro IN ('quanly', 'nhanvien', 'bep')";
+        return $this->db->query($sql, array($id));
     }
 
     // Khoa / mo khoa tai khoan (Usecase 115)
     public function capNhatTrangThai($id, $trang_thai)
     {
-        $sql = "UPDATE tai_khoan SET dang_hoat_dong = ? WHERE id = ?";
-        return $this->db->query($sql, array((int)$trang_thai, (int)$id));
+        $sql = "UPDATE tai_khoan SET dang_hoat_dong = ? WHERE id_tai_khoan = ?";
+        return $this->db->query($sql, array((int)$trang_thai, $id));
     }
 
     // Diem tich luy cua khach nam trong khach_tai_khoan.
@@ -233,21 +207,21 @@ class MoHinhTaiKhoan extends MoHinhCo
     // Doi mat khau (Usecase 110)
     public function doiMatKhau($id, $mat_khau_moi)
     {
-        $sql = "UPDATE tai_khoan SET mat_khau = ? WHERE id = ?";
-        return $this->db->query($sql, array(MatKhau::maHoa($mat_khau_moi), (int)$id));
+        $sql = "UPDATE tai_khoan SET mat_khau = ? WHERE id_tai_khoan = ?";
+        return $this->db->query($sql, array(MatKhau::maHoa($mat_khau_moi), $id));
     }
 
     public function capNhatMatKhauDaMaHoa($id, $matKhauDaMaHoa)
     {
-        $sql = "UPDATE tai_khoan SET mat_khau = ? WHERE id = ?";
-        return $this->db->query($sql, array($matKhauDaMaHoa, (int)$id));
+        $sql = "UPDATE tai_khoan SET mat_khau = ? WHERE id_tai_khoan = ?";
+        return $this->db->query($sql, array($matKhauDaMaHoa, $id));
     }
 
     // Cap nhat thong tin ca nhan (Usecase 109)
     public function capNhatThongTin($id, $ho_ten, $email)
     {
-        $sql = "UPDATE tai_khoan SET ho_ten = ?, email = ? WHERE id = ?";
-        return $this->db->query($sql, array($ho_ten, $email, (int)$id));
+        $sql = "UPDATE tai_khoan SET ho_ten = ?, email = ? WHERE id_tai_khoan = ?";
+        return $this->db->query($sql, array($ho_ten, $email, $id));
     }
 }
 

@@ -10,36 +10,48 @@ Project mô phỏng quy trình vận hành thực tế của một nhà hàng bu
 
 ---
 
+## 4. Cấu hình cơ sở dữ liệu
+
+Project hiện tại sử dụng schema MariaDB được cung cấp trong `database.sql`.
+
+- Nếu bạn chạy bằng Docker Compose, hãy đảm bảo `db_data` là volume mới hoặc xóa volume cũ trước khi lên lại container, để MariaDB khởi tạo lại từ `database.sql`.
+- Nếu bạn chạy trên môi trường WAMP/MAMP/PHP trực tiếp, hãy import `database.sql` vào database `buffet_chay`.
+- Không sử dụng `database_v2.sql` hoặc `database_v2_ma_chuoi.sql` trừ khi bạn đã điều chỉnh code để tương thích với schema mới.
+
+Lỗi `Field 'id' doesn't have a default value` thường xảy ra khi các bảng được tạo ra mà cột `id` không có `AUTO_INCREMENT` trong schema.
+
+---
+
 ## 2. Chức năng chính
 
 ### Khách hàng
 
-* Xem thông tin nhà hàng và thực đơn món chay.
-* Đặt bàn theo ngày, giờ và số lượng khách.
-* Gọi món bằng mã bàn tại hoặc mã qr.
-* Theo dõi danh sách món đã gọi.
-* Đánh giá món ăn.
-* Đăng ký, đăng nhập tài khoản khách hàng để sử dụng chức năng tích điểm.
+- Xem thông tin nhà hàng và thực đơn món chay.
+- Đặt bàn theo ngày, giờ và số lượng khách.
+- Gọi món bằng mã bàn tại hoặc mã qr.
+- Theo dõi danh sách món đã gọi.
+- Đánh giá món ăn.
+- Đăng ký, đăng nhập tài khoản khách hàng để sử dụng chức năng tích điểm.
 
 ### Nhân viên phục vụ
 
-* Theo dõi trạng thái các bàn trong nhà hàng và
-* Cập nhật tình trạng bàn khi có khách sử dụng hoặc sau khi thanh toán.
-* Xem danh sách đặt bàn, kiểm tra thông tin khách và gán bàn phù hợp cho từng lượt đặt.
-* Theo dõi các món khách đã gọi theo từng bàn để nắm được món đang chờ và món đã được phục vụ.
-* Xác nhận món đã phục vụ sau khi món được mang ra cho khách.
-* Hỗ trợ thanh toán cho bàn bằng tiền mặt hoặc chuyển khoản.
-* Ghi nhận điểm tích lũy cho khách hàng sau khi sử dụng dịch vụ.
+- Theo dõi trạng thái các bàn trong nhà hàng và
+- Cập nhật tình trạng bàn khi có khách sử dụng hoặc sau khi thanh toán.
+- Xem danh sách đặt bàn, kiểm tra thông tin khách và gán bàn phù hợp cho từng lượt đặt.
+- Theo dõi các món khách đã gọi theo từng bàn để nắm được món đang chờ và món đã được phục vụ.
+- Xác nhận món đã phục vụ sau khi món được mang ra cho khách.
+- Hỗ trợ thanh toán cho bàn bằng tiền mặt hoặc chuyển khoản.
+- Ghi nhận điểm tích lũy cho khách hàng sau khi sử dụng dịch vụ.
 
 ### Nhân viên bếp
 
-* Xem danh sách món khách đã gọi.
+- Xem danh sách món khách đã gọi.
 
 ### Quản lý
 
-* Xem báo cáo doanh thu của nhà hàng.
-* Quản lý thực đơn, bao gồm danh sách món ăn và thông tin món.
-* Quản lý nhân viên, bao gồm tài khoản và vai trò làm việc trong hệ thống.
+- Xem báo cáo doanh thu của nhà hàng.
+- Quản lý thực đơn, bao gồm danh sách món ăn và thông tin món.
+- Quản lý nhân viên, bao gồm tài khoản và vai trò làm việc trong hệ thống.
 
 ---
 
@@ -88,13 +100,13 @@ Model
 
 Trong đó:
 
-* **Trình duyệt/PWA** là nơi người dùng thao tác với hệ thống.
-* **PHP + Apache** là môi trường chạy backend.
-* **Router** điều hướng request đến đúng controller.
-* **Controller** xử lý các nghiệp vụ chính.
-* **Model** truy vấn và cập nhật dữ liệu.
-* **MariaDB** lưu dữ liệu vận hành chính.
-* **MongoDB** lưu dữ liệu báo cáo và phân tích.
+- **Trình duyệt/PWA** là nơi người dùng thao tác với hệ thống.
+- **PHP + Apache** là môi trường chạy backend.
+- **Router** điều hướng request đến đúng controller.
+- **Controller** xử lý các nghiệp vụ chính.
+- **Model** truy vấn và cập nhật dữ liệu.
+- **MariaDB** lưu dữ liệu vận hành chính.
+- **MongoDB** lưu dữ liệu báo cáo và phân tích.
 
 Hệ thống được triển khai bằng Docker với các thành phần chính:
 

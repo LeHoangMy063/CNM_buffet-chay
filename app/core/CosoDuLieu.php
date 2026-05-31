@@ -55,7 +55,9 @@ class CosoDuLieu
             call_user_func_array(array($stmt, 'bind_param'), $ten_bind);
         }
 
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            die("Execute thất bại: " . $stmt->error . " SQL: " . $sql);
+        }
 
         $meta = $stmt->result_metadata();
 

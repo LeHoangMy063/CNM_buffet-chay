@@ -89,15 +89,59 @@ class MoHinhMonAn extends MoHinhCo
         return $rows;
     }
 
+    private function selectMonAn()
+    {
+        return "
+        SELECT
+            id_mon_an AS id,
+            ten_mon AS ten,
+            mon_an.mo_ta,
+            danh_muc_mon.ten_danh_muc AS danh_muc,
+            mon_an.anh_url,
+            mon_an.gia,
+            mon_an.con_mon,
+            mon_an.noi_bat,
+            mon_an.thu_tu,
+            mon_an.ngay_tao
+        FROM mon_an
+        LEFT JOIN danh_muc_mon ON danh_muc_mon.id_danh_muc_mon = mon_an.id_danh_muc_mon
+        ";
+    }
+
+    private function idDanhMuc($danh_muc)
+    {
+        $ten = $this->chuanHoaDanhMuc($danh_muc);
+        $map = array(
+            'Khai vi' => 'DM-KHAIVI',
+            'Mon chinh' => 'DM-MONCHINH',
+            'Nuoc lau' => 'DM-NUOCLAU',
+            'Topping' => 'DM-TOPPING',
+            'Rau' => 'DM-RAU',
+            'Do uong' => 'DM-DOUONG',
+            'Trang mieng' => 'DM-TRANGMIENG'
+        );
+        if (isset($map[$ten])) {
+            return $map[$ten];
+        }
+
+        $id = 'DM-' . strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $ten));
+        $this->db->query(
+            "INSERT IGNORE INTO danh_muc_mon (id_danh_muc_mon, ten_danh_muc, thu_tu, dang_hien_thi)
+             VALUES (?, ?, 99, 1)",
+            array($id, $ten)
+        );
+        return $id;
+    }
+
     public function layTatCa()
     {
-        $sql = "SELECT * FROM mon_an ORDER BY danh_muc, ten";
+        $sql = $this->selectMonAn() . " ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
         return $this->ganTenHienThiDanhMuc($this->db->query($sql));
     }
 
     public function layNhomTheoDanhMuc()
     {
-        $sql  = "SELECT * FROM mon_an WHERE con_mon = 1 ORDER BY danh_muc, ten";
+        $sql  = $this->selectMonAn() . " WHERE mon_an.con_mon = 1 ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
         $rows = $this->ganTenHienThiDanhMuc($this->db->query($sql));
 
         $nhom = array();
@@ -120,7 +164,7 @@ class MoHinhMonAn extends MoHinhCo
 
     public function luu($du_lieu)
     {
-        $id       = isset($du_lieu['id'])       ? (int)$du_lieu['id']        : 0;
+        $id       = isset($du_lieu['id'])       ? trim($du_lieu['id'])       : '';
         $ten      = isset($du_lieu['ten'])       ? trim($du_lieu['ten'])      : '';
         $mo_ta    = isset($du_lieu['mo_ta'])     ? trim($du_lieu['mo_ta'])    : '';
         $danh_muc = isset($du_lieu['danh_muc'])  ? $this->chuanHoaDanhMuc($du_lieu['danh_muc']) : '';
@@ -128,30 +172,34 @@ class MoHinhMonAn extends MoHinhCo
         $con_mon  = isset($du_lieu['con_mon'])   ? (int)$du_lieu['con_mon']   : 1;
         $noi_bat  = isset($du_lieu['noi_bat'])   ? (int)$du_lieu['noi_bat']   : 0;
 
-        if ($id > 0) {
+        $idDanhMuc = $this->idDanhMuc($danh_muc);
+
+        if ($id !== '') {
             $sql = "
             UPDATE mon_an
-            SET ten=?, mo_ta=?, danh_muc=?, anh_url=?, con_mon=?, noi_bat=?
-            WHERE id=?
+            SET ten_mon=?, mo_ta=?, id_danh_muc_mon=?, anh_url=?, con_mon=?, noi_bat=?
+            WHERE id_mon_an=?
             ";
             return $this->db->query($sql, array(
                 $ten,
                 $mo_ta,
-                $danh_muc,
+                $idDanhMuc,
                 $anh_url,
                 $con_mon,
                 $noi_bat,
                 $id
             ));
         } else {
+            $id = $this->taoId('MON');
             $sql = "
-            INSERT INTO mon_an (ten, mo_ta, danh_muc, anh_url, con_mon, noi_bat)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO mon_an (id_mon_an, ten_mon, mo_ta, id_danh_muc_mon, anh_url, con_mon, noi_bat)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ";
             return $this->db->query($sql, array(
+                $id,
                 $ten,
                 $mo_ta,
-                $danh_muc,
+                $idDanhMuc,
                 $anh_url,
                 $con_mon,
                 $noi_bat
@@ -162,9 +210,9 @@ class MoHinhMonAn extends MoHinhCo
     public function layNoiBat($gioi_han)
     {
         $sql = "
-        SELECT * FROM mon_an
-        WHERE con_mon = 1
-        ORDER BY noi_bat DESC, ten ASC
+        " . $this->selectMonAn() . "
+        WHERE mon_an.con_mon = 1
+        ORDER BY mon_an.noi_bat DESC, mon_an.ten_mon ASC
         LIMIT ?
         ";
         return $this->ganTenHienThiDanhMuc($this->db->query($sql, array((int)$gioi_han)));
@@ -172,16 +220,16 @@ class MoHinhMonAn extends MoHinhCo
 
     public function xoa($id)
     {
-        $sql = "DELETE FROM mon_an WHERE id = ?";
-        return $this->db->query($sql, array((int)$id));
+        $sql = "DELETE FROM mon_an WHERE id_mon_an = ?";
+        return $this->db->query($sql, array($id));
     }
 
     public function timKiem($tu_khoa)
     {
         $sql = "
-        SELECT * FROM mon_an
-        WHERE con_mon = 1 AND ten LIKE ?
-        ORDER BY danh_muc, ten
+        " . $this->selectMonAn() . "
+        WHERE mon_an.con_mon = 1 AND mon_an.ten_mon LIKE ?
+        ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon
         ";
         return $this->ganTenHienThiDanhMuc($this->db->query($sql, array('%' . $tu_khoa . '%')));
     }

@@ -11,6 +11,16 @@
       .replace(/'/g, "&#039;");
   }
 
+  function jsArg(v) {
+    return (
+      "'" +
+      String(v == null ? "" : v)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'") +
+      "'"
+    );
+  }
+
   function toast(msg, type) {
     var e = document.getElementById("toast");
     if (!e) return;
@@ -28,7 +38,9 @@
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onload = function () {
       try {
-        cb(JSON.parse(xhr.responseText));
+        var res = JSON.parse(xhr.responseText);
+        if (res && res.chuyen_huong) window.location.href = res.chuyen_huong;
+        cb(res);
       } catch (e) {
         cb({ success: false, thong_bao: "Phản hồi server không hợp lệ" });
       }
@@ -50,7 +62,9 @@
     xhr.open("GET", url, true);
     xhr.onload = function () {
       try {
-        cb(JSON.parse(xhr.responseText));
+        var res = JSON.parse(xhr.responseText);
+        if (res && res.chuyen_huong) window.location.href = res.chuyen_huong;
+        cb(res);
       } catch (e) {
         cb({ success: false, thong_bao: "Phản hồi server không hợp lệ" });
       }
@@ -113,12 +127,16 @@
     el: el,
     setText: setText,
     fmtTime: fmtTime,
+    jsArg: jsArg,
     statusInfo: statusInfo,
     tableStatusInfo: tableStatusInfo,
   };
 
   window.StaffDashboard = {
-    currentSection: typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep" ? "dat-ban" : "home",
+    currentSection:
+      typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep"
+        ? "dat-ban"
+        : "home",
   };
 
   window.StaffTabs = {
@@ -183,7 +201,11 @@
       if (menu) menu.style.display = "none";
     },
     showPane: function (name) {
-      if (typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep" && name !== "xac-nhan-mon") {
+      if (
+        typeof STAFF_ROLE !== "undefined" &&
+        STAFF_ROLE === "bep" &&
+        name !== "xac-nhan-mon"
+      ) {
         return;
       }
       this.currentPane = name;
@@ -389,7 +411,8 @@
 
     var requestedTab = "";
     try {
-      requestedTab = new URLSearchParams(window.location.search).get("tab") || "";
+      requestedTab =
+        new URLSearchParams(window.location.search).get("tab") || "";
     } catch (e) {
       requestedTab = "";
     }
@@ -404,12 +427,20 @@
     }
     StaffOrders.loadTables();
     StaffRealtime.connect();
-    document.addEventListener("click", function () {
-      StaffRealtime.unlockAudio();
-    }, { once: true });
-    document.addEventListener("touchstart", function () {
-      StaffRealtime.unlockAudio();
-    }, { once: true });
+    document.addEventListener(
+      "click",
+      function () {
+        StaffRealtime.unlockAudio();
+      },
+      { once: true },
+    );
+    document.addEventListener(
+      "touchstart",
+      function () {
+        StaffRealtime.unlockAudio();
+      },
+      { once: true },
+    );
 
     setInterval(function () {
       StaffOrders.loadTables();
@@ -436,6 +467,7 @@
   var setText = ui.setText;
   var fmtTime = ui.fmtTime;
   var tableStatusInfo = ui.tableStatusInfo;
+  var jsArg = ui.jsArg;
 
   function normalizeText(value) {
     return String(value || "")
@@ -450,7 +482,8 @@
   }
 
   function menuItems() {
-    var source = typeof STAFF_MENU_ITEMS === "undefined" ? [] : STAFF_MENU_ITEMS;
+    var source =
+      typeof STAFF_MENU_ITEMS === "undefined" ? [] : STAFF_MENU_ITEMS;
     var items = [];
     for (var i = 0; i < source.length; i++) {
       if (Number(source[i].con_mon || 0) === 0) continue;
@@ -465,7 +498,9 @@
     for (var i = 0; i < items.length && result.length < count; i++) {
       var it = items[i];
       if (used[it.id]) continue;
-      var text = normalizeText((it.ten || "") + " " + (it.danh_muc || "") + " " + (it.mo_ta || ""));
+      var text = normalizeText(
+        (it.ten || "") + " " + (it.danh_muc || "") + " " + (it.mo_ta || ""),
+      );
       var matched = false;
       for (var j = 0; j < words.length; j++) {
         if (text.indexOf(words[j]) !== -1) matched = true;
@@ -550,7 +585,7 @@
           '<button type="button" class="' +
           cardCls +
           '" onclick="StaffOrders.selectTable(' +
-          t.id +
+          jsArg(t.id) +
           ')">';
         html +=
           '<div class="table-num"><span class="table-status-dot"></span>' +
@@ -664,7 +699,8 @@
         clearBtn.textContent =
           n > 0 ? "Phục vụ hết đơn trước" : "Xác nhận bàn trống";
       }
-      if (confirmAll) confirmAll.style.display = !isKitchen && n > 0 ? "inline-flex" : "none";
+      if (confirmAll)
+        confirmAll.style.display = !isKitchen && n > 0 ? "inline-flex" : "none";
       if (countLabel) {
         countLabel.textContent =
           n > 0 ? n + " đơn đang chờ" : "Không có đơn chờ";
@@ -706,7 +742,10 @@
         html += "</div>";
       }
       if (isKitchen) {
-        html = html.replace(/<button class="btn btn-sm" type="button" onclick="StaffOrders\.confirmDish\([0-9]+\)">[\s\S]*?<\/button>/g, "");
+        html = html.replace(
+          /<button class="btn btn-sm" type="button" onclick="StaffOrders\.confirmDish\([0-9]+\)">[\s\S]*?<\/button>/g,
+          "",
+        );
       }
       el("orders").innerHTML = html;
     },
@@ -778,6 +817,7 @@
   var getJson = ui.getJson;
   var el = ui.el;
   var tableStatusInfo = ui.tableStatusInfo;
+  var jsArg = ui.jsArg;
 
   function money(v) {
     v = Number(v || 0);
@@ -785,21 +825,34 @@
   }
 
   function vietQrNote(t) {
-    var code = t && (t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban) ? (t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban) : "";
-    return ("BUFFET " + code).replace(/[^A-Za-z0-9 ]/g, " ").replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "");
+    var code =
+      t && (t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban)
+        ? t.ma_phien_goi_mon || t.ma_truy_cap || t.so_ban
+        : "";
+    return ("BUFFET " + code)
+      .replace(/[^A-Za-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/^\s+|\s+$/g, "");
   }
 
   function vietQrImageUrl(t) {
     var cfg = typeof VIETQR !== "undefined" ? VIETQR : {};
     var amount = Number(t && t.phien_tong_tien ? t.phien_tong_tien : 0);
     var template = cfg.template || "compact2";
-    return "https://img.vietqr.io/image/" +
-      encodeURIComponent(cfg.bankId || "") + "-" +
-      encodeURIComponent(cfg.accountNo || "") + "-" +
-      encodeURIComponent(template) + ".png?amount=" +
+    return (
+      "https://img.vietqr.io/image/" +
+      encodeURIComponent(cfg.bankId || "") +
+      "-" +
+      encodeURIComponent(cfg.accountNo || "") +
+      "-" +
+      encodeURIComponent(template) +
+      ".png?amount=" +
       encodeURIComponent(amount) +
-      "&addInfo=" + encodeURIComponent(vietQrNote(t)) +
-      "&accountName=" + encodeURIComponent(cfg.accountName || "");
+      "&addInfo=" +
+      encodeURIComponent(vietQrNote(t)) +
+      "&accountName=" +
+      encodeURIComponent(cfg.accountName || "")
+    );
   }
 
   function paymentMethodText(method) {
@@ -809,13 +862,38 @@
   }
 
   function priceAdult() {
-    return typeof PRICE_ADULT !== "undefined" ? Number(PRICE_ADULT || 0) : 199000;
+    return typeof PRICE_ADULT !== "undefined"
+      ? Number(PRICE_ADULT || 0)
+      : 199000;
   }
 
   function priceChild() {
     return typeof PRICE_CHILD !== "undefined" ? Number(PRICE_CHILD || 0) : 0;
   }
+  function reservationDateText(v) {
+    if (!v) return "";
+    var p = String(v).split("-");
+    if (p.length === 3) return p[2] + "/" + p[1];
+    return String(v);
+  }
 
+  function reservationLabel(t) {
+    if (!t || !t.dat_ban_sap_toi_id) return "";
+
+    var time = t.dat_ban_sap_toi_gio ? t.dat_ban_sap_toi_gio + " " : "";
+    var date = reservationDateText(t.dat_ban_sap_toi_ngay);
+    var name = t.dat_ban_sap_toi_ten_khach || "Khách đặt bàn";
+    var guests = Number(t.dat_ban_sap_toi_so_khach || 0);
+
+    return (
+      "Đã có đặt bàn " +
+      time +
+      date +
+      " - " +
+      name +
+      (guests > 0 ? " - " + guests + " khách" : "")
+    );
+  }
   window.StaffTableStatus = {
     tables: [],
 
@@ -856,20 +934,26 @@
         var sessionCode =
           Number(t.ma_phien_con_han || 0) === 1 ? t.ma_phien_goi_mon || "" : "";
         var name = "Bàn " + t.so_ban;
+        var reservationText = reservationLabel(t);
 
         if (
           keyword &&
-          (name + " " + code).toLowerCase().indexOf(keyword) === -1
+          (name + " " + code + " " + reservationText)
+            .toLowerCase()
+            .indexOf(keyword) === -1
         )
-          continue;
-        if (status && effectiveStatus !== status && rawStatus !== status)
           continue;
 
         visible++;
         var info = tableStatusInfo(effectiveStatus);
         var emptyText = effectiveStatus === "trong" ? "Bàn trống" : info.text;
+        var hasReservation = !!reservationText;
 
-        html += '<div class="table-status-card ' + info.cls + '">';
+        html +=
+          '<div class="table-status-card ' +
+          info.cls +
+          (hasReservation ? " has-reservation" : "") +
+          '">';
         html += '<div class="table-status-head">';
         html +=
           '<div class="table-status-title"><strong>' +
@@ -897,13 +981,23 @@
             "</strong></div>";
         }
         html += "</div>";
-
+        if (reservationText) {
+          html +=
+            '<div class="table-status-note reservation-warning">' +
+            esc(reservationText) +
+            "</div>";
+        }
         if (rawStatus === "dang_dung" && sessionCode) {
           html +=
             '<div class="table-status-note">Mã tạm thời có hiệu lực gọi món trong 100 phút.</div>';
         }
 
-        if (rawStatus === "dang_dung" && sessionCode && (t.phien_ten_khach || Number(t.phien_nguoi_lon || 0) + Number(t.phien_tre_em || 0) > 0)) {
+        if (
+          rawStatus === "dang_dung" &&
+          sessionCode &&
+          (t.phien_ten_khach ||
+            Number(t.phien_nguoi_lon || 0) + Number(t.phien_tre_em || 0) > 0)
+        ) {
           html +=
             '<div class="table-status-note">Bill: ' +
             esc(t.phien_ten_khach || "Khach le") +
@@ -925,16 +1019,16 @@
           html += '<div class="table-status-actions">';
           html +=
             '<button type="button" class="table-status-btn" onclick="StaffTableStatus.openPaymentModal(' +
-            t.id +
+            jsArg(t.id) +
             ",'tien_mat')\">Tiền mặt</button>";
           html +=
             '<button type="button" class="table-status-btn active" onclick="StaffTableStatus.openPaymentModal(' +
-            t.id +
+            jsArg(t.id) +
             ",'chuyen_khoan')\">Chuyển khoản</button>";
           html += "</div>";
           html +=
             '<button type="button" class="table-status-btn" style="width:100%;margin-top:6px" onclick="StaffTableStatus.inPhieu(' +
-            t.id +
+            jsArg(t.id) +
             ')">In phiếu gọi món</button>';
         } else {
           html += '<div class="table-status-actions">';
@@ -956,7 +1050,7 @@
         '<button type="button" class="table-status-btn' +
         active +
         '" onclick="StaffTableStatus.update(' +
-        id +
+        jsArg(id) +
         ",'" +
         status +
         "')\">" +
@@ -1009,20 +1103,21 @@
         '<div class="bill-modal-head"><div><p class="eyebrow">Bill mẫu</p><h3 id="billModalTitle">Mở bàn</h3></div><button type="button" onclick="StaffTableStatus.closeBillForm()">×</button></div>' +
         '<form id="tableBillForm" class="bill-form">' +
         '<input type="hidden" id="billTableId">' +
+        '<div id="billReservationWarning" class="table-status-note reservation-warning" style="display:none"></div>' +
         '<label>Tên khách<input id="billCustomerName" type="text" autocomplete="off" required></label>' +
         '<label>SĐT <span>không bắt buộc</span><input id="billCustomerPhone" type="text" autocomplete="off"></label>' +
         '<div class="bill-form-grid">' +
         '<label>Người lớn<input id="billAdultCount" type="number" min="0" value="1"></label>' +
         '<label>Trẻ em<input id="billChildCount" type="number" min="0" value="0"></label>' +
-        '</div>' +
+        "</div>" +
         '<div class="bill-preview">' +
         '<div><span>Giá người lớn</span><strong id="billAdultPrice"></strong></div>' +
         '<div><span>Giá trẻ em</span><strong id="billChildPrice"></strong></div>' +
         '<div class="bill-total"><span>Tổng giá</span><strong id="billTotalPrice"></strong></div>' +
-        '</div>' +
+        "</div>" +
         '<div class="bill-modal-actions"><button type="button" class="table-status-btn" onclick="StaffTableStatus.closeBillForm()">Hủy</button><button type="submit" class="table-status-btn active">Xác nhận</button></div>' +
-        '</form>' +
-        '</div>';
+        "</form>" +
+        "</div>";
       document.body.appendChild(box);
 
       el("tableBillForm").onsubmit = function (ev) {
@@ -1030,12 +1125,14 @@
         StaffTableStatus.confirmBillForm();
         return false;
       };
-      el("billAdultCount").onkeyup = el("billAdultCount").oninput = function () {
-        StaffTableStatus.updateBillTotal();
-      };
-      el("billChildCount").onkeyup = el("billChildCount").oninput = function () {
-        StaffTableStatus.updateBillTotal();
-      };
+      el("billAdultCount").onkeyup = el("billAdultCount").oninput =
+        function () {
+          StaffTableStatus.updateBillTotal();
+        };
+      el("billChildCount").onkeyup = el("billChildCount").oninput =
+        function () {
+          StaffTableStatus.updateBillTotal();
+        };
       return box;
     },
 
@@ -1043,11 +1140,24 @@
       var t = this.findTable(id);
       var box = this.ensureBillForm();
       el("billTableId").value = id;
-      el("billModalTitle").textContent = "Mở " + (t && t.so_ban ? "Bàn " + t.so_ban : "bàn");
-      el("billCustomerName").value = t && t.phien_ten_khach ? t.phien_ten_khach : "";
-      el("billCustomerPhone").value = t && t.phien_sdt_khach ? t.phien_sdt_khach : "";
-      el("billAdultCount").value = t && Number(t.phien_nguoi_lon || 0) > 0 ? Number(t.phien_nguoi_lon || 0) : 1;
-      el("billChildCount").value = t && Number(t.phien_tre_em || 0) > 0 ? Number(t.phien_tre_em || 0) : 0;
+      el("billModalTitle").textContent =
+        "Mở " + (t && t.so_ban ? "Bàn " + t.so_ban : "bàn");
+      var reservationText = reservationLabel(t);
+      var reservationWarning = el("billReservationWarning");
+      if (reservationWarning) {
+        reservationWarning.style.display = reservationText ? "block" : "none";
+        reservationWarning.textContent = reservationText || "";
+      }
+      el("billCustomerName").value =
+        t && t.phien_ten_khach ? t.phien_ten_khach : "";
+      el("billCustomerPhone").value =
+        t && t.phien_sdt_khach ? t.phien_sdt_khach : "";
+      el("billAdultCount").value =
+        t && Number(t.phien_nguoi_lon || 0) > 0
+          ? Number(t.phien_nguoi_lon || 0)
+          : 1;
+      el("billChildCount").value =
+        t && Number(t.phien_tre_em || 0) > 0 ? Number(t.phien_tre_em || 0) : 0;
       this.updateBillTotal();
       box.className = "bill-modal show";
       setTimeout(function () {
@@ -1078,11 +1188,11 @@
         '<div id="paymentNoteRow" style="display:none"><span>Nội dung</span><strong id="paymentNote"></strong></div>' +
         '<div id="paymentAccountRow" style="display:none"><span>Tài khoản</span><strong id="paymentAccount"></strong></div>' +
         '<div id="paymentNameRow" style="display:none"><span>Chủ TK</span><strong id="paymentName"></strong></div>' +
-        '</div>' +
+        "</div>" +
         '<p id="paymentHelpText" class="vietqr-staff-note"></p>' +
         '<div class="bill-modal-actions"><button type="button" class="table-status-btn" onclick="StaffTableStatus.closePaymentModal()">Hủy</button><button id="paymentConfirmBtn" type="button" class="table-status-btn active">Xác nhận đã nhận tiền</button></div>' +
-        '</div>' +
-        '</div>';
+        "</div>" +
+        "</div>";
       document.body.appendChild(box);
       return box;
     },
@@ -1112,7 +1222,8 @@
       }
 
       var box = this.ensurePaymentModal();
-      el("paymentModalTitle").textContent = "Thanh toán Bàn " + (t.so_ban || id);
+      el("paymentModalTitle").textContent =
+        "Thanh toán Bàn " + (t.so_ban || id);
       el("paymentMethodText").textContent = paymentMethodText(method);
       el("paymentAmount").textContent = money(amount);
       el("paymentQrWrap").style.display = isTransfer ? "" : "none";
@@ -1124,9 +1235,11 @@
         el("paymentNote").textContent = vietQrNote(t);
         el("paymentAccount").textContent = cfg.accountNo || "-";
         el("paymentName").textContent = cfg.accountName || "-";
-        el("paymentHelpText").textContent = "Cho khách quét QR/chuyển khoản, kiểm tra app ngân hàng. Khi tiền đã vào, bấm xác nhận để trả bàn.";
+        el("paymentHelpText").textContent =
+          "Cho khách quét QR/chuyển khoản, kiểm tra app ngân hàng. Khi tiền đã vào, bấm xác nhận để trả bàn.";
       } else {
-        el("paymentHelpText").textContent = "Thu đủ tiền mặt từ khách. Khi đã nhận tiền, bấm xác nhận để trả bàn.";
+        el("paymentHelpText").textContent =
+          "Thu đủ tiền mặt từ khách. Khi đã nhận tiền, bấm xác nhận để trả bàn.";
       }
       el("paymentConfirmBtn").onclick = function () {
         StaffTableStatus.closePaymentModal();
@@ -1140,7 +1253,9 @@
       var child = Math.max(0, Number(el("billChildCount").value || 0));
       el("billAdultPrice").textContent = money(priceAdult());
       el("billChildPrice").textContent = money(priceChild());
-      el("billTotalPrice").textContent = money(adult * priceAdult() + child * priceChild());
+      el("billTotalPrice").textContent = money(
+        adult * priceAdult() + child * priceChild(),
+      );
     },
 
     confirmBillForm: function () {
@@ -1212,7 +1327,8 @@
         typeof PUBLIC_BASE_URL !== "undefined" && PUBLIC_BASE_URL
           ? PUBLIC_BASE_URL
           : BASE_URL;
-      var url = qrBase.replace(/\/+$/, "") + "/goi-mon?ma=" + encodeURIComponent(ma);
+      var url =
+        qrBase.replace(/\/+$/, "") + "/goi-mon?ma=" + encodeURIComponent(ma);
       var qrUrl =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
         encodeURIComponent(url);
@@ -1230,7 +1346,9 @@
       var tongKhach = nguoiLon + treEm;
       var tenKhach = t.phien_ten_khach || "";
       var sdtKhach = t.phien_sdt_khach || "";
-      var tongTien = Number(t.phien_tong_tien || (nguoiLon * priceAdult() + treEm * priceChild()));
+      var tongTien = Number(
+        t.phien_tong_tien || nguoiLon * priceAdult() + treEm * priceChild(),
+      );
       var batDau = t.phien_bat_dau || "";
       var win = window.open("", "_blank");
       win.document.write(
@@ -1246,26 +1364,46 @@
           '<div class="bill">' +
           '<div class="head"><h2>Buffet Chay</h2><div class="muted">Hóa đơn mở phiên gọi món</div></div>' +
           '<div class="section">' +
-          '<div class="row"><span>Ngày in</span><strong>' + esc(ngayIn) + '</strong></div>' +
-          '<div class="row"><span>Bàn</span><strong>' + esc(tenBan) + '</strong></div>' +
-          '<div class="row"><span>Mã tạm thời</span><strong>' + esc(ma) + '</strong></div>' +
-          '</div>' +
+          '<div class="row"><span>Ngày in</span><strong>' +
+          esc(ngayIn) +
+          "</strong></div>" +
+          '<div class="row"><span>Bàn</span><strong>' +
+          esc(tenBan) +
+          "</strong></div>" +
+          '<div class="row"><span>Mã tạm thời</span><strong>' +
+          esc(ma) +
+          "</strong></div>" +
+          "</div>" +
           '<div class="section">' +
-          '<div class="row"><span>Tên khách</span><strong>' + esc(tenKhach) + '</strong></div>' +
-          '<div class="row"><span>SĐT</span><strong>' + esc(sdtKhach) + '</strong></div>' +
-          '<div class="row"><span>Mở phiên</span><strong>' + esc(batDau) + '</strong></div>' +
-          '<div class="row"><span>Người lớn</span><strong>' + esc(nguoiLon) + '</strong></div>' +
-          '<div class="row"><span>Trẻ em</span><strong>' + esc(treEm) + '</strong></div>' +
-          '<div class="row"><span>Số lượng</span><strong>' + esc(tongKhach ? tongKhach + " khách" : "") + '</strong></div>' +
-          '<div class="row"><span>Tổng giá</span><strong>' + esc(money(tongTien)) + '</strong></div>' +
-          '</div>' +
+          '<div class="row"><span>Tên khách</span><strong>' +
+          esc(tenKhach) +
+          "</strong></div>" +
+          '<div class="row"><span>SĐT</span><strong>' +
+          esc(sdtKhach) +
+          "</strong></div>" +
+          '<div class="row"><span>Mở phiên</span><strong>' +
+          esc(batDau) +
+          "</strong></div>" +
+          '<div class="row"><span>Người lớn</span><strong>' +
+          esc(nguoiLon) +
+          "</strong></div>" +
+          '<div class="row"><span>Trẻ em</span><strong>' +
+          esc(treEm) +
+          "</strong></div>" +
+          '<div class="row"><span>Số lượng</span><strong>' +
+          esc(tongKhach ? tongKhach + " khách" : "") +
+          "</strong></div>" +
+          '<div class="row"><span>Tổng giá</span><strong>' +
+          esc(money(tongTien)) +
+          "</strong></div>" +
+          "</div>" +
           '<div class="qr"><img src="' +
           qrUrl +
           '"><div><strong>Quét QR để gọi món</strong></div></div>' +
           '<div class="note">Mã tạm thời chỉ có hiệu lực gọi món trong 100 phút.</div>' +
-          '</div>' +
+          "</div>" +
           "<script>window.onload=function(){window.print()}<\/script>" +
-          "</body></html>"
+          "</body></html>",
       );
       win.document.close();
     },

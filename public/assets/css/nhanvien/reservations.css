@@ -626,6 +626,17 @@
   background: #f97316;
 }
 
+.table-status-card.has-reservation {
+  border-color: #f0b957;
+  box-shadow:
+    0 0 0 1px rgba(240, 185, 87, 0.25),
+    var(--shadow-soft);
+}
+
+.table-status-card.has-reservation::before {
+  background: #f59e0b;
+}
+
 .table-status-card.paying {
   background: #f5f8ff;
 }
@@ -660,7 +671,16 @@
   font-size: 12px;
   font-weight: 700;
 }
+.table-status-note.reservation-warning {
+  border: 1px solid #f5c46b;
+  background: #fff7e6;
+  color: #7c4300;
+}
 
+.table-status-note.reservation-warning::before {
+  content: "Lịch đặt: ";
+  font-weight: 900;
+}
 .table-status-facts {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1088,12 +1108,17 @@
 
 .reservation-accordion-card.expanded {
   border-color: #77d89b;
-  box-shadow: 0 0 0 1px rgba(56, 161, 105, 0.18), var(--shadow-soft);
+  box-shadow:
+    0 0 0 1px rgba(56, 161, 105, 0.18),
+    var(--shadow-soft);
 }
 
 .reservation-summary {
   display: grid;
-  grid-template-columns: 18px 12px minmax(150px, 1fr) minmax(150px, 1.2fr) minmax(112px, auto);
+  grid-template-columns: 18px 12px minmax(150px, 1fr) minmax(
+      150px,
+      1.2fr
+    ) minmax(112px, auto);
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -1173,7 +1198,10 @@
 
 .reservation-detail-grid {
   display: grid;
-  grid-template-columns: minmax(150px, 0.9fr) minmax(160px, 0.9fr) minmax(210px, 1.1fr);
+  grid-template-columns: minmax(150px, 0.9fr) minmax(160px, 0.9fr) minmax(
+      210px,
+      1.1fr
+    );
   gap: 16px;
 }
 
@@ -1322,7 +1350,10 @@
 
 @media (max-width: 1250px) {
   .reservation-summary {
-    grid-template-columns: 18px 12px minmax(120px, 1fr) minmax(120px, 1fr) minmax(112px, auto);
+    grid-template-columns: 18px 12px minmax(120px, 1fr) minmax(
+        120px,
+        1fr
+      ) minmax(112px, auto);
   }
 }
 

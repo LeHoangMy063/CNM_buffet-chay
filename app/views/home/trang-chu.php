@@ -21,6 +21,9 @@
     $tenKhachHang = $laKhachDangNhap && isset($nguoiDungHienTai['ho_ten'])
         ? $nguoiDungHienTai['ho_ten']
         : '';
+    $sdtKhachHang = $laKhachDangNhap && isset($nguoiDungHienTai['so_dien_thoai'])
+        ? $nguoiDungHienTai['so_dien_thoai']
+        : '';
     ?>
 
     <nav>
@@ -152,7 +155,7 @@
             <h2 class="section-title">Nhập Mã Bàn<br>Để Bắt Đầu</h2>
             <p class="section-sub">Mã bàn được in trên biển hiệu tại bàn của bạn. Nhập mã để gọi món trực tiếp — không cần đợi phục vụ.</p>
             <div class="code-wrap">
-                <input type="text" id="codeInput" placeholder="VD: BANA1-1234" maxlength="20">
+                <input type="text" id="codeInput" placeholder="VD: PH-BANA1-20260531-1234" maxlength="50">
                 <button onclick="goOrder()">Vào Gọi Món →</button>
             </div>
         </div>
@@ -189,11 +192,21 @@
                 <div class="form-row">
                     <div class="field">
                         <label>Họ tên *</label>
-                        <input type="text" name="customer_name" placeholder="Nguyễn Văn A" required>
+                        <input
+                            type="text"
+                            name="customer_name"
+                            placeholder="Nguyễn Văn A"
+                            value="<?php echo htmlspecialchars($tenKhachHang, ENT_QUOTES, 'UTF-8'); ?>"
+                            required>
                     </div>
                     <div class="field">
                         <label>Điện thoại *</label>
-                        <input type="tel" name="customer_phone" placeholder="0901234567" required>
+                        <input
+                            type="tel"
+                            name="customer_phone"
+                            placeholder="0901234567"
+                            value="<?php echo htmlspecialchars($sdtKhachHang, ENT_QUOTES, 'UTF-8'); ?>"
+                            required>
                     </div>
                 </div>
                 <div class="form-row">

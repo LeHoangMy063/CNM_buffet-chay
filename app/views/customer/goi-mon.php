@@ -143,7 +143,7 @@ $menuItemsJson = json_encode($menuItemsFlat, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                             $dataDesc = addslashes(htmlspecialchars($itemDesc));
                         ?>
                             <div class="item-card"
-                                onclick="openAdd(<?php echo $item['id'] ?>,'<?php echo $dataName ?>','<?php echo $dataDesc ?>','<?php echo $img ?>')">
+                                onclick="openAdd('<?php echo htmlspecialchars($item['id'], ENT_QUOTES, 'UTF-8') ?>','<?php echo $dataName ?>','<?php echo $dataDesc ?>','<?php echo $img ?>')">
                                 <div class="item-img-wrap">
                                     <img class="item-img" src="<?php echo $img ?>"
                                         alt="<?php echo htmlspecialchars($itemName) ?>" loading="lazy">

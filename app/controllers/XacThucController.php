@@ -155,20 +155,24 @@ class XacThucController extends BoieuKhienCo
         }
 
         $_SESSION['nguoi_dung'] = array(
-            'id'             => $tai_khoan['id'],
-            'ten_dang_nhap'  => $tai_khoan['ten_dang_nhap'],
-            'vai_tro'        => $tai_khoan['vai_tro'],
-            'ho_ten'         => $tai_khoan['ho_ten'],
-            'dang_hoat_dong' => $tai_khoan['dang_hoat_dong']
+            'id'              => $tai_khoan['id'],
+            'ten_dang_nhap'   => $tai_khoan['ten_dang_nhap'],
+            'vai_tro'         => $tai_khoan['vai_tro'],
+            'ho_ten'          => $tai_khoan['ho_ten'],
+            'so_dien_thoai'   => $tai_khoan['so_dien_thoai'],
+            'email'           => $tai_khoan['email'],
+            'dang_hoat_dong'  => $tai_khoan['dang_hoat_dong']
         );
         $_SESSION['thoi_gian_hoat_dong'] = time();
 
         // Mirror session for code that expects `user`
         $_SESSION['user'] = array(
-            'id'       => $tai_khoan['id'],
-            'username' => $tai_khoan['ten_dang_nhap'],
-            'role'     => $tai_khoan['vai_tro'],
-            'ho_ten'   => $tai_khoan['ho_ten']
+            'id'             => $tai_khoan['id'],
+            'username'       => $tai_khoan['ten_dang_nhap'],
+            'role'           => $tai_khoan['vai_tro'],
+            'ho_ten'         => $tai_khoan['ho_ten'],
+            'so_dien_thoai'  => $tai_khoan['so_dien_thoai'],
+            'email'          => $tai_khoan['email']
         );
 
         echo json_encode(array('success' => true, 'chuyen_huong' => BASE_URL . '/'));

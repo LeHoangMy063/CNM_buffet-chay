@@ -20,12 +20,12 @@ class GoiYMonController extends BoieuKhienCo
         }
 
         $maPhien = trim(strtoupper($this->post('ma', '')));
-        $monAnId = (int)$this->post('mon_an_id', 0);
+        $monAnId = trim((string)$this->post('mon_an_id', ''));
         $loaiHanhVi = trim($this->post('loai_hanh_vi', 'view_item'));
         $giaTri = (int)$this->post('gia_tri', 1);
-        $phienId = (int)$this->post('phien_id', 0);
+        $phienId = trim((string)$this->post('phien_id', ''));
 
-        if ($maPhien === '') {
+        if ($maPhien === '' || $monAnId === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Thiếu mã phiên'));
         }
 
@@ -39,16 +39,16 @@ class GoiYMonController extends BoieuKhienCo
     public function layGoiY()
     {
         $maPhien = isset($_GET['ma']) ? trim(strtoupper($_GET['ma'])) : '';
-        $monGocId = isset($_GET['mon_id']) ? (int)$_GET['mon_id'] : 0;
+        $monGocId = isset($_GET['mon_id']) ? trim((string)$_GET['mon_id']) : '';
 
         $monDaGoiRows = $this->moHinhGoiY->layMonDaGoiTheoMaPhien($maPhien);
         $monDaGoi = array();
 
         foreach ($monDaGoiRows as $row) {
-            $monDaGoi[(int)$row['mon_an_id']] = true;
+            $monDaGoi[(string)$row['mon_an_id']] = true;
         }
 
-        if ($monGocId > 0) {
+        if ($monGocId !== '') {
             $ds = $this->moHinhGoiY->layGoiYTheoMonGoc($monGocId, 10);
         } else {
             $ds = $this->moHinhGoiY->layGoiYPhoBien(10);
@@ -61,7 +61,7 @@ class GoiYMonController extends BoieuKhienCo
         $ketQua = array();
 
         foreach ($ds as $mon) {
-            $id = (int)$mon['id'];
+            $id = (string)$mon['id'];
 
             if (isset($monDaGoi[$id])) {
                 continue;

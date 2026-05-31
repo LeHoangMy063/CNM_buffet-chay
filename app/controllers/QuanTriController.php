@@ -65,10 +65,10 @@ class QuanTriController extends BoieuKhienCo
     {
         $this->yeuCauVaiTro('quanly');
 
-        $id         = intval($this->post('id', 0));
+        $id         = trim((string)$this->post('id', ''));
         $trang_thai = $this->post('trang_thai', '');
 
-        if ($id <= 0) {
+        if ($id === '') {
             $this->json(array('success' => false, 'thong_bao' => 'ID ban khong hop le'));
         }
 
@@ -101,7 +101,7 @@ class QuanTriController extends BoieuKhienCo
     {
         $this->yeuCauVaiTro('quanly');
 
-        $id = intval($this->post('id', 0));
+        $id = trim((string)$this->post('id', ''));
         $ok = $this->moHinhThucDon->xoa($id);
         $this->json(array('success' => (bool)$ok));
     }
@@ -123,7 +123,7 @@ class QuanTriController extends BoieuKhienCo
     {
         $this->yeuCauVaiTro('quanly');
 
-        $id         = intval($this->post('id', 0));
+        $id         = trim((string)$this->post('id', ''));
         $trang_thai = $this->post('trang_thai', '');
 
         $ok = $this->moHinhDon->capNhatTrangThai($id, $trang_thai);
@@ -160,7 +160,7 @@ class QuanTriController extends BoieuKhienCo
     {
         $this->yeuCauVaiTro('quanly');
 
-        $id         = intval($this->post('id', 0));
+        $id         = trim((string)$this->post('id', ''));
         $trang_thai = $this->post('trang_thai', '');
 
         $hop_le = array('cho_xac_nhan', 'da_xac_nhan', 'da_huy', 'cancelled', 'expired', 'hoan_thanh');
@@ -241,10 +241,10 @@ class QuanTriController extends BoieuKhienCo
     {
         $this->yeuCauVaiTro('quanly');
 
-        $id         = intval($this->post('id', 0));
+        $id         = trim((string)$this->post('id', ''));
         $trang_thai = intval($this->post('trang_thai', 1));
 
-        if ($id <= 0) {
+        if ($id === '') {
             $this->json(array('success' => false, 'thong_bao' => 'ID khong hop le'));
         }
 

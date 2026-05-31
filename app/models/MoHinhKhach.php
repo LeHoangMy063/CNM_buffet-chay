@@ -18,34 +18,6 @@ class MoHinhKhach extends MoHinhCo
 
     private function damBaoBangKhachTaiKhoan()
     {
-        $this->db->query(
-            "CREATE TABLE IF NOT EXISTS khach_tai_khoan (
-                id int(11) NOT NULL auto_increment,
-                ten_dang_nhap varchar(50) DEFAULT NULL,
-                mat_khau varchar(255) DEFAULT NULL,
-                vai_tro enum('khach') NOT NULL default 'khach',
-                dang_hoat_dong tinyint(1) NOT NULL default 1,
-                ho_ten varchar(100) DEFAULT NULL,
-                email varchar(100) DEFAULT NULL,
-                so_dien_thoai varchar(20) DEFAULT NULL,
-                diem_tich_luy int(11) NOT NULL default 0,
-                ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                UNIQUE KEY ten_dang_nhap (ten_dang_nhap),
-                UNIQUE KEY so_dien_thoai (so_dien_thoai)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
-        );
-
-        $this->damBaoCotKhachTaiKhoan('ten_dang_nhap', "ALTER TABLE khach_tai_khoan ADD COLUMN ten_dang_nhap varchar(50) DEFAULT NULL");
-        $this->damBaoCotKhachTaiKhoan('mat_khau', "ALTER TABLE khach_tai_khoan ADD COLUMN mat_khau varchar(255) DEFAULT NULL");
-        $this->damBaoCotKhachTaiKhoan('vai_tro', "ALTER TABLE khach_tai_khoan ADD COLUMN vai_tro enum('khach') NOT NULL default 'khach'");
-        $this->damBaoCotKhachTaiKhoan('dang_hoat_dong', "ALTER TABLE khach_tai_khoan ADD COLUMN dang_hoat_dong tinyint(1) NOT NULL default 1");
-        $this->damBaoCotKhachTaiKhoan('ho_ten', "ALTER TABLE khach_tai_khoan ADD COLUMN ho_ten varchar(100) DEFAULT NULL");
-        $this->damBaoCotKhachTaiKhoan('email', "ALTER TABLE khach_tai_khoan ADD COLUMN email varchar(100) DEFAULT NULL");
-        $this->damBaoCotKhachTaiKhoan('so_dien_thoai', "ALTER TABLE khach_tai_khoan ADD COLUMN so_dien_thoai varchar(20) DEFAULT NULL");
-        $this->damBaoCotKhachTaiKhoan('diem_tich_luy', "ALTER TABLE khach_tai_khoan ADD COLUMN diem_tich_luy int(11) NOT NULL default 0");
-        $this->damBaoCotKhachTaiKhoan('ngay_tao', "ALTER TABLE khach_tai_khoan ADD COLUMN ngay_tao timestamp NOT NULL default CURRENT_TIMESTAMP");
-        $this->dongBoKhachCuTuTaiKhoan();
         $this->nangCapMatKhauMacDinhCu();
     }
 
@@ -94,7 +66,9 @@ class MoHinhKhach extends MoHinhCo
     public function layTheoSDT($sdt)
     {
         $this->damBaoBangKhachTaiKhoan();
-        $sql = "SELECT * FROM khach_tai_khoan WHERE so_dien_thoai = ? LIMIT 1";
+        $sql = "SELECT id_khach_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro,
+                       dang_hoat_dong, ho_ten, email, so_dien_thoai, diem_tich_luy, ngay_tao
+                FROM khach_tai_khoan WHERE so_dien_thoai = ? LIMIT 1";
         $rows = $this->db->query($sql, array($sdt));
         return !empty($rows) ? $rows[0] : null;
     }
@@ -102,7 +76,9 @@ class MoHinhKhach extends MoHinhCo
     public function layTheoEmail($email)
     {
         $this->damBaoBangKhachTaiKhoan();
-        $sql = "SELECT * FROM khach_tai_khoan WHERE email = ? LIMIT 1";
+        $sql = "SELECT id_khach_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro,
+                       dang_hoat_dong, ho_ten, email, so_dien_thoai, diem_tich_luy, ngay_tao
+                FROM khach_tai_khoan WHERE email = ? LIMIT 1";
         $rows = $this->db->query($sql, array($email));
         return !empty($rows) ? $rows[0] : null;
     }
@@ -110,8 +86,10 @@ class MoHinhKhach extends MoHinhCo
     public function layTheoId($id)
     {
         $this->damBaoBangKhachTaiKhoan();
-        $sql = "SELECT * FROM khach_tai_khoan WHERE id = ? LIMIT 1";
-        $rows = $this->db->query($sql, array((int)$id));
+        $sql = "SELECT id_khach_tai_khoan AS id, ten_dang_nhap, mat_khau, vai_tro,
+                       dang_hoat_dong, ho_ten, email, so_dien_thoai, diem_tich_luy, ngay_tao
+                FROM khach_tai_khoan WHERE id_khach_tai_khoan = ? LIMIT 1";
+        $rows = $this->db->query($sql, array($id));
         return !empty($rows) ? $rows[0] : null;
     }
 
@@ -124,12 +102,14 @@ class MoHinhKhach extends MoHinhCo
             return false;
         }
 
+        $id = $this->taoId('KH');
         $sql = "INSERT INTO khach_tai_khoan
-            (ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
+            (id_khach_tai_khoan, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
              ho_ten, email, so_dien_thoai, diem_tich_luy)
-         VALUES (?, ?, 'khach', 1, ?, ?, ?, 0)";
+         VALUES (?, ?, ?, 'khach', 1, ?, ?, ?, 0)";
 
         $ok = $this->db->query($sql, array(
+            $id,
             $so_dien_thoai,
             MatKhau::maHoa($mat_khau),
             $ho_ten,
@@ -137,22 +117,22 @@ class MoHinhKhach extends MoHinhCo
             $so_dien_thoai
         ));
 
-        return $ok ? $this->db->lastInsertId() : false;
+        return $ok ? $id : false;
     }
 
     public function congDiem($id, $diem)
     {
         $this->damBaoBangKhachTaiKhoan();
 
-        $sql = "UPDATE khach_tai_khoan SET diem_tich_luy = diem_tich_luy + ? WHERE id = ?";
-        return $this->db->query($sql, array((int)$diem, (int)$id));
+        $sql = "UPDATE khach_tai_khoan SET diem_tich_luy = diem_tich_luy + ? WHERE id_khach_tai_khoan = ?";
+        return $this->db->query($sql, array((int)$diem, $id));
     }
 
     public function capNhatMatKhauDaMaHoa($id, $matKhauDaMaHoa)
     {
         $this->damBaoBangKhachTaiKhoan();
 
-        $sql = "UPDATE khach_tai_khoan SET mat_khau = ? WHERE id = ?";
-        return $this->db->query($sql, array($matKhauDaMaHoa, (int)$id));
+        $sql = "UPDATE khach_tai_khoan SET mat_khau = ? WHERE id_khach_tai_khoan = ?";
+        return $this->db->query($sql, array($matKhauDaMaHoa, $id));
     }
 }

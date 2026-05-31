@@ -141,7 +141,28 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register(BASE_URL + '/service-worker.js', {
                     scope: BASE_URL + '/'
+                }).then(function(reg) {
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({
+                            type: 'SKIP_WAITING'
+                        });
+                    }
+                    reg.addEventListener('updatefound', function() {
+                        var newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', function() {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                newWorker.postMessage({
+                                    type: 'SKIP_WAITING'
+                                });
+                            }
+                        });
+                    });
                 }).catch(function() {});
+
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    window.location.reload();
+                });
             });
         }
     </script>

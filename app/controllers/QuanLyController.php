@@ -184,8 +184,8 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
-        $id = intval($this->post('id', 0));
-        if ($id <= 0) {
+        $id = trim((string)$this->post('id', ''));
+        if ($id === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Món ăn không hợp lệ'));
         }
 
@@ -203,7 +203,7 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
-        $id     = intval($this->post('id', 0));
+        $id     = trim((string)$this->post('id', ''));
         $duLieu = array(
             'ten_dang_nhap'  => trim($this->post('ten_dang_nhap', '')),
             'mat_khau'       => $this->post('mat_khau', ''),
@@ -227,16 +227,16 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Email không hợp lệ'));
         }
 
-        if ($id <= 0 && trim($duLieu['mat_khau']) === '') {
+        if ($id === '' && trim($duLieu['mat_khau']) === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Vui lòng nhập mật khẩu cho nhân viên mới'));
         }
 
         $nguoiDung = $this->layNguoiDung();
-        if ($id > 0 && $nguoiDung && isset($nguoiDung['id']) && (int)$nguoiDung['id'] === $id && $duLieu['dang_hoat_dong'] !== 1) {
+        if ($id !== '' && $nguoiDung && isset($nguoiDung['id']) && (string)$nguoiDung['id'] === $id && $duLieu['dang_hoat_dong'] !== 1) {
             $this->json(array('success' => false, 'thong_bao' => 'Không thể khóa chính tài khoản đang đăng nhập'));
         }
 
-        if ($id > 0) {
+        if ($id !== '') {
             $taiKhoan = $this->moHinhTaiKhoan->layTheoId($id);
             if (!$taiKhoan || !in_array($taiKhoan['vai_tro'], $vaiTroHopLe)) {
                 $this->json(array('success' => false, 'thong_bao' => 'Không tìm thấy nhân viên'));
@@ -263,13 +263,13 @@ class QuanLyController extends BoieuKhienCo
             $this->json(array('success' => false, 'thong_bao' => 'Phương thức không hợp lệ'));
         }
 
-        $id = intval($this->post('id', 0));
-        if ($id <= 0) {
+        $id = trim((string)$this->post('id', ''));
+        if ($id === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Nhân viên không hợp lệ'));
         }
 
         $nguoiDung = $this->layNguoiDung();
-        if ($nguoiDung && isset($nguoiDung['id']) && (int)$nguoiDung['id'] === $id) {
+        if ($nguoiDung && isset($nguoiDung['id']) && (string)$nguoiDung['id'] === $id) {
             $this->json(array('success' => false, 'thong_bao' => 'Không thể xóa chính tài khoản đang đăng nhập'));
         }
 
