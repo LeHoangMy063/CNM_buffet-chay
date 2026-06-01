@@ -195,16 +195,17 @@ class KhachHangController extends BoieuKhienCo
 
         $ketQua = array();
         foreach ($danhSachDon as $don) {
+            $tenMon = isset($don['ten_mon']) ? $don['ten_mon'] : (isset($don['ten']) ? $don['ten'] : '');
             $ketQua[] = array(
-                'id'        => $don['id'],
-                'ten_mon'   => $don['ten_mon'],
-                'item_name' => $don['ten_mon'],
-                'so_luong'  => $don['so_luong'],
-                'quantity'  => $don['so_luong'],
-                'trang_thai' => $don['trang_thai'],
-                'status'    => $this->mapTrangThaiDonChoJs($don['trang_thai']),
-                'ghi_chu'   => $don['ghi_chu'],
-                'note'      => $don['ghi_chu']
+                'id'        => isset($don['id']) ? $don['id'] : '',
+                'ten_mon'   => $tenMon,
+                'item_name' => isset($don['item_name']) ? $don['item_name'] : $tenMon,
+                'so_luong'  => isset($don['so_luong']) ? $don['so_luong'] : 0,
+                'quantity'  => isset($don['so_luong']) ? $don['so_luong'] : 0,
+                'trang_thai' => isset($don['trang_thai']) ? $don['trang_thai'] : '',
+                'status'    => $this->mapTrangThaiDonChoJs(isset($don['trang_thai']) ? $don['trang_thai'] : ''),
+                'ghi_chu'   => isset($don['ghi_chu']) ? $don['ghi_chu'] : '',
+                'note'      => isset($don['ghi_chu']) ? $don['ghi_chu'] : ''
             );
         }
 

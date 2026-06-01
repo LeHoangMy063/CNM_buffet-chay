@@ -243,7 +243,7 @@ class MoHinhBan extends MoHinhCo
             h.sdt_khach = COALESCE(NULLIF(p.sdt_khach, ''), h.sdt_khach),
             h.tong_tien_buffet = p.tong_tien_tam_tinh,
             h.tong_tien = p.tong_tien_tam_tinh,
-            h.thanh_tien = p.tong_tien_tam_tinh - h.giam_gia,
+            h.thanh_tien = p.tong_tien_tam_tinh,
             h.updated_at = NOW()
         WHERE pb.id_ban = ?
           AND pb.trang_thai = 'dang_gan'

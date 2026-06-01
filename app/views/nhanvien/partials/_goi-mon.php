@@ -78,10 +78,6 @@
                                         onclick="StaffOrders.confirmAll()" style="display:none">
                                     Xác nhận tất cả
                                 </button>
-                                <button id="clearTableBtn" class="btn danger btn-sm" type="button"
-                                        onclick="StaffOrders.markTableEmpty()" disabled>
-                                    Xác nhận bàn trống
-                                </button>
                             </div>
                         <?php endif; ?>
                     </div>

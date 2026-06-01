@@ -33,7 +33,7 @@ class MoHinhMonAn extends MoHinhCo
 
     private function sapXepMacDinh()
     {
-        return " ORDER BY danh_muc_mon.ten_danh_muc, mon_an.ten_mon";
+        return " ORDER BY danh_muc_mon.thu_tu ASC, mon_an.thu_tu ASC, mon_an.ten_mon ASC";
     }
 
     private function ganTenHienThiDanhMuc($rows)

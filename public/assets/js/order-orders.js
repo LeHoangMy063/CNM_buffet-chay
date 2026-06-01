@@ -19,7 +19,10 @@ function cancelOrd(id) {
 }
 
 function refreshOrders() {
-  return fetch(BASE + "/goi-mon/danh-sach?ma=" + encodeURIComponent(CODE))
+  return fetch(
+    BASE + "/goi-mon/danh-sach?ma=" + encodeURIComponent(CODE) + "&_=" + Date.now(),
+    { cache: "no-store" },
+  )
     .then(function (r) {
       return r.json();
     })
@@ -78,7 +81,7 @@ function refreshOrders() {
       });
 
       updateVisibility();
-      renderComboSets();
+      refreshPreferredSuggestions();
     })
     .catch(function (err) {
       console.error("refreshOrders error:", err);
@@ -180,14 +183,17 @@ function renderOrderStatusSidebar(orders) {
 }
 
 function refreshOrders() {
-  return fetch(BASE + "/goi-mon/danh-sach?ma=" + encodeURIComponent(CODE))
+  return fetch(
+    BASE + "/goi-mon/danh-sach?ma=" + encodeURIComponent(CODE) + "&_=" + Date.now(),
+    { cache: "no-store" },
+  )
     .then(function (r) {
       return r.json();
     })
     .then(function (d) {
       if (!d.success) return;
       renderOrderStatusSidebar(d.orders || d.danh_sach || []);
-      renderComboSets();
+      refreshPreferredSuggestions();
     })
     .catch(function (err) {
       console.error("refreshOrders error:", err);

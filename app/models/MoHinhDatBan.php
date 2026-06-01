@@ -393,14 +393,15 @@ class MoHinhDatBan extends MoHinhCo
         if ($ngay_dat !== '' && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $ngay_dat)) {
             $where[] = 'r.ngay_dat = ?';
             $params[] = $ngay_dat;
+        } else {
+            // Only apply time filter if no specific date is selected
+            $where[] = $this->dieuKienChuaQuaGio('r');
+            $params[] = date('Y-m-d H:i:s');
         }
 
         if ($chi_chua_xac_nhan_ban) {
             $where[] = "r.trang_thai = 'cho_xac_nhan'";
         }
-
-        $where[] = $this->dieuKienChuaQuaGio('r');
-        $params[] = date('Y-m-d H:i:s');
 
         $sql = $this->selectDatBanVoiBan();
         if (!empty($where)) {

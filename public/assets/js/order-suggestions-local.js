@@ -77,6 +77,17 @@ function hasWord(text, words) {
   });
 }
 
+function stableItemSeed(value) {
+  var text = String(value == null ? "" : value);
+  var hash = 0;
+
+  for (var i = 0; i < text.length; i++) {
+    hash = (hash * 31 + text.charCodeAt(i)) % 100000;
+  }
+
+  return hash || 1;
+}
+
 function itemSignals(item) {
   var text = menuItemText(item);
   var cat = normalizeText(item.category || item.danh_muc || "");
@@ -214,7 +225,7 @@ function scoreItem(item, context, profile, picked) {
 
   var novelty =
     Math.sin(
-      (Number(item.id || 0) + 1) * (suggestionNonce + profile.variant * 7 + 3),
+      stableItemSeed(item.id) * (suggestionNonce + profile.variant * 7 + 3),
     ) * 6;
   score += novelty;
 
@@ -327,6 +338,9 @@ function buildSuggestionVariant(profile, context, variant) {
     .map(function (item) {
       var localProfile = Object.assign({}, profile, { variant: variant });
       return scoreItem(item, context, localProfile, picked);
+    })
+    .filter(function (scored) {
+      return Number.isFinite(scored.score);
     });
   var selected = [];
 
@@ -344,7 +358,11 @@ function buildSuggestionVariant(profile, context, variant) {
         return rescored;
       })
       .filter(function (scored) {
-        return !picked.ids[scored.item.id] && scored.score > -60;
+        return (
+          !picked.ids[scored.item.id] &&
+          Number.isFinite(scored.score) &&
+          scored.score > -60
+        );
       })
       .sort(function (a, b) {
         return b.score - a.score;
@@ -368,7 +386,11 @@ function buildSuggestionVariant(profile, context, variant) {
         );
       })
       .filter(function (scored) {
-        return !picked.ids[scored.item.id] && scored.score > -60;
+        return (
+          !picked.ids[scored.item.id] &&
+          Number.isFinite(scored.score) &&
+          scored.score > -60
+        );
       })
       .sort(function (a, b) {
         return b.score - a.score;
@@ -401,6 +423,10 @@ function buildComboSets() {
 
 function shuffleSuggestions() {
   suggestionNonce++;
+  if (typeof refreshPreferredSuggestions === "function") {
+    refreshPreferredSuggestions();
+    return;
+  }
   renderComboSets();
 }
 

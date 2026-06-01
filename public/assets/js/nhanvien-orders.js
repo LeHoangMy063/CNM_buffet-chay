@@ -229,7 +229,6 @@
       }
       var isKitchen = typeof STAFF_ROLE !== "undefined" && STAFF_ROLE === "bep";
       var actionBar = el("orderActionBar");
-      var clearBtn = el("clearTableBtn");
       var confirmAll = el("confirmAllBtn");
       var countLabel = el("orderCountLabel");
       var lastUpd = el("lastUpdated");
@@ -238,11 +237,6 @@
       this.renderStats(pendingCount);
 
       if (actionBar) actionBar.style.display = "flex";
-
-      if (clearBtn) {
-        clearBtn.disabled = pendingCount > 0;
-        clearBtn.textContent = "Xác nhận bàn trống";
-      }
       if (confirmAll)
         confirmAll.style.display =
           !isKitchen && pendingCount > 0 ? "inline-flex" : "none";
@@ -342,26 +336,6 @@
             self.loadTables();
           } else {
             toast(res.thong_bao || "Không thể xác nhận tất cả", "err");
-          }
-        },
-      );
-    },
-
-    markTableEmpty: function () {
-      var self = this;
-      if (!self.selectedTableId) return;
-      if (!confirm("Xác nhận bàn này đã trống?")) return;
-
-      postForm(
-        BASE_URL + "/nhan-vien/xac-nhan-ban",
-        { ban_id: self.selectedTableId },
-        function (res) {
-          if (res.success) {
-            toast(res.thong_bao || "Đã xác nhận bàn trống");
-            self.loadTables();
-            self.loadOrders();
-          } else {
-            toast(res.thong_bao || "Không thể cập nhật bàn", "err");
           }
         },
       );

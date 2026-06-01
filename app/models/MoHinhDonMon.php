@@ -62,6 +62,8 @@ class MoHinhDonMon extends MoHinhCo
                ct.trang_thai_hien_tai AS trang_thai,
                ct.ghi_chu,
                m.ten_mon AS ten,
+               m.ten_mon AS ten_mon,
+               m.ten_mon AS item_name,
                m.anh_url,
                dm.ten_danh_muc AS danh_muc
         FROM don_mon d

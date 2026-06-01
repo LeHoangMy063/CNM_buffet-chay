@@ -15,7 +15,6 @@ USE `buffet_chay`;
 
 DROP TABLE IF EXISTS `goi_y_mon_batch`;
 DROP TABLE IF EXISTS `hanh_vi_goi_mon`;
-DROP TABLE IF EXISTS `danh_gia`;
 DROP TABLE IF EXISTS `chitiet_donmon`;
 DROP TABLE IF EXISTS `don_mon`;
 DROP TABLE IF EXISTS `chi_tiet_thanh_toan_phien`;
@@ -204,7 +203,6 @@ CREATE TABLE `hoa_don_phien` (
   `sdt_khach` varchar(20) default NULL,
   `tong_tien_buffet` decimal(12,0) NOT NULL default '0',
   `tong_tien` decimal(12,0) NOT NULL default '0',
-  `giam_gia` decimal(12,0) NOT NULL default '0',
   `thanh_tien` decimal(12,0) NOT NULL default '0',
   `da_tich_diem` tinyint(1) NOT NULL default '0',
   `trang_thai` enum('chua_thanh_toan','da_thanh_toan','da_huy') NOT NULL default 'chua_thanh_toan',
@@ -281,27 +279,11 @@ CREATE TABLE `chitiet_donmon` (
     FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `danh_gia` (
-  `id_danh_gia` nvarchar(30) NOT NULL,
-  `id_khach_tai_khoan` nvarchar(30) NOT NULL,
-  `id_mon_an` nvarchar(30) NOT NULL,
-  `so_sao` tinyint(1) NOT NULL default '5',
-  `binh_luan` text,
-  `ngay_tao` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_danh_gia`),
-  KEY `idx_danh_gia_khach` (`id_khach_tai_khoan`),
-  KEY `idx_danh_gia_mon` (`id_mon_an`),
-  CONSTRAINT `fk_danh_gia_khach`
-    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`) ON DELETE CASCADE,
-  CONSTRAINT `fk_danh_gia_mon`
-    FOREIGN KEY (`id_mon_an`) REFERENCES `mon_an` (`id_mon_an`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `hanh_vi_goi_mon` (
   `id_hanh_vi_goi_mon` nvarchar(30) NOT NULL,
   `id_phien_goi_mon` nvarchar(30) NOT NULL,
   `id_mon_an` nvarchar(30) NOT NULL,
-  `loai_hanh_vi` enum('xem_mon','them_mon','goi_mon','huy_mon') NOT NULL,
+  `loai_hanh_vi` enum('them_mon','goi_mon','huy_mon') NOT NULL,
   `gia_tri` int(11) NOT NULL default '1',
   `thoi_gian` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_hanh_vi_goi_mon`),
@@ -319,7 +301,6 @@ CREATE TABLE `goi_y_mon_batch` (
   `id_mon_goi_y` nvarchar(30) NOT NULL,
   `diem_pho_bien` decimal(10,2) NOT NULL default '0.00',
   `diem_di_cung` decimal(10,2) NOT NULL default '0.00',
-  `diem_danh_gia` decimal(10,2) NOT NULL default '0.00',
   `diem_batch` decimal(10,2) NOT NULL default '0.00',
   `ngay_cap_nhat` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_goi_y_mon_batch`),
@@ -360,7 +341,6 @@ INSERT INTO `bo_dem_ma` (`tien_to`, `gia_tri_hien_tai`, `mo_ta`) VALUES
 ('DMON', 0, 'Don mon'),
 ('CTDM', 0, 'Chi tiet don mon'),
 ('LSTTM', 0, 'Lich su trang thai mon'),
-('DG', 0, 'Danh gia'),
 ('LSD', 0, 'Lich su diem'),
 ('HV', 0, 'Hanh vi goi mon'),
 ('GY', 0, 'Goi y mon batch');
@@ -377,10 +357,10 @@ INSERT INTO `ban` (`id_ban`, `so_ban`, `khu_vuc`, `suc_chua`, `trang_thai`, `ma_
 
 INSERT INTO `danh_muc_mon` (`id_danh_muc_mon`, `ten_danh_muc`, `mo_ta`, `thu_tu`, `dang_hien_thi`) VALUES
 ('DM-KHAIVI', 'Khai vi', NULL, 1, 1),
-('DM-MONCHINH', 'Mon chinh', NULL, 2, 1),
-('DM-TOPPING', 'Topping', NULL, 3, 1),
+('DM-NUOCLAU', 'Nuoc lau', NULL, 2, 1),
+('DM-MONCHINH', 'Mon chinh', NULL, 3, 1),
 ('DM-RAU', 'Rau', NULL, 4, 1),
-('DM-NUOCLAU', 'Nuoc lau', NULL, 5, 1),
+('DM-TOPPING', 'Topping', NULL, 5, 1),
 ('DM-DOUONG', 'Do uong', NULL, 6, 1);
 
 INSERT INTO `mon_an` (`id_mon_an`, `id_danh_muc_mon`, `ten_mon`, `mo_ta`, `anh_url`, `con_mon`, `noi_bat`, `thu_tu`, `ngay_tao`) VALUES

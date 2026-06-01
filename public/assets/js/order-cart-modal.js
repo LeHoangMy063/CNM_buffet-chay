@@ -53,7 +53,7 @@ function renderCart() {
     list.innerHTML = '<div class="cart-empty">Chưa có món nào</div>';
     btn.style.display = "none";
     updateVisibility();
-    renderComboSets();
+    refreshPreferredSuggestions();
     return;
   }
 
@@ -73,7 +73,7 @@ function renderCart() {
 
   btn.style.display = "";
   updateVisibility();
-  renderComboSets();
+  refreshPreferredSuggestions();
 }
 
 function submitAllCart() {
@@ -112,6 +112,7 @@ function submitAllCart() {
         renderCart();
         toast("Gọi món thành công!");
         refreshOrders();
+        window.setTimeout(refreshOrders, 600);
         taiGoiYHybrid(0);
       } else {
         toast(

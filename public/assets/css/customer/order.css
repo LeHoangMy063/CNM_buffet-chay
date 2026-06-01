@@ -81,7 +81,7 @@ body.order-sidebar-collapsed .layout { grid-template-columns:minmax(0,1fr); }
   color:var(--ink);
 }
 .combo-controls {
-  display:grid;
+  display:none;
   grid-template-columns:1fr 1fr auto;
   align-items:center;
   gap:10px 14px;
@@ -174,23 +174,68 @@ body.order-sidebar-collapsed .layout { grid-template-columns:minmax(0,1fr); }
   line-height:1.25;
   margin-top:8px;
 }
+.combo-card-note {
+  max-width:720px;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.45;
+}
 .combo-items {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:8px;
-  margin-top:12px;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:10px;
+  margin-top:14px;
 }
 .combo-dish {
   display:flex;
   flex-direction:column;
-  gap:3px;
+  gap:6px;
   border-radius:var(--radius-sm);
-  padding:9px 11px;
-  background:var(--warm);
+  padding:12px;
+  border:1px solid rgba(107,124,94,.14);
+  background:#fffaf2;
   color:var(--sage-dark);
   font-size:12.5px;
   font-weight:800;
   line-height:1.2;
+}
+.combo-dish-recommend {
+  min-height:148px;
+  position:relative;
+}
+.combo-dish-recommend.is-best-seller {
+  border-color:rgba(184,145,42,.45);
+  background:linear-gradient(180deg,#fff9df,#fffaf2);
+  box-shadow:0 8px 18px rgba(184,145,42,.12);
+}
+.combo-dish-badges {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+}
+.combo-rank,
+.combo-signal {
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:900;
+  line-height:1;
+}
+.combo-rank {
+  min-width:28px;
+  justify-content:center;
+  padding:5px 7px;
+  background:var(--sage-dark);
+  color:#fff;
+}
+.combo-signal {
+  padding:5px 8px;
+  background:#f4e4ad;
+  color:#6f4f06;
 }
 .combo-dish-main {
   display:flex;
@@ -198,11 +243,46 @@ body.order-sidebar-collapsed .layout { grid-template-columns:minmax(0,1fr); }
   justify-content:space-between;
   gap:8px;
 }
+.combo-dish-main strong {
+  color:var(--ink);
+  font-size:14.5px;
+  line-height:1.25;
+}
+.combo-dish-stats {
+  color:#6f4f06;
+  font-size:11.5px;
+  font-weight:900;
+}
 .combo-dish small {
   color:var(--muted);
   font-size:10px;
   font-weight:700;
   white-space:nowrap;
+}
+.combo-dish > small {
+  line-height:1.35;
+  white-space:normal;
+}
+.combo-dish-main small {
+  padding:2px 7px;
+  border-radius:999px;
+  background:#eef6ec;
+  color:var(--sage-dark);
+  white-space:nowrap;
+}
+.combo-dish-add {
+  align-self:flex-start;
+  min-width:0 !important;
+  margin-top:auto !important;
+  padding:6px 10px !important;
+  border:1px solid rgba(107,124,94,.22) !important;
+  background:#fff !important;
+  color:var(--sage-dark) !important;
+  font-size:11.5px;
+}
+.combo-dish-add:hover {
+  background:var(--gold) !important;
+  color:var(--ink) !important;
 }
 .combo-card button {
   width:auto;

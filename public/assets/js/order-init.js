@@ -3,11 +3,13 @@
 setInterval(refreshOrders, 25000);
 
 document.addEventListener("DOMContentLoaded", function () {
-  renderComboSets();
+  var suggestTitle = document.querySelector(".combo-suggest-head h2");
+  if (suggestTitle) suggestTitle.textContent = "Món nên gọi tiếp";
+
   if (typeof INITIAL_ORDERS !== "undefined") {
     renderOrderStatusSidebar(INITIAL_ORDERS || []);
   }
-  taiGoiYHybrid(0);
+  refreshPreferredSuggestions(0);
   updateVisibility();
   refreshOrders();
 
@@ -32,19 +34,24 @@ document.addEventListener("DOMContentLoaded", function () {
         item.classList.remove("active");
       });
       btn.classList.add("active");
-      renderComboSets();
+      refreshPreferredSuggestions();
     });
   });
 
   document
     .getElementById("suggestPeople")
-    ?.addEventListener("change", renderComboSets);
+    ?.addEventListener("change", function () {
+      refreshPreferredSuggestions();
+    });
 
   document
     .getElementById("suggestIntent")
     ?.addEventListener("input", function () {
       window.clearTimeout(window.__suggestIntentTimer);
-      window.__suggestIntentTimer = window.setTimeout(renderComboSets, 180);
+      window.__suggestIntentTimer = window.setTimeout(
+        refreshPreferredSuggestions,
+        180,
+      );
     });
 
   window.addEventListener("resize", function () {
