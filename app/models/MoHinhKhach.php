@@ -4,6 +4,12 @@ require_once dirname(__FILE__) . '/../core/MatKhau.php';
 
 class MoHinhKhach extends MoHinhCo
 {
+    private function taoIdKhachHang()
+    {
+        $ma = $this->taoId('KH' . date('Ym'));
+        return preg_replace('/^KH([0-9]{6})-/', 'KH-$1-', $ma);
+    }
+
     private function nangCapMatKhauMacDinhCu()
     {
         $this->db->query(
@@ -93,6 +99,20 @@ class MoHinhKhach extends MoHinhCo
         return !empty($rows) ? $rows[0] : null;
     }
 
+    public function layTheoDangNhapQuenMatKhau($dangNhap)
+    {
+        $dangNhap = trim($dangNhap);
+        if ($dangNhap === '') {
+            return null;
+        }
+
+        if (strpos($dangNhap, '@') !== false) {
+            return $this->layTheoEmail($dangNhap);
+        }
+
+        return $this->layTheoSDT($dangNhap);
+    }
+
     public function dangKy($ho_ten, $so_dien_thoai, $email, $mat_khau)
     {
         $this->damBaoBangKhachTaiKhoan();
@@ -102,7 +122,7 @@ class MoHinhKhach extends MoHinhCo
             return false;
         }
 
-        $id = $this->taoId('KH');
+        $id = $this->taoIdKhachHang();
         $sql = "INSERT INTO khach_tai_khoan
             (id_khach_tai_khoan, ten_dang_nhap, mat_khau, vai_tro, dang_hoat_dong,
              ho_ten, email, so_dien_thoai, diem_tich_luy)
@@ -129,11 +149,101 @@ class MoHinhKhach extends MoHinhCo
         return $this->db->query($sql, array($diem, $id));
     }
 
+    public function truDiem($id, $diem)
+    {
+        $this->damBaoBangKhachTaiKhoan();
+
+        $diem = (int)$diem;
+        $sql = "UPDATE khach_tai_khoan SET diem_tich_luy = diem_tich_luy - ? WHERE id_khach_tai_khoan = ?";
+        return $this->db->query($sql, array($diem, $id));
+    }
+
     public function capNhatMatKhauDaMaHoa($id, $matKhauDaMaHoa)
     {
         $this->damBaoBangKhachTaiKhoan();
 
         $sql = "UPDATE khach_tai_khoan SET mat_khau = ? WHERE id_khach_tai_khoan = ?";
         return $this->db->query($sql, array($matKhauDaMaHoa, $id));
+    }
+
+    public function huyTokenDatLaiMatKhauCu($idKhach)
+    {
+        $sql = "UPDATE dat_lai_mat_khau
+                SET da_su_dung = 1, used_at = NOW()
+                WHERE id_khach_tai_khoan = ?
+                  AND da_su_dung = 0";
+        return $this->db->query($sql, array($idKhach));
+    }
+
+    public function taoYeuCauDatLaiMatKhau($idKhach, $kenhGui, $diaChiGui, $tokenHash, $hetHanLuc)
+    {
+        $id = $this->taoId('RESET' . date('Ymd'), 4, false);
+        $sql = "INSERT INTO dat_lai_mat_khau
+                    (id_dat_lai_mat_khau, id_khach_tai_khoan, kenh_gui, dia_chi_gui, token_hash, het_han_luc)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $ok = $this->db->query($sql, array($id, $idKhach, $kenhGui, $diaChiGui, $tokenHash, $hetHanLuc));
+        return $ok ? $id : false;
+    }
+
+    public function layYeuCauDatLaiMatKhauTheoHash($tokenHash)
+    {
+        $sql = "SELECT r.id_dat_lai_mat_khau, r.id_khach_tai_khoan, r.het_han_luc, r.da_su_dung,
+                       k.id_khach_tai_khoan AS id, k.ten_dang_nhap, k.vai_tro, k.dang_hoat_dong,
+                       k.ho_ten, k.email, k.so_dien_thoai
+                FROM dat_lai_mat_khau r
+                INNER JOIN khach_tai_khoan k ON k.id_khach_tai_khoan = r.id_khach_tai_khoan
+                WHERE r.token_hash = ?
+                  AND r.da_su_dung = 0
+                  AND r.het_han_luc >= NOW()
+                  AND k.dang_hoat_dong = 1
+                LIMIT 1";
+        $rows = $this->db->query($sql, array($tokenHash));
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    public function layYeuCauDatLaiMatKhauOtp($idDatLaiMatKhau, $otpHash, $kenhGui)
+    {
+        $sql = "SELECT r.id_dat_lai_mat_khau, r.id_khach_tai_khoan, r.het_han_luc, r.da_su_dung,
+                       r.so_lan_thu, k.id_khach_tai_khoan AS id, k.ten_dang_nhap, k.vai_tro,
+                       k.dang_hoat_dong, k.ho_ten, k.email, k.so_dien_thoai
+                FROM dat_lai_mat_khau r
+                INNER JOIN khach_tai_khoan k ON k.id_khach_tai_khoan = r.id_khach_tai_khoan
+                WHERE r.id_dat_lai_mat_khau = ?
+                  AND r.token_hash = ?
+                  AND r.kenh_gui = ?
+                  AND r.da_su_dung = 0
+                  AND r.het_han_luc >= NOW()
+                  AND k.dang_hoat_dong = 1
+                LIMIT 1";
+        $rows = $this->db->query($sql, array($idDatLaiMatKhau, $otpHash, $kenhGui));
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    public function layYeuCauDatLaiMatKhauTheoId($idDatLaiMatKhau)
+    {
+        $sql = "SELECT r.id_dat_lai_mat_khau, r.id_khach_tai_khoan, r.kenh_gui, r.het_han_luc,
+                       r.da_su_dung, r.so_lan_thu, k.ho_ten, k.so_dien_thoai
+                FROM dat_lai_mat_khau r
+                INNER JOIN khach_tai_khoan k ON k.id_khach_tai_khoan = r.id_khach_tai_khoan
+                WHERE r.id_dat_lai_mat_khau = ?
+                  AND r.da_su_dung = 0
+                  AND r.het_han_luc >= NOW()
+                LIMIT 1";
+        $rows = $this->db->query($sql, array($idDatLaiMatKhau));
+        return !empty($rows) ? $rows[0] : null;
+    }
+
+    public function tangSoLanThuDatLaiMatKhau($idDatLaiMatKhau)
+    {
+        $sql = "UPDATE dat_lai_mat_khau SET so_lan_thu = so_lan_thu + 1 WHERE id_dat_lai_mat_khau = ?";
+        return $this->db->query($sql, array($idDatLaiMatKhau));
+    }
+
+    public function danhDauTokenDatLaiMatKhauDaDung($idDatLaiMatKhau)
+    {
+        $sql = "UPDATE dat_lai_mat_khau
+                SET da_su_dung = 1, used_at = NOW()
+                WHERE id_dat_lai_mat_khau = ?";
+        return $this->db->query($sql, array($idDatLaiMatKhau));
     }
 }

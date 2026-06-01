@@ -185,6 +185,11 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                 <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tong-quan?tab=dat-ban">
                     <span>Quản lý bàn</span>
                 </a>
+                <?php if ($vaiTro === 'nhanvien'): ?>
+                    <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/khach-hang">
+                        <span>Quản lý khách hàng</span>
+                    </a>
+                <?php endif; ?>
                 <a class="side-link active" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem">
                     <span>Tích điểm</span>
                 </a>
@@ -269,7 +274,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                             </div>
                                         </div>
                                         <form id="form-tich-diem" class="form-tich-diem">
-                                            <input type="hidden" name="tai_khoan_id" value="0">
+                                            <input type="hidden" name="tai_khoan_id" value="">
                                             <input type="hidden" name="bang_tich_diem" value="khach_tai_khoan">
                                             <input type="hidden" name="sdt" value="<?php echo htmlspecialchars(isset($sdt) ? $sdt : '', ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="ngay" value="<?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?>">
@@ -283,7 +288,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                         </form>
                                     <?php else: ?>
                                         <form id="form-tich-diem" class="form-tich-diem">
-                                            <input type="hidden" name="tai_khoan_id" value="0">
+                                            <input type="hidden" name="tai_khoan_id" value="">
                                             <input type="hidden" name="bang_tich_diem" value="khach_tai_khoan">
                                             <input type="hidden" name="sdt" value="<?php echo htmlspecialchars(isset($sdt) ? $sdt : '', ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="ngay" value="<?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?>">
@@ -324,7 +329,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                     <div style="color:var(--muted); font-size:13px; margin-top:2px">
                                         <?php echo htmlspecialchars($khach['so_dien_thoai'], ENT_QUOTES, 'UTF-8') ?>
                                         <span style="margin:0 6px">·</span>
-                                        ID: <?php echo intval($khach['id']) ?>
+                                        ID: <?php echo htmlspecialchars($khach['id'], ENT_QUOTES, 'UTF-8') ?>
                                     </div>
                                 </div>
                                 <div class="customer-points">
@@ -356,7 +361,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                     <?php endif; ?>
 
                                     <form id="form-tich-diem" class="form-tich-diem">
-                                        <input type="hidden" name="tai_khoan_id" value="<?php echo intval($khach['id']) ?>">
+                                        <input type="hidden" name="tai_khoan_id" value="<?php echo htmlspecialchars($khach['id'], ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="bang_tich_diem" value="<?php echo htmlspecialchars(isset($khach['_bang_tich_diem']) ? $khach['_bang_tich_diem'] : 'khach_tai_khoan', ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="sdt" value="<?php echo htmlspecialchars(isset($sdt) ? $sdt : '', ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="ngay" value="<?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?>">
@@ -386,6 +391,27 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                     </form>
                                 </div>
                             </div>
+                            <div class="panel" style="margin-top:16px">
+                                <div class="panel-head">
+                                    <h2>Xóa điểm</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <form class="form-tich-diem">
+                                        <input type="hidden" name="tai_khoan_id" value="<?php echo htmlspecialchars($khach['id'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="bang_tich_diem" value="khach_tai_khoan">
+                                        <input type="hidden" name="hanh_dong" value="xoa">
+                                        <input type="hidden" name="tu_hoa_don" value="0">
+                                        <div class="td-field">
+                                            <label class="td-label">Số điểm cần xóa</label>
+                                            <input class="td-input" type="number" name="diem" min="1" max="<?php echo (int)$khach['diem_tich_luy']; ?>" placeholder="Nhập số điểm">
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:10px">
+                                            <button type="button" class="btn danger btnTichDiem">Xóa điểm</button>
+                                            <span class="result-ok resultMsg" style="display:none"></span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         <?php endif; ?>
 
                         <?php if (!empty($hoaDonChuaSdt)): ?>
@@ -403,16 +429,16 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                         $hdDiem = isset($hd['diem_quy_doi']) ? (int)$hd['diem_quy_doi'] : (int)floor($hdTongTien / 10000);
                                         ?>
                                         <form class="form-tich-diem" style="<?php echo $idx > 0 ? 'border-top:1px solid var(--line); padding-top:16px; margin-top:16px' : '' ?>">
-                                            <input type="hidden" name="tai_khoan_id" value="0">
+                                            <input type="hidden" name="tai_khoan_id" value="">
                                             <input type="hidden" name="bang_tich_diem" value="khach_tai_khoan">
                                             <input type="hidden" name="ngay" value="<?php echo htmlspecialchars($ngayTraCuu, ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="tu_hoa_don" value="1">
-                                            <input type="hidden" name="hoa_don_id" value="<?php echo intval($hd['id']); ?>">
+                                            <input type="hidden" name="hoa_don_id" value="<?php echo htmlspecialchars($hd['id'], ENT_QUOTES, 'UTF-8'); ?>">
                                             <input type="hidden" name="diem" value="<?php echo $hdDiem; ?>">
 
                                             <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px">
                                                 <div>
-                                                    <div style="font-weight:800">Hóa đơn #<?php echo intval($hd['id']); ?></div>
+                                                    <div style="font-weight:800">Hóa đơn #<?php echo htmlspecialchars($hd['id'], ENT_QUOTES, 'UTF-8'); ?></div>
                                                     <div style="color:var(--muted); font-size:12px">
                                                         <?php echo !empty($hd['so_ban']) ? 'Bàn ' . htmlspecialchars($hd['so_ban'], ENT_QUOTES, 'UTF-8') . ' · ' : ''; ?>
                                                         <?php echo htmlspecialchars(isset($hd['ngay_tao']) && $hd['ngay_tao'] ? date('d-m-y H:i', strtotime($hd['ngay_tao'])) : '', ENT_QUOTES, 'UTF-8'); ?>
@@ -497,31 +523,36 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                     var diemInp = form ? form.querySelector('[name="diem"]') : null;
                     var amtInp = form ? form.querySelector('#amountInput') : null;
                     var resultMsg = form ? (form.querySelector('.resultMsg') || form.querySelector('#resultMsg')) : null;
+                    var hanhDong = formVal(form, 'hanh_dong') || 'cong';
                     var diem = safeInt(diemInp ? diemInp.value : 0);
                     var amt = safeInt(amtInp ? amtInp.value : 0);
                     var sdt = formVal(form, 'sdt');
                     var fromInvoice = formVal(form, 'tu_hoa_don') === '1';
 
-                    if (!sdt) {
+                    if (hanhDong !== 'xoa' && !sdt) {
                         alert('Vui lòng nhập số điện thoại khách hàng');
                         return;
                     }
-                    if (!fromInvoice && amt <= 0) {
+                    if (hanhDong !== 'xoa' && !fromInvoice && amt <= 0) {
                         alert('Vui lòng nhập số tiền bill');
                         return;
                     }
-                    if (!fromInvoice) {
+                    if (hanhDong !== 'xoa' && !fromInvoice) {
                         diem = Math.floor(amt / RATE);
                         if (diemInp) diemInp.value = diem > 0 ? diem : '';
                     }
                     if (diem <= 0) {
-                        alert('Số tiền chưa đủ để quy đổi điểm');
+                        alert(hanhDong === 'xoa' ? 'Vui lòng nhập số điểm cần xóa' : 'Số tiền chưa đủ để quy đổi điểm');
                         return;
                     }
-                    if (!confirm('Cộng ' + diem + ' điểm cho khách?')) return;
+                    if (hanhDong === 'xoa' && currentEl && diem > safeInt(currentEl.textContent)) {
+                        alert('Không thể xóa nhiều hơn số điểm hiện có');
+                        return;
+                    }
+                    if (!confirm((hanhDong === 'xoa' ? 'Xóa ' : 'Cộng ') + diem + ' điểm ' + (hanhDong === 'xoa' ? 'của khách?' : 'cho khách?'))) return;
 
                     var fd = new FormData();
-                    ['tai_khoan_id', 'bang_tich_diem', 'sdt', 'ngay', 'tu_hoa_don', 'hoa_don_id', 'ten_khach'].forEach(function(k) {
+                    ['tai_khoan_id', 'bang_tich_diem', 'sdt', 'ngay', 'tu_hoa_don', 'hoa_don_id', 'ten_khach', 'hanh_dong'].forEach(function(k) {
                         fd.append(k, formVal(form, k));
                     });
                     fd.append('diem', diem);
@@ -536,9 +567,9 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                             if (res.success) {
                                 if (resultMsg) {
                                     resultMsg.style.display = '';
-                                    resultMsg.textContent = res.thong_bao || 'Cộng điểm thành công';
+                                    resultMsg.textContent = res.thong_bao || (hanhDong === 'xoa' ? 'Xóa điểm thành công' : 'Cộng điểm thành công');
                                 }
-                                if (currentEl) currentEl.textContent = safeInt(currentEl.textContent) + diem;
+                                if (currentEl) currentEl.textContent = safeInt(currentEl.textContent) + (hanhDong === 'xoa' ? -diem : diem);
                                 if (formVal(form, 'tu_hoa_don') === '1') {
                                     self.disabled = true;
                                     self.textContent = 'Đã tích điểm';

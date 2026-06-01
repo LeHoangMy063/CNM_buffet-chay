@@ -57,6 +57,11 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                             Quản lý gọi món
                         </button>
                     </div>
+                    <?php if ($vaiTro === 'nhanvien'): ?>
+                        <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/khach-hang">
+                            <span>Quản lý khách hàng</span>
+                        </a>
+                    <?php endif; ?>
                     <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem">
                         <span>Tích điểm</span>
                     </a>
@@ -92,6 +97,12 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                             <h3><?php echo htmlspecialchars($tenNhanVien, ENT_QUOTES, 'UTF-8'); ?></h3>
                             <p>Chào mừng trở lại. Hôm nay là <?php echo date('d-m-y'); ?>.</p>
                         </div>
+                        <?php if ($vaiTro === 'nhanvien'): ?>
+                            <a class="feature-card" href="<?php echo BASE_URL; ?>/nhan-vien/khach-hang">
+                                <strong>Quản lý khách hàng</strong>
+                                <small>Xem danh sách tài khoản khách, điểm tích lũy và lịch sử đặt bàn, thanh toán.</small>
+                            </a>
+                        <?php endif; ?>
                     </div>
 
                     <?php require dirname(__FILE__) . '/partials/_thong-ke.php'; ?>

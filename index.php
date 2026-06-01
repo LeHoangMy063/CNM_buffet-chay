@@ -19,6 +19,7 @@ require_once dirname(__FILE__) . '/app/controllers/KhachHangController.php';
 require_once dirname(__FILE__) . '/app/controllers/QuanLyController.php';
 require_once dirname(__FILE__) . '/app/controllers/QuanTriController.php';
 require_once dirname(__FILE__) . '/app/controllers/NhanVienController.php';
+require_once dirname(__FILE__) . '/app/controllers/KhachHangNhanVienController.php';
 require_once dirname(__FILE__) . '/app/controllers/XacThucController.php';
 require_once dirname(__FILE__) . '/app/controllers/GoiYMonController.php';
 
@@ -80,6 +81,10 @@ $routes = array(
     array('POST', '/khach/dang-nhap/xu-ly', 'XacThucController', 'xuLyDangNhapKhach'),
     array('GET',  '/khach/dang-ky',         'XacThucController', 'hienThiDangKy'),
     array('POST', '/khach/dang-ky/xu-ly',   'XacThucController', 'xuLyDangKy'),
+    array('GET',  '/khach/quen-mat-khau',   'XacThucController', 'hienThiQuenMatKhau'),
+    array('POST', '/khach/quen-mat-khau/gui', 'XacThucController', 'guiLienKetDatLaiMatKhau'),
+    array('GET',  '/khach/dat-lai-mat-khau', 'XacThucController', 'hienThiDatLaiMatKhau'),
+    array('POST', '/khach/dat-lai-mat-khau/xu-ly', 'XacThucController', 'xuLyDatLaiMatKhau'),
     array('POST', '/danh-gia',              'KhachHangController', 'danhGia'),
 
     // QUAN LY
@@ -136,6 +141,9 @@ $routes = array(
     array('POST', '/nhan-vien/dat-ban/gan-ban', 'NhanVienController', 'ganBanDatBanTheoSucChuaNhaHang'),
     array('POST', '/nhan-vien/dat-ban/xac-nhan-gan-ban', 'NhanVienController', 'xacNhanGanBan'),
 
+    array('GET',  '/nhan-vien/khach-hang', 'KhachHangNhanVienController', 'index'),
+    array('GET',  '/nhan-vien/khach-hang/chi-tiet/{id}', 'KhachHangNhanVienController', 'chiTiet'),
+
     array('GET',  '/nhan-vien/tich-diem',      'NhanVienController', 'tichDiem'),
     array('POST', '/nhan-vien/tich-diem/xu-ly', 'NhanVienController', 'xuLyTichDiem'),
 );
@@ -154,13 +162,25 @@ foreach ($routes as $route) {
     $routeDuongDan   = $route[1];
     $tenClass        = $route[2];
     $tenPhuongThuc   = $route[3];
+    $thamSoRoute      = array();
 
     if ($routePhuongThuc === $phuongThuc && $routeDuongDan === $uri) {
         $khop = true;
+    } elseif ($routePhuongThuc === $phuongThuc && strpos($routeDuongDan, '{') !== false) {
+        $pattern = preg_replace('/\\\{[^\/]+\\\}/', '([^/]+)', preg_quote($routeDuongDan, '#'));
+        if (preg_match('#^' . $pattern . '$#', $uri, $matches)) {
+            array_shift($matches);
+            foreach ($matches as $match) {
+                $thamSoRoute[] = rawurldecode($match);
+            }
+            $khop = true;
+        }
+    }
 
+    if ($khop) {
         try {
             $ctrl = new $tenClass();
-            $ctrl->$tenPhuongThuc();
+            call_user_func_array(array($ctrl, $tenPhuongThuc), $thamSoRoute);
         } catch (Exception $e) {
             header('HTTP/1.1 500 Internal Server Error');
             echo '<h1>500 - Loi may chu</h1>';

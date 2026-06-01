@@ -19,11 +19,21 @@ services:
       MONGO_ENABLED: ${MONGO_ENABLED:-1}
       MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
       MONGO_DB: ${MONGO_DB:-buffet_chay_analytics}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@buffet-chay.local}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Buffet Chay An Lac}
+      PASSWORD_RESET_MINUTES: ${PASSWORD_RESET_MINUTES:-15}
+      MAIL_DRIVER: ${MAIL_DRIVER:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-}
     volumes:
       - ./:/var/www/html/buffet-chay
     depends_on:
       - db
       - mongo
+      - mailpit
 
   db:
     image: mariadb:10.5
@@ -56,6 +66,12 @@ services:
       - "27018:27017"
     volumes:
       - mongo_data:/data/db
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   db_data:

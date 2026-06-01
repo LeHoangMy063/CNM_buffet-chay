@@ -4,6 +4,7 @@ require_once dirname(__FILE__) . '/../models/MoHinhCo.php';
 require_once dirname(__FILE__) . '/../models/MoHinh.php';
 require_once dirname(__FILE__) . '/../models/MoHinhKhach.php';
 require_once dirname(__FILE__) . '/../core/MatKhau.php';
+require_once dirname(__FILE__) . '/../core/DichVuEmail.php';
 require_once dirname(__FILE__) . '/BoieuKhienCo.php';
 
 class XacThucController extends BoieuKhienCo
@@ -178,6 +179,154 @@ class XacThucController extends BoieuKhienCo
         echo json_encode(array('success' => true, 'chuyen_huong' => BASE_URL . '/'));
     }
 
+    // ================= QUEN MAT KHAU KHACH HANG =================
+    public function hienThiQuenMatKhau()
+    {
+        $this->view('auth/quen-mat-khau');
+    }
+
+    public function guiLienKetDatLaiMatKhau()
+    {
+        $email = trim($this->post('email', ''));
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->json(array('success' => false, 'thong_bao' => 'Vui long nhap Gmail/email hop le'));
+        }
+
+        $khach = $this->moHinhKhach->layTheoEmail($email);
+
+        if (!$khach || $khach['vai_tro'] !== 'khach') {
+            $this->json(array(
+                'success' => true,
+                'thong_bao' => 'Neu email ton tai, he thong se gui ma OTP dat lai mat khau.'
+            ));
+        }
+
+        if ((int)$khach['dang_hoat_dong'] === 0) {
+            $this->json(array('success' => false, 'thong_bao' => 'Tai khoan da bi khoa, vui long lien he nhan vien'));
+        }
+
+        $otp = $this->taoOtpEmail();
+        $otpHash = hash('sha256', $otp);
+        $soPhut = PASSWORD_RESET_MINUTES > 0 ? PASSWORD_RESET_MINUTES : 15;
+        if ($soPhut < 2) {
+            $soPhut = 2;
+        } elseif ($soPhut > 30) {
+            $soPhut = 30;
+        }
+        $hetHanLuc = date('Y-m-d H:i:s', time() + ($soPhut * 60));
+
+        $this->moHinhKhach->huyTokenDatLaiMatKhauCu($khach['id']);
+        $idReset = $this->moHinhKhach->taoYeuCauDatLaiMatKhau($khach['id'], 'email', $email, $otpHash, $hetHanLuc);
+
+        if (!$idReset) {
+            $this->json(array('success' => false, 'thong_bao' => 'Khong tao duoc yeu cau dat lai mat khau, vui long thu lai'));
+        }
+
+        $daGui = $this->guiEmailOtpDatLaiMatKhau($email, $khach['ho_ten'], $otp, $soPhut);
+
+        if (!$daGui) {
+            $this->moHinhKhach->danhDauTokenDatLaiMatKhauDaDung($idReset);
+            $this->json(array('success' => false, 'thong_bao' => 'Khong gui duoc email OTP. Vui long kiem tra cau hinh mail tren server.'));
+        }
+
+        $this->json(array(
+            'success' => true,
+            'thong_bao' => 'Da gui ma OTP den email da dang ky. Ma co hieu luc trong ' . $soPhut . ' phut.',
+            'chuyen_huong' => BASE_URL . '/khach/dat-lai-mat-khau?yeu_cau=' . rawurlencode($idReset)
+        ));
+    }
+
+    public function hienThiDatLaiMatKhau()
+    {
+        $idYeuCau = trim($this->get('yeu_cau', ''));
+        $hopLe = false;
+
+        if ($idYeuCau !== '') {
+            $yeuCau = $this->moHinhKhach->layYeuCauDatLaiMatKhauTheoId($idYeuCau);
+            $hopLe = ($yeuCau && $yeuCau['kenh_gui'] === 'email') ? true : false;
+        }
+
+        $this->view('auth/dat-lai-mat-khau', array(
+            'idYeuCau' => $idYeuCau,
+            'hopLe' => $hopLe
+        ));
+    }
+
+    public function xuLyDatLaiMatKhau()
+    {
+        $idYeuCau = trim($this->post('yeu_cau', ''));
+        $otp = trim($this->post('otp', ''));
+        $matKhau = $this->post('mat_khau', '');
+        $xacNhan = $this->post('xac_nhan_mat_khau', '');
+
+        if ($idYeuCau === '' || !preg_match('/^[0-9]{6}$/', $otp)) {
+            $this->json(array('success' => false, 'thong_bao' => 'Ma OTP khong hop le'));
+        }
+
+        $yeuCauHienTai = $this->moHinhKhach->layYeuCauDatLaiMatKhauTheoId($idYeuCau);
+        if (!$yeuCauHienTai || $yeuCauHienTai['kenh_gui'] !== 'email') {
+            $this->json(array('success' => false, 'thong_bao' => 'Yeu cau OTP da het han hoac da duoc su dung'));
+        }
+
+        if ((int)$yeuCauHienTai['so_lan_thu'] >= 5) {
+            $this->moHinhKhach->danhDauTokenDatLaiMatKhauDaDung($idYeuCau);
+            $this->json(array('success' => false, 'thong_bao' => 'Ban da nhap sai OTP qua nhieu lan. Vui long gui lai OTP moi.'));
+        }
+
+        if ($matKhau === '' || strlen($matKhau) < 6) {
+            $this->json(array('success' => false, 'thong_bao' => 'Mat khau moi phai co it nhat 6 ky tu'));
+        }
+
+        if ($matKhau !== $xacNhan) {
+            $this->json(array('success' => false, 'thong_bao' => 'Mat khau xac nhan khong khop'));
+        }
+
+        $otpHash = hash('sha256', $otp);
+        $yeuCau = $this->moHinhKhach->layYeuCauDatLaiMatKhauOtp($idYeuCau, $otpHash, 'email');
+
+        if (!$yeuCau) {
+            $this->moHinhKhach->tangSoLanThuDatLaiMatKhau($idYeuCau);
+            $this->json(array('success' => false, 'thong_bao' => 'Ma OTP khong dung hoac da het han'));
+        }
+
+        $ok = $this->moHinhKhach->capNhatMatKhauDaMaHoa($yeuCau['id_khach_tai_khoan'], MatKhau::maHoa($matKhau));
+
+        if ($ok) {
+            $this->moHinhKhach->danhDauTokenDatLaiMatKhauDaDung($yeuCau['id_dat_lai_mat_khau']);
+            $this->json(array(
+                'success' => true,
+                'thong_bao' => 'Dat lai mat khau thanh cong. Vui long dang nhap lai.',
+                'chuyen_huong' => BASE_URL . '/khach/dang-nhap'
+            ));
+        }
+
+        $this->json(array('success' => false, 'thong_bao' => 'Khong cap nhat duoc mat khau, vui long thu lai'));
+    }
+
+    private function taoOtpEmail()
+    {
+        if (function_exists('random_int')) {
+            return (string)random_int(100000, 999999);
+        }
+
+        return (string)mt_rand(100000, 999999);
+    }
+
+    private function guiEmailOtpDatLaiMatKhau($email, $hoTen, $otp, $soPhut)
+    {
+        $tenNguoiNhan = trim($hoTen) !== '' ? trim($hoTen) : 'khach hang';
+        $subject = 'Ma OTP dat lai mat khau - ' . APP_NAME;
+        $body = "Xin chao " . $tenNguoiNhan . ",\n\n"
+            . "Ban vua yeu cau dat lai mat khau tai " . APP_NAME . ".\n"
+            . "Ma OTP dat lai mat khau cua ban la: " . $otp . "\n\n"
+            . "Ma OTP co hieu luc trong " . $soPhut . " phut va chi duoc su dung mot lan.\n"
+            . "Neu ban khong yeu cau, hay bo qua email nay.\n";
+
+        $dichVuEmail = new DichVuEmail();
+        return $dichVuEmail->gui($email, $subject, $body);
+    }
+
     // ================= DANG KY =================
     public function hienThiDangKy()
     {
@@ -191,9 +340,25 @@ class XacThucController extends BoieuKhienCo
         $email       = trim($this->post('email', ''));
         $matKhau     = $this->post('mat_khau', '');
         $xacNhanMk   = $this->post('xac_nhan_mat_khau', '');
+        $dungMatKhauMacDinh = $this->post('mat_khau_mac_dinh', '') === '1';
 
-        if ($hoTen === '' || $soDienThoai === '' || $matKhau === '') {
+        if ($hoTen === '' || $soDienThoai === '') {
             $this->json(array('success' => false, 'thong_bao' => 'Vui long nhap day du thong tin bat buoc'));
+            return;
+        }
+
+        if (!preg_match('/^0[0-9]{9}$/', $soDienThoai)) {
+            $this->json(array('success' => false, 'thong_bao' => 'So dien thoai khong hop le (phai bat dau 0, 10 chu so)'));
+            return;
+        }
+
+        if ($dungMatKhauMacDinh) {
+            $matKhau = substr(preg_replace('/[^0-9]/', '', $soDienThoai), -6);
+            $xacNhanMk = $matKhau;
+        }
+
+        if ($matKhau === '') {
+            $this->json(array('success' => false, 'thong_bao' => 'Vui long nhap mat khau'));
             return;
         }
 

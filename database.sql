@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `phien_ban`;
 DROP TABLE IF EXISTS `phien_goi_mon`;
 DROP TABLE IF EXISTS `chitiet_datban`;
 DROP TABLE IF EXISTS `dat_ban`;
+DROP TABLE IF EXISTS `dat_lai_mat_khau`;
 DROP TABLE IF EXISTS `khach_tai_khoan`;
 DROP TABLE IF EXISTS `tai_khoan`;
 DROP TABLE IF EXISTS `mon_an`;
@@ -108,6 +109,26 @@ CREATE TABLE `khach_tai_khoan` (
   PRIMARY KEY (`id_khach_tai_khoan`),
   UNIQUE KEY `uq_khach_ten_dang_nhap` (`ten_dang_nhap`),
   UNIQUE KEY `uq_khach_so_dien_thoai` (`so_dien_thoai`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `dat_lai_mat_khau` (
+  `id_dat_lai_mat_khau` nvarchar(40) NOT NULL,
+  `id_khach_tai_khoan` nvarchar(30) NOT NULL,
+  `kenh_gui` enum('email') NOT NULL default 'email',
+  `dia_chi_gui` varchar(120) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `het_han_luc` datetime NOT NULL,
+  `da_su_dung` tinyint(1) NOT NULL default '0',
+  `so_lan_thu` int(11) NOT NULL default '0',
+  `created_at` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `used_at` datetime default NULL,
+  PRIMARY KEY (`id_dat_lai_mat_khau`),
+  UNIQUE KEY `uq_reset_token_hash` (`token_hash`),
+  KEY `idx_reset_khach` (`id_khach_tai_khoan`),
+  KEY `idx_reset_het_han` (`het_han_luc`),
+  CONSTRAINT `fk_reset_khach`
+    FOREIGN KEY (`id_khach_tai_khoan`) REFERENCES `khach_tai_khoan` (`id_khach_tai_khoan`)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `dat_ban` (
@@ -328,7 +349,8 @@ INSERT INTO `bo_dem_ma` (`tien_to`, `gia_tri_hien_tai`, `mo_ta`) VALUES
 ('TK-QL', 2, 'Tai khoan quan ly'),
 ('TK-NV', 1, 'Tai khoan nhan vien'),
 ('TK-BEP', 1, 'Tai khoan bep'),
-('KH', 3, 'Khach hang'),
+('KH202604', 18, 'Khach hang thang 202604'),
+('KH202605', 4, 'Khach hang thang 202605'),
 ('DB', 5, 'Dat ban'),
 ('PBD', 6, 'Chi tiet dat ban'),
 ('PH', 0, 'Phien goi mon'),
@@ -392,16 +414,16 @@ INSERT INTO `tai_khoan` (`id_tai_khoan`, `ten_dang_nhap`, `mat_khau`, `vai_tro`,
 ('TK-BEP-001', 'nhanvien02', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'bep', 1, 'Nhân viên bếp', NULL, NULL, '2026-05-26 00:00:00');
 
 INSERT INTO `khach_tai_khoan` (`id_khach_tai_khoan`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
-('KH-001', '0932396610', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),
-('KH-002', '01871638136', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '01871638136', 0, '2026-04-27 15:52:31'),
-('KH-003', '0187193123', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyen AA', '', '0187193123', 0, '2026-04-27 15:57:39');
+('KH-202604-016', '0932396610', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Lê Hoàng My', '', '0932396610', 0, '2026-04-27 15:51:20'),
+('KH-202604-017', '01871638136', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyễn Anh Ân', '', '01871638136', 0, '2026-04-27 15:52:31'),
+('KH-202604-018', '0187193123', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Nguyễn Ánh An', '', '0187193123', 0, '2026-04-27 15:57:39');
 
 INSERT INTO `dat_ban` (`id_dat_ban`, `ma_dat_ban`, `id_khach_tai_khoan`, `ten_khach`, `sdt_khach`, `ngay_dat`, `gio_dat`, `so_nguoi_lon`, `so_tre_em`, `ghi_chu`, `trang_thai`, `created_at`) VALUES
-('DB-20260430-52765', 'DB-20260430-52765', NULL, 'My', '0826893126', '2026-05-01', '10:00:00', 13, 0, '', 'expired', '2026-04-30 21:43:39'),
-('DB-20260430-98422', 'DB-20260430-98422', NULL, 'Le Anh', '01827132', '2026-05-01', '10:00:00', 20, 0, '', 'da_xac_nhan', '2026-04-30 21:44:18'),
-('DB-20260430-63833', 'DB-20260430-63833', NULL, 'Le Anh', '018271321', '2026-05-01', '11:30:00', 10, 0, '', 'da_huy', '2026-04-30 21:45:33'),
-('DB-20260430-67602', 'DB-20260430-67602', NULL, 'My Mi', '01827132', '2026-05-01', '12:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:57:42'),
-('DB-20260430-60104', 'DB-20260430-60104', NULL, 'My MII', '01827132', '2026-05-01', '15:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:58:02');
+('DB-20260430-52765', 'DB-20260430-52765', NULL, 'Mỹ', '0826893126', '2026-05-01', '10:00:00', 13, 0, '', 'expired', '2026-04-30 21:43:39'),
+('DB-20260430-98422', 'DB-20260430-98422', NULL, 'Lê Anh', '01827132', '2026-05-01', '10:00:00', 20, 0, '', 'da_xac_nhan', '2026-04-30 21:44:18'),
+('DB-20260430-63833', 'DB-20260430-63833', NULL, 'Lê Anh', '018271321', '2026-05-01', '11:30:00', 10, 0, '', 'da_huy', '2026-04-30 21:45:33'),
+('DB-20260430-67602', 'DB-20260430-67602', NULL, 'Mỹ Mi', '01827132', '2026-05-01', '12:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:57:42'),
+('DB-20260430-60104', 'DB-20260430-60104', NULL, 'Mỹ My', '01827132', '2026-05-01', '15:30:00', 2, 0, '', 'cho_xac_nhan', '2026-04-30 21:58:02');
 
 INSERT INTO `chitiet_datban` (`id_chitiet_datban`, `id_dat_ban`, `id_ban`, `thoi_gian_bat_dau`, `thoi_gian_ket_thuc`, `trang_thai`) VALUES
 ('PBD-20260430-001', 'DB-20260430-98422', 'BAN-A1', '2026-05-01 10:00:00', '2026-05-01 11:30:00', 'dang_gan'),

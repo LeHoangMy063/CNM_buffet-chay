@@ -682,7 +682,11 @@ class NhanVienController extends BoieuKhienCo
         }
 
         $taiKhoanId = trim((string)$this->post('tai_khoan_id', ''));
+        if ($taiKhoanId === '0') {
+            $taiKhoanId = '';
+        }
         $diem       = intval($this->post('diem', 0));
+        $hanhDong   = trim((string)$this->post('hanh_dong', 'cong'));
         $soTien     = intval($this->post('so_tien', 0));
         $sdt        = trim($this->post('sdt', ''));
         $ngay       = trim($this->post('ngay', ''));
@@ -690,6 +694,28 @@ class NhanVienController extends BoieuKhienCo
         $hoaDonId   = trim((string)$this->post('hoa_don_id', ''));
         $tenKhachPost = trim($this->post('ten_khach', ''));
         $hoaDonTichDiem = null;
+
+        if ($hanhDong === 'xoa') {
+            if ($taiKhoanId === '' || $diem <= 0) {
+                $this->json(array('success' => false, 'thong_bao' => 'Thông tin xóa điểm không hợp lệ'));
+            }
+
+            $khachHienTai = $this->moHinhKhach->layTheoId($taiKhoanId);
+            if (!$khachHienTai) {
+                $this->json(array('success' => false, 'thong_bao' => 'Không tìm thấy tài khoản khách hàng'));
+            }
+
+            $diemHienTai = isset($khachHienTai['diem_tich_luy']) ? (int)$khachHienTai['diem_tich_luy'] : 0;
+            if ($diem > $diemHienTai) {
+                $this->json(array('success' => false, 'thong_bao' => 'Không thể xóa nhiều hơn số điểm hiện có'));
+            }
+
+            $okXoa = $this->moHinhKhach->truDiem($taiKhoanId, $diem);
+            if ($okXoa) {
+                $this->json(array('success' => true, 'thong_bao' => 'Đã xóa ' . $diem . ' điểm của khách hàng'));
+            }
+            $this->json(array('success' => false, 'thong_bao' => 'Lỗi khi xóa điểm'));
+        }
 
         if ($tuHoaDon && $hoaDonId !== '') {
             $hoaDonTichDiem = $this->moHinhBan->layHoaDonChuaTichDiemTheoId($hoaDonId);

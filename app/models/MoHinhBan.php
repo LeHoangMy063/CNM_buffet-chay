@@ -420,12 +420,21 @@ class MoHinhBan extends MoHinhCo
 
     public function capNhatKhachHoaDon($id, $tenKhach, $sdt)
     {
-        return $this->db->query("
+        $ok = $this->db->query("
         UPDATE hoa_don_phien h
         SET h.ten_khach = ?, h.sdt_khach = ?, h.updated_at = NOW()
         WHERE h.id_hoa_don_phien = ?
           AND h.da_tich_diem = 0
         ", array($tenKhach, $sdt, $id));
+
+        $this->db->query("
+        UPDATE phien_goi_mon p
+        JOIN hoa_don_phien h ON h.id_phien_goi_mon = p.id_phien_goi_mon
+        SET p.ten_khach = ?, p.sdt_khach = ?, p.updated_at = NOW()
+        WHERE h.id_hoa_don_phien = ?
+        ", array($tenKhach, $sdt, $id));
+
+        return $ok;
     }
 
     public function taoHoaDonTuPhienDangDungTheoSDTNgay($sdt, $ngay)
@@ -439,7 +448,7 @@ class MoHinhBan extends MoHinhCo
             $ngay = date('Y-m-d');
         }
 
-        return $this->db->query("
+        $ok = $this->db->query("
         UPDATE hoa_don_phien h
         JOIN phien_goi_mon p ON p.id_phien_goi_mon = h.id_phien_goi_mon
         SET h.da_tich_diem = 1,
@@ -450,11 +459,21 @@ class MoHinhBan extends MoHinhCo
           AND h.thanh_tien > 0
           AND h.da_tich_diem = 0
         ", array($taiKhoanId, $sdt, $ngay, $ngay, $ngay));
+
+        $this->db->query("
+        UPDATE phien_goi_mon
+        SET id_khach_tai_khoan = ?,
+            updated_at = NOW()
+        WHERE sdt_khach = ?
+          AND (DATE(gio_bat_dau) = ? OR DATE(IFNULL(gio_ket_thuc, created_at)) = ?)
+        ", array($taiKhoanId, $sdt, $ngay, $ngay));
+
+        return $ok;
     }
 
     public function danhDauMotHoaDonDaTichDiem($id, $taiKhoanId, $diem)
     {
-        return $this->db->query("
+        $ok = $this->db->query("
         UPDATE hoa_don_phien
         SET da_tich_diem = 1,
             id_khach_tai_khoan = ?,
@@ -463,6 +482,16 @@ class MoHinhBan extends MoHinhCo
           AND thanh_tien > 0
           AND da_tich_diem = 0
         ", array($taiKhoanId, $id));
+
+        $this->db->query("
+        UPDATE phien_goi_mon p
+        JOIN hoa_don_phien h ON h.id_phien_goi_mon = p.id_phien_goi_mon
+        SET p.id_khach_tai_khoan = ?,
+            p.updated_at = NOW()
+        WHERE h.id_hoa_don_phien = ?
+        ", array($taiKhoanId, $id));
+
+        return $ok;
     }
 
     public function demTatCa()

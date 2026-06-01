@@ -183,6 +183,30 @@
             display: block;
         }
 
+        .checkbox-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: -4px 0 16px;
+            color: var(--muted);
+            font-size: .9rem;
+            line-height: 1.45;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .checkbox-row input {
+            width: 18px;
+            height: 18px;
+            margin-top: 1px;
+            accent-color: var(--green);
+            flex-shrink: 0;
+        }
+
+        .checkbox-row span {
+            display: block;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 14px 0;
@@ -295,9 +319,9 @@
                     name="so_dien_thoai"
                     placeholder="Ví dụ: 0901234567"
                     required
-                    pattern="0[0-9]{9,10}"
-                    maxlength="11">
-                <div class="input-help" id="help-so_dien_thoai">Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số)</div>
+                    pattern="0[0-9]{9}"
+                    maxlength="10">
+                <div class="input-help" id="help-so_dien_thoai">Vui lòng nhập số điện thoại hợp lệ (phải bắt đầu 0, 10 chữ số)</div>
             </div>
 
             <div class="form-group">
@@ -312,16 +336,20 @@
             </div>
 
             <div class="form-group">
+                <label class="checkbox-row" for="mat_khau_mac_dinh">
+                    <input id="mat_khau_mac_dinh" type="checkbox" name="mat_khau_mac_dinh" value="1" checked>
+                    <span>Mật khẩu là 6 số cuối số điện thoại</span>
+                </label>
                 <label for="mat_khau">Mật khẩu <span class="required">*</span></label>
                 <input
                     id="mat_khau"
                     type="password"
                     name="mat_khau"
-                    placeholder="Mật khẩu ít nhất 6 ký tự"
+                    placeholder="Mật khẩu là 6 số cuối số điện thoại hoặc nhập ít nhất 6 ký tự"
                     required
                     minlength="6"
                     maxlength="255">
-                <div class="input-help" id="help-mat_khau">Mật khẩu phải có ít nhất 6 ký tự</div>
+                <div class="input-help" id="help-mat_khau">Mật khẩu là 6 số cuối số điện thoại hoặc nhập mật khẩu ít nhất 6 ký tự</div>
             </div>
 
             <div class="form-group">
@@ -350,6 +378,10 @@
         var form = document.getElementById('form-dang-ky');
         var alertBox = document.getElementById('formAlert');
         var btnSubmit = document.getElementById('btnSubmit');
+        var chkMatKhauMacDinh = document.getElementById('mat_khau_mac_dinh');
+        var inputSdt = document.getElementById('so_dien_thoai');
+        var inputMatKhau = document.getElementById('mat_khau');
+        var inputXacNhanMatKhau = document.getElementById('xac_nhan_mat_khau');
 
         // Hiển thị thông báo
         function showAlert(message, type) {
@@ -378,9 +410,9 @@
                     break;
 
                 case 'so_dien_thoai':
-                    if (!value.match(/^0[0-9]{9,10}$/)) {
+                    if (!value.match(/^0[0-9]{9}$/)) {
                         isValid = false;
-                        message = 'Số điện thoại không hợp lệ (phải bắt đầu 0, 10-11 chữ số)';
+                        message = 'Số điện thoại không hợp lệ (phải bắt đầu 0, 10 chữ số)';
                     }
                     break;
 
@@ -392,13 +424,19 @@
                     break;
 
                 case 'mat_khau':
+                    if (chkMatKhauMacDinh && chkMatKhauMacDinh.checked) {
+                        break;
+                    }
                     if (value.length < 6) {
                         isValid = false;
-                        message = 'Mật khẩu phải có ít nhất 6 ký tự';
+                        message = 'Mật khẩu là 6 số cuối số điện thoại hoặc nhập mật khẩu ít nhất 6 ký tự';
                     }
                     break;
 
                 case 'xac_nhan_mat_khau':
+                    if (chkMatKhauMacDinh && chkMatKhauMacDinh.checked) {
+                        break;
+                    }
                     var matKhau = document.getElementById('mat_khau').value;
                     if (value !== matKhau) {
                         isValid = false;
@@ -421,13 +459,39 @@
             return isValid;
         }
 
+        function matKhauTuSdt() {
+            var sdt = inputSdt.value.replace(/[^0-9]/g, '');
+            return sdt.length >= 6 ? sdt.slice(-6) : '';
+        }
+
+        function syncMatKhauMacDinh() {
+            if (!chkMatKhauMacDinh.checked) {
+                inputMatKhau.readOnly = false;
+                inputXacNhanMatKhau.readOnly = false;
+                return;
+            }
+
+            var mk = matKhauTuSdt();
+            inputMatKhau.value = mk;
+            inputXacNhanMatKhau.value = mk;
+            inputMatKhau.readOnly = true;
+            inputXacNhanMatKhau.readOnly = true;
+            validateInput('mat_khau', inputMatKhau.value);
+            validateInput('xac_nhan_mat_khau', inputXacNhanMatKhau.value);
+        }
+
         // Event listener cho validation real-time
         document.getElementById('ho_ten').addEventListener('blur', function() {
             validateInput('ho_ten', this.value);
         });
 
+        document.getElementById('so_dien_thoai').addEventListener('input', function() {
+            if (chkMatKhauMacDinh.checked) syncMatKhauMacDinh();
+        });
+
         document.getElementById('so_dien_thoai').addEventListener('blur', function() {
             validateInput('so_dien_thoai', this.value);
+            syncMatKhauMacDinh();
         });
 
         document.getElementById('email').addEventListener('blur', function() {
@@ -443,6 +507,20 @@
         document.getElementById('xac_nhan_mat_khau').addEventListener('blur', function() {
             validateInput('xac_nhan_mat_khau', this.value);
         });
+
+        chkMatKhauMacDinh.addEventListener('change', function() {
+            if (this.checked) {
+                syncMatKhauMacDinh();
+            } else {
+                inputMatKhau.readOnly = false;
+                inputXacNhanMatKhau.readOnly = false;
+                inputMatKhau.value = '';
+                inputXacNhanMatKhau.value = '';
+                inputMatKhau.focus();
+            }
+        });
+
+        syncMatKhauMacDinh();
 
         // Submit form
         form.addEventListener('submit', function(e) {

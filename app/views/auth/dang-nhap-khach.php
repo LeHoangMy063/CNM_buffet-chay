@@ -181,6 +181,10 @@
             Dang Nhap &rarr;
         </button>
 
+        <div class="phan-duoi" style="margin-top:12px;">
+            <a href="<?php echo BASE_URL; ?>/khach/quen-mat-khau">Quen mat khau?</a>
+        </div>
+
         <hr class="duong-phan">
 
         <div class="phan-duoi">

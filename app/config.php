@@ -76,6 +76,17 @@ define('MONGO_ENABLED', getenv('MONGO_ENABLED') ? getenv('MONGO_ENABLED') : '0')
 define('MONGO_URI', getenv('MONGO_URI') ? getenv('MONGO_URI') : 'mongodb://localhost:27017');
 define('MONGO_DB', getenv('MONGO_DB') ? getenv('MONGO_DB') : 'buffet_chay_analytics');
 
+// Password reset email settings. Requires a working mail transport on the server.
+define('MAIL_FROM', getenv('MAIL_FROM') ? getenv('MAIL_FROM') : 'no-reply@buffet-chay.local');
+define('MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ? getenv('MAIL_FROM_NAME') : APP_NAME);
+define('PASSWORD_RESET_MINUTES', getenv('PASSWORD_RESET_MINUTES') ? (int)getenv('PASSWORD_RESET_MINUTES') : 15);
+define('MAIL_DRIVER', getenv('MAIL_DRIVER') ? getenv('MAIL_DRIVER') : 'mail');
+define('MAIL_HOST', getenv('MAIL_HOST') ? getenv('MAIL_HOST') : 'localhost');
+define('MAIL_PORT', getenv('MAIL_PORT') ? getenv('MAIL_PORT') : '25');
+define('MAIL_USERNAME', getenv('MAIL_USERNAME') ? getenv('MAIL_USERNAME') : '');
+define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ? getenv('MAIL_PASSWORD') : '');
+define('MAIL_ENCRYPTION', getenv('MAIL_ENCRYPTION') ? getenv('MAIL_ENCRYPTION') : '');
+
 define('SESSION_LIFETIME', 28800); // 8 gio
 
 // Timezone
