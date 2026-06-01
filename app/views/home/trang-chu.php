@@ -40,6 +40,8 @@
         </div>
         <div class="nav-links">
             <a href="<?php echo BASE_URL ?>/thuc-don">Thực Đơn</a>
+            <a href="<?php echo BASE_URL ?>/uu-dai">Ưu Đãi</a>
+            <a href="<?php echo BASE_URL ?>">Liên Hệ</a>
             <a href="#price">Giá Buffet</a>
             <a href="#order">Gọi Món</a>
             <?php if ($laKhachDangNhap): ?>

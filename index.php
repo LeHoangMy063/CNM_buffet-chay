@@ -46,6 +46,8 @@ $routes = array(
     // TRANG CHU
     array('GET',  '/',         'TrangChuController', 'index'),
     array('GET',  '/thuc-don', 'TrangChuController', 'thucDon'),
+    array('GET',  '/uu-dai',   'TrangChuController', 'uuDai'),
+    array('POST', '/uu-dai/doi-mon', 'TrangChuController', 'xuLyDoiMon'),
 
     // DANG NHAP / DANG KY / DANG XUAT
     array('GET',  '/dang-nhap',       'XacThucController', 'hienThiDangNhap'),

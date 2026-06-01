@@ -1,0 +1,348 @@
+:root {
+  --reward-bg: #f8f4eb;
+  --reward-panel: #ffffff;
+  --reward-border: rgba(109, 91, 68, 0.16);
+  --reward-text: #2b2b22;
+  --reward-muted: #6f6b5f;
+  --gold: #b8912a;
+  --green-dark: #4a7a5c;
+}
+
+body.page-rewards {
+  font-family: "DM Sans", sans-serif;
+  background: var(--reward-bg);
+  color: var(--reward-text);
+}
+
+nav {
+  font-family: "DM Sans", sans-serif;
+}
+
+.nav-brand-text {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.reward-hero {
+  padding: 8rem 2rem 4rem;
+  background: linear-gradient(
+    135deg,
+    rgba(60, 94, 68, 0.96),
+    rgba(184, 150, 74, 0.95)
+  );
+  color: #fff;
+  text-align: center;
+}
+
+.reward-hero-inner {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.reward-hero .eyebrow {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #f7e4bc;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+}
+
+.reward-hero h1 {
+  font-size: clamp(2.25rem, 4vw, 3.8rem);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 700;
+}
+
+.reward-hero p {
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 400;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.reward-summary,
+.reward-info,
+.reward-items,
+.reward-terms {
+  padding: 4rem 2rem;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.account-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--reward-panel);
+  border: 1px solid var(--reward-border);
+  border-radius: 22px;
+  padding: 1.6rem 1.8rem;
+  box-shadow: 0 8px 24px rgba(73, 61, 42, 0.06);
+}
+
+.account-box.empty {
+  flex-direction: column;
+  text-align: center;
+}
+
+.account-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--reward-text);
+}
+
+.account-points {
+  margin-top: 0.45rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--reward-text);
+}
+
+.account-note {
+  margin-top: 0.55rem;
+  color: var(--reward-muted);
+}
+
+.reward-info h2,
+.reward-items .section-heading h2,
+.reward-terms h2 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--reward-text);
+  margin-bottom: 0.75rem;
+}
+
+.reward-info p,
+.reward-terms p,
+.reward-card p,
+.reward-note {
+  color: var(--reward-muted);
+  line-height: 1.8;
+}
+
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.reward-card.small {
+  padding: 1.6rem;
+  background: var(--reward-panel);
+  border-radius: 20px;
+  border: 1px solid var(--reward-border);
+}
+
+.reward-card.small h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+.reward-card.small p {
+  margin: 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.section-heading .eyebrow {
+  display: block;
+  color: var(--reward-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.reward-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.reward-card {
+  background: var(--reward-panel);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 35px rgba(41, 46, 36, 0.08);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--reward-border);
+}
+
+.reward-image {
+  min-height: 220px;
+  background-size: cover;
+  background-position: center;
+}
+
+.reward-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reward-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  background: rgba(105, 122, 94, 0.12);
+  color: var(--reward-text);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.reward-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--reward-text);
+  font-family: "DM Sans", sans-serif;
+}
+
+.reward-meta {
+  color: var(--green-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.reward-footer {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reward-status {
+  display: inline-flex;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.reward-status.available {
+  background: rgba(74, 122, 92, 0.14);
+  color: #365a3e;
+}
+
+.reward-status.sold_out {
+  background: rgba(201, 100, 72, 0.14);
+  color: #914e39;
+}
+
+.reward-status.coming_soon {
+  background: rgba(186, 150, 80, 0.14);
+  color: #7f6137;
+}
+
+.reward-note {
+  color: var(--reward-muted);
+  font-size: 0.95rem;
+}
+
+.reward-terms ul {
+  list-style: disc inside;
+  max-width: 760px;
+  color: var(--reward-muted);
+  line-height: 1.8;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.65rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: #2d2b20;
+}
+
+.btn-outline {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+}
+
+.btn-disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 920px) {
+  .reward-hero {
+    padding-top: 6rem;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .reward-hero {
+    padding: 5rem 1.2rem 3rem;
+  }
+
+  nav {
+    padding: 0 1rem;
+    height: auto;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav-left,
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .account-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .reward-list {
+    grid-template-columns: 1fr;
+  }
+}
