@@ -56,8 +56,8 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <button class="btn secondary" type="button" onclick="chooseEdit(<?php echo (int)$mon['id']; ?>)">Sửa</button>
-                                    <button class="btn danger" type="button" onclick="deleteItem(<?php echo (int)$mon['id']; ?>)">Xóa</button>
+                                    <button class="btn secondary js-menu-edit" type="button" data-id="<?php echo htmlspecialchars((string)$mon['id'], ENT_QUOTES, 'UTF-8'); ?>">Sửa</button>
+                                    <button class="btn danger js-menu-delete" type="button" data-id="<?php echo htmlspecialchars((string)$mon['id'], ENT_QUOTES, 'UTF-8'); ?>">Xóa</button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

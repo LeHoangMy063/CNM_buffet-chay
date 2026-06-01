@@ -5,6 +5,12 @@ require_once dirname(__FILE__) . '/../core/MatKhau.php';
 
 class MoHinhTaiKhoan extends MoHinhCo
 {
+    private function rongThanhNull($value)
+    {
+        $value = trim((string)$value);
+        return $value === '' ? null : $value;
+    }
+
     private function nangCapMatKhauMacDinhCu()
     {
         $this->db->query(
@@ -143,8 +149,8 @@ class MoHinhTaiKhoan extends MoHinhCo
             $du_lieu['vai_tro'],
             isset($du_lieu['dang_hoat_dong']) ? (int)$du_lieu['dang_hoat_dong'] : 1,
             $du_lieu['ho_ten'],
-            $du_lieu['email'],
-            $du_lieu['so_dien_thoai']
+            $this->rongThanhNull($du_lieu['email']),
+            $this->rongThanhNull($du_lieu['so_dien_thoai'])
         ));
         return $ok ? $id : false;
     }
@@ -158,8 +164,8 @@ class MoHinhTaiKhoan extends MoHinhCo
             $du_lieu['vai_tro'],
             (int)$du_lieu['dang_hoat_dong'],
             $du_lieu['ho_ten'],
-            $du_lieu['email'],
-            $du_lieu['so_dien_thoai']
+            $this->rongThanhNull($du_lieu['email']),
+            $this->rongThanhNull($du_lieu['so_dien_thoai'])
         );
 
         $sql = "

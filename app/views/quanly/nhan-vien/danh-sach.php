@@ -20,25 +20,23 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Nhân viên</th>
+                        <th>Tên nhân viên</th>
                         <th>Liên hệ</th>
                         <th>Vai trò</th>
                         <th>Trạng thái</th>
-                        <th>Ngày tạo</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="staffRows">
                     <?php if (empty($danhSachNhanVien)) : ?>
                         <tr>
-                            <td colspan="6" class="empty">Chưa có nhân viên phù hợp.</td>
+                            <td colspan="5" class="empty">Chưa có nhân viên phù hợp.</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($danhSachNhanVien as $nhanVien) : ?>
                             <tr>
                                 <td>
                                     <strong><?php echo htmlspecialchars(managerText(isset($nhanVien['ho_ten']) ? $nhanVien['ho_ten'] : '-'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                    <div class="muted"><?php echo htmlspecialchars(isset($nhanVien['ten_dang_nhap']) ? $nhanVien['ten_dang_nhap'] : '', ENT_QUOTES, 'UTF-8'); ?></div>
                                 </td>
                                 <td>
                                     <div><?php echo htmlspecialchars(isset($nhanVien['email']) ? $nhanVien['email'] : '', ENT_QUOTES, 'UTF-8'); ?></div>
@@ -52,10 +50,9 @@
                                         <span class="badge off">Đã khóa</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo htmlspecialchars(isset($nhanVien['ngay_tao']) ? managerFormatDateShort($nhanVien['ngay_tao']) : '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
-                                    <button class="btn secondary" type="button" onclick="editStaff(<?php echo (int)$nhanVien['id']; ?>)">Sửa</button>
-                                    <button class="btn danger" type="button" onclick="deleteStaff(<?php echo (int)$nhanVien['id']; ?>)">Xóa</button>
+                                    <button class="btn secondary js-staff-edit" type="button" data-id="<?php echo htmlspecialchars((string)$nhanVien['id'], ENT_QUOTES, 'UTF-8'); ?>">Sửa</button>
+                                    <button class="btn danger js-staff-delete" type="button" data-id="<?php echo htmlspecialchars((string)$nhanVien['id'], ENT_QUOTES, 'UTF-8'); ?>">Xóa</button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

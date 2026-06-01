@@ -74,7 +74,11 @@
     if (isNaN(at.getTime())) return false;
 
     var diffMinutes = (at.getTime() - new Date().getTime()) / 60000;
-    return diffMinutes >= 0 && diffMinutes <= 90;
+    var sessionMinutes =
+      typeof BUFFET_SESSION_MINUTES !== "undefined"
+        ? Number(BUFFET_SESSION_MINUTES || 90)
+        : 90;
+    return diffMinutes >= -sessionMinutes && diffMinutes <= 90;
   }
 
   function reservationLabel(t) {

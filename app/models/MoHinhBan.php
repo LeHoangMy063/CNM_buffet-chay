@@ -118,8 +118,8 @@ class MoHinhBan extends MoHinhCo
         JOIN dat_ban db ON db.id_dat_ban = ct.id_dat_ban
         WHERE db.trang_thai IN ('cho_xac_nhan', 'da_xac_nhan')
           AND ct.trang_thai = 'dang_gan'
-          AND ct.thoi_gian_bat_dau >= NOW()
           AND ct.thoi_gian_bat_dau <= DATE_ADD(NOW(), INTERVAL 90 MINUTE)
+          AND ct.thoi_gian_ket_thuc >= NOW()
         GROUP BY ct.id_ban
     ) rs ON rs.id_ban = b.id_ban
     ";

@@ -70,7 +70,6 @@ CREATE TABLE `mon_an` (
   `ten_mon` varchar(150) NOT NULL,
   `mo_ta` text,
   `anh_url` varchar(255) default NULL,
-  `gia` decimal(12,0) NOT NULL default '0',
   `con_mon` tinyint(1) NOT NULL default '1',
   `noi_bat` tinyint(1) NOT NULL default '0',
   `thu_tu` int(11) NOT NULL default '0',
@@ -384,33 +383,33 @@ INSERT INTO `danh_muc_mon` (`id_danh_muc_mon`, `ten_danh_muc`, `mo_ta`, `thu_tu`
 ('DM-NUOCLAU', 'Nuoc lau', NULL, 5, 1),
 ('DM-DOUONG', 'Do uong', NULL, 6, 1);
 
-INSERT INTO `mon_an` (`id_mon_an`, `id_danh_muc_mon`, `ten_mon`, `mo_ta`, `anh_url`, `gia`, `con_mon`, `noi_bat`, `thu_tu`, `ngay_tao`) VALUES
-('MON-001', 'DM-KHAIVI', 'Goi cuon chay', 'Rau song, dau hu cuon banh trang', NULL, 0, 1, 1, 1, '2026-04-21 18:03:24'),
-('MON-002', 'DM-KHAIVI', 'Cha gio chay', 'Nhan rau cu chien gion', NULL, 0, 1, 0, 2, '2026-04-21 18:03:24'),
-('MON-003', 'DM-KHAIVI', 'Sup bi do', 'Bi do nau mem voi nuoc cot dua', NULL, 0, 1, 0, 3, '2026-04-21 18:03:24'),
-('MON-004', 'DM-KHAIVI', 'Salad rau', 'Rau mam, ca chua, sot chanh', NULL, 0, 1, 1, 4, '2026-04-21 18:03:24'),
-('MON-005', 'DM-MONCHINH', 'Com chien chay', 'Com xao rau cu', NULL, 0, 1, 1, 11, '2026-04-21 18:03:24'),
-('MON-006', 'DM-MONCHINH', 'Mi xao chay', 'Mi xao nam va rau', NULL, 0, 1, 0, 12, '2026-04-21 18:03:24'),
-('MON-007', 'DM-MONCHINH', 'Ca ri chay', 'Ca ri rau cu nuoc dua', NULL, 0, 1, 1, 13, '2026-04-21 18:03:24'),
-('MON-008', 'DM-MONCHINH', 'Dau hu sot ca', 'Dau hu chien sot ca chua', NULL, 0, 1, 0, 14, '2026-04-21 18:03:24'),
-('MON-009', 'DM-MONCHINH', 'Nam kho tieu', 'Nam dong co kho tieu dam da', NULL, 0, 1, 1, 15, '2026-04-21 18:03:24'),
-('MON-010', 'DM-MONCHINH', 'Thanh cua chay', 'Gia cua, vi nhe', NULL, 0, 1, 0, 32, '2026-04-21 18:03:24'),
-('MON-011', 'DM-TOPPING', 'Dau hu non', 'Mem min, tham nuoc lau', NULL, 0, 1, 0, 20, '2026-04-21 18:03:24'),
-('MON-012', 'DM-TOPPING', 'Tau hu ky', 'Dai mem, tham nuoc dung', NULL, 0, 1, 1, 26, '2026-04-21 18:03:24'),
-('MON-013', 'DM-TOPPING', 'Cha vien chay', 'Vien dai, vi dam da', NULL, 0, 1, 1, 27, '2026-04-21 18:03:24'),
-('MON-014', 'DM-RAU', 'Rau muong', 'Gion xanh', NULL, 0, 1, 1, 30, '2026-04-21 18:03:24'),
-('MON-015', 'DM-RAU', 'Cai thao', 'Ngot thanh', NULL, 0, 1, 0, 31, '2026-04-21 18:03:24'),
-('MON-016', 'DM-RAU', 'Nam kim cham', 'Gion ngot', NULL, 0, 1, 1, 22, '2026-04-21 18:03:24'),
-('MON-017', 'DM-NUOCLAU', 'Lau nam', 'Nuoc lau thanh ngot tu nam', NULL, 0, 1, 1, 9, '2026-04-21 18:03:24'),
-('MON-018', 'DM-NUOCLAU', 'Lau dashi', 'Thanh nhe', NULL, 0, 1, 1, 40, '2026-04-21 18:03:24'),
-('MON-019', 'DM-DOUONG', 'Nuoc cam', 'Tuoi mat', NULL, 0, 1, 1, 50, '2026-04-21 18:03:24'),
-('MON-020', 'DM-DOUONG', 'Tra tac', 'Chua ngot, thom mui tac', NULL, 0, 1, 1, 53, '2026-04-21 18:03:24');
+INSERT INTO `mon_an` (`id_mon_an`, `id_danh_muc_mon`, `ten_mon`, `mo_ta`, `anh_url`, `con_mon`, `noi_bat`, `thu_tu`, `ngay_tao`) VALUES
+('MON-001', 'DM-KHAIVI', 'Goi cuon chay', 'Rau song, dau hu cuon banh trang', NULL, 1, 1, 1, '2026-04-21 18:03:24'),
+('MON-002', 'DM-KHAIVI', 'Cha gio chay', 'Nhan rau cu chien gion', NULL, 1, 0, 2, '2026-04-21 18:03:24'),
+('MON-003', 'DM-KHAIVI', 'Sup bi do', 'Bi do nau mem voi nuoc cot dua', NULL, 1, 0, 3, '2026-04-21 18:03:24'),
+('MON-004', 'DM-KHAIVI', 'Salad rau', 'Rau mam, ca chua, sot chanh', NULL, 1, 1, 4, '2026-04-21 18:03:24'),
+('MON-005', 'DM-MONCHINH', 'Com chien chay', 'Com xao rau cu', NULL, 1, 1, 11, '2026-04-21 18:03:24'),
+('MON-006', 'DM-MONCHINH', 'Mi xao chay', 'Mi xao nam va rau', NULL, 1, 0, 12, '2026-04-21 18:03:24'),
+('MON-007', 'DM-MONCHINH', 'Ca ri chay', 'Ca ri rau cu nuoc dua', NULL, 1, 1, 13, '2026-04-21 18:03:24'),
+('MON-008', 'DM-MONCHINH', 'Dau hu sot ca', 'Dau hu chien sot ca chua', NULL, 1, 0, 14, '2026-04-21 18:03:24'),
+('MON-009', 'DM-MONCHINH', 'Nam kho tieu', 'Nam dong co kho tieu dam da', NULL, 1, 1, 15, '2026-04-21 18:03:24'),
+('MON-010', 'DM-MONCHINH', 'Thanh cua chay', 'Gia cua, vi nhe', NULL, 1, 0, 32, '2026-04-21 18:03:24'),
+('MON-011', 'DM-TOPPING', 'Dau hu non', 'Mem min, tham nuoc lau', NULL, 1, 0, 20, '2026-04-21 18:03:24'),
+('MON-012', 'DM-TOPPING', 'Tau hu ky', 'Dai mem, tham nuoc dung', NULL, 1, 1, 26, '2026-04-21 18:03:24'),
+('MON-013', 'DM-TOPPING', 'Cha vien chay', 'Vien dai, vi dam da', NULL, 1, 1, 27, '2026-04-21 18:03:24'),
+('MON-014', 'DM-RAU', 'Rau muong', 'Gion xanh', NULL, 1, 1, 30, '2026-04-21 18:03:24'),
+('MON-015', 'DM-RAU', 'Cai thao', 'Ngot thanh', NULL, 1, 0, 31, '2026-04-21 18:03:24'),
+('MON-016', 'DM-RAU', 'Nam kim cham', 'Gion ngot', NULL, 1, 1, 22, '2026-04-21 18:03:24'),
+('MON-017', 'DM-NUOCLAU', 'Lau nam', 'Nuoc lau thanh ngot tu nam', NULL, 1, 1, 9, '2026-04-21 18:03:24'),
+('MON-018', 'DM-NUOCLAU', 'Lau dashi', 'Thanh nhe', NULL, 1, 1, 40, '2026-04-21 18:03:24'),
+('MON-019', 'DM-DOUONG', 'Nuoc cam', 'Tuoi mat', NULL, 1, 1, 50, '2026-04-21 18:03:24'),
+('MON-020', 'DM-DOUONG', 'Tra tac', 'Chua ngot, thom mui tac', NULL, 1, 1, 53, '2026-04-21 18:03:24');
 
 INSERT INTO `tai_khoan` (`id_tai_khoan`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `ngay_tao`) VALUES
-('TK-QL-001', 'quanly', '$2y$10$mYFxzdEx8VM1P2TBvXAc5.ez9b8L9zupQll/yqTZCXVjjHJpjcok.', 'quanly', 1, 'Quan tri vien', NULL, NULL, '2026-04-27 14:09:41'),
-('TK-NV-001', 'nhanvien01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'nhanvien', 1, 'Nguyen Thanh Truc', NULL, NULL, '2026-04-27 14:09:41'),
-('TK-QL-002', 'quanly01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'quanly', 1, 'Quan ly nha hang', NULL, NULL, '2026-05-14 00:00:00'),
-('TK-BEP-001', 'nhanvien02', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'bep', 1, 'Nhan vien bep', NULL, NULL, '2026-05-26 00:00:00');
+('TK-QL-001', 'quanly', '$2y$10$mYFxzdEx8VM1P2TBvXAc5.ez9b8L9zupQll/yqTZCXVjjHJpjcok.', 'quanly', 1, 'Quản trị viên', NULL, NULL, '2026-04-27 14:09:41'),
+('TK-NV-001', 'nhanvien01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'nhanvien', 1, 'Nguyễn Thanh Trúc', NULL, NULL, '2026-04-27 14:09:41'),
+('TK-QL-002', 'quanly01', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'quanly', 1, 'Quản lý nhà hàng', NULL, NULL, '2026-05-14 00:00:00'),
+('TK-BEP-001', 'nhanvien02', '$2y$10$iPMW0P.XD1BA3XBP4SxOwOKT7DUp1GRjaz5FK/meFGjO/X/4RL4y6', 'bep', 1, 'Nhân viên bếp', NULL, NULL, '2026-05-26 00:00:00');
 
 INSERT INTO `khach_tai_khoan` (`id_khach_tai_khoan`, `ten_dang_nhap`, `mat_khau`, `vai_tro`, `dang_hoat_dong`, `ho_ten`, `email`, `so_dien_thoai`, `diem_tich_luy`, `ngay_tao`) VALUES
 ('KH-001', '0932396610', '$2y$10$.3jEZn7fLH96eyDrrx1eGOHW/61HnDyehRTrSkBQQxMJTxOkXsxDi', 'khach', 1, 'Le Hoang My', '', '0932396610', 0, '2026-04-27 15:51:20'),

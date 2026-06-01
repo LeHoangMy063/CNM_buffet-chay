@@ -197,12 +197,12 @@ function rowHtml(it) {
   html += "</td>";
   html +=
     "<td>" +
-    '<button class="btn secondary" type="button" onclick="chooseEdit(' +
-    it.id +
-    ')">Sửa</button> ' +
-    '<button class="btn danger" type="button" onclick="deleteItem(' +
-    it.id +
-    ')">Xóa</button>' +
+    '<button class="btn secondary js-menu-edit" type="button" data-id="' +
+    esc(it.id || "") +
+    '">Sửa</button> ' +
+    '<button class="btn danger js-menu-delete" type="button" data-id="' +
+    esc(it.id || "") +
+    '">Xóa</button>' +
     "</td>";
   html += "</tr>";
   return html;
@@ -334,11 +334,17 @@ function deleteItem(id) {
 
 function staffRoleLabel(value) {
   var labels = {
+    quanly: "Quản lý",
     quan_ly: "Quản lý",
+    nhanvien: "Nhân viên",
     nhan_vien: "Nhân viên",
     bep: "Bếp",
   };
   return labels[value] || value || "-";
+}
+
+function staffStatusLabel(active) {
+  return active ? "Đang hoạt động" : "Đã khóa";
 }
 
 function compactNumber(value) {
@@ -539,9 +545,7 @@ function staffRowHtml(staff) {
   html +=
     "<td><strong>" +
     esc(staff.ho_ten || "-") +
-    '</strong><div class="muted">' +
-    esc(staff.ten_dang_nhap || "") +
-    "</div></td>";
+    "</strong></td>";
   html +=
     "<td><div>" +
     esc(staff.email || "") +
@@ -553,16 +557,15 @@ function staffRowHtml(staff) {
     '<td><span class="badge ' +
     (active ? "ok" : "off") +
     '">' +
-    (active ? "Đang hoạt động" : "Đã khóa") +
+    staffStatusLabel(active) +
     "</span></td>";
-  html += "<td>" + esc(formatDateShort(staff.ngay_tao || "")) + "</td>";
   html +=
-    '<td><button class="btn secondary" type="button" onclick="editStaff(' +
-    staff.id +
-    ')">Sửa</button> ' +
-    '<button class="btn danger" type="button" onclick="deleteStaff(' +
-    staff.id +
-    ')">Xóa</button></td>';
+    '<td><button class="btn secondary js-staff-edit" type="button" data-id="' +
+    esc(staff.id || "") +
+    '">Sửa</button> ' +
+    '<button class="btn danger js-staff-delete" type="button" data-id="' +
+    esc(staff.id || "") +
+    '">Xóa</button></td>';
   html += "</tr>";
   return html;
 }
@@ -605,7 +608,7 @@ function renderStaffList() {
 
   rows.innerHTML = count
     ? html
-    : '<tr><td colspan="6" class="empty">Chưa có nhân viên phù hợp.</td></tr>';
+    : '<tr><td colspan="5" class="empty">Chưa có nhân viên phù hợp.</td></tr>';
 }
 
 function showStaffForm() {
@@ -670,7 +673,7 @@ function viewStaff(id) {
     esc(staffRoleLabel(staff.vai_tro)) +
     "</strong></div>" +
     '<div><span>Trạng thái</span><strong>' +
-    (Number(staff.dang_hoat_dong || 0) === 1 ? "Đang hoạt động" : "Đã khóa") +
+    staffStatusLabel(Number(staff.dang_hoat_dong || 0) === 1) +
     "</strong></div>" +
     '<div><span>Ngày tạo</span><strong>' +
     esc(formatDateShort(staff.ngay_tao || "") || "-") +
@@ -750,6 +753,21 @@ if (staffForm) {
     submitStaffForm(this);
   };
 }
+
+document.addEventListener("click", function (e) {
+  var target = e.target;
+  if (!target || !target.getAttribute) return;
+
+  if (target.className.indexOf("js-menu-edit") !== -1) {
+    chooseEdit(target.getAttribute("data-id"));
+  } else if (target.className.indexOf("js-menu-delete") !== -1) {
+    deleteItem(target.getAttribute("data-id"));
+  } else if (target.className.indexOf("js-staff-edit") !== -1) {
+    editStaff(target.getAttribute("data-id"));
+  } else if (target.className.indexOf("js-staff-delete") !== -1) {
+    deleteStaff(target.getAttribute("data-id"));
+  }
+});
 
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {

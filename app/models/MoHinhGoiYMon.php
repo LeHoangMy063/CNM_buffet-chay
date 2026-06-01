@@ -25,8 +25,7 @@ class MoHinhGoiYMon extends MoHinhCo
                 ma.ten_mon AS ten,
                 ma.mo_ta,
                 dm.ten_danh_muc AS danh_muc,
-                ma.anh_url,
-                ma.gia
+                ma.anh_url
             FROM mon_an ma
             LEFT JOIN danh_muc_mon dm ON dm.id_danh_muc_mon = ma.id_danh_muc_mon
         ";

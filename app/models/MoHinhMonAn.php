@@ -22,7 +22,6 @@ class MoHinhMonAn extends MoHinhCo
             mon_an.mo_ta,
             danh_muc_mon.ten_danh_muc AS danh_muc,
             mon_an.anh_url,
-            mon_an.gia,
             mon_an.con_mon,
             mon_an.noi_bat,
             mon_an.thu_tu,
@@ -48,12 +47,17 @@ class MoHinhMonAn extends MoHinhCo
         return $this->ganTenHienThiDanhMuc($this->db->query($sql));
     }
 
-    public function layNhomTheoDanhMuc()
+    public function layDangHienThi()
     {
         $sql = $this->selectMonAn() . "
         WHERE mon_an.con_mon = 1
         " . $this->sapXepMacDinh();
-        $rows = $this->ganTenHienThiDanhMuc($this->db->query($sql));
+        return $this->ganTenHienThiDanhMuc($this->db->query($sql));
+    }
+
+    public function layNhomTheoDanhMuc()
+    {
+        $rows = $this->layDangHienThi();
 
         $nhom = array();
         foreach ($rows as $mon) {

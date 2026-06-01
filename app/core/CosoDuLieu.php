@@ -31,6 +31,7 @@ class CosoDuLieu
         }
 
         $this->conn->set_charset($charset);
+        $this->conn->query("SET time_zone = '+07:00'");
     }
 
     // Thuc thi truy van SQL voi tham so (PHP 5.3 safe - khong dung get_result)

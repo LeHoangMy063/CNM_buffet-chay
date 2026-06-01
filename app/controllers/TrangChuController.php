@@ -39,7 +39,7 @@ class TrangChuController extends BoieuKhienCo
         if ($tu_khoa !== '') {
             $danh_sach = $this->moHinhThucDon->timKiem($tu_khoa);
         } else {
-            $danh_sach = $this->moHinhThucDon->layTatCa();
+            $danh_sach = $this->moHinhThucDon->layDangHienThi();
         }
 
         $data = array(
