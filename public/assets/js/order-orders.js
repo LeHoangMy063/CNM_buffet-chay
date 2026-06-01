@@ -10,7 +10,7 @@ function cancelOrd(id) {
       if (d.success) {
         document.getElementById("oi-" + id)?.remove();
         updateVisibility();
-        toast("✓ " + (d.thong_bao || d.message || "Da huy mon"));
+        toast(d.thong_bao || d.message || "Da huy mon");
       } else {
         toast("❌ " + (d.thong_bao || d.message || "Khong the huy mon"), true);
       }

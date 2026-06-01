@@ -13,6 +13,6 @@ var suggestionNonce = 0;
 
 var smap = {
   pending: ["⏳ Chờ", "s-pending"],
-  preparing: ["👨‍🍳 Đang làm", "s-preparing"],
-  served: ["✓ Hoàn thành", "s-served"],
+  preparing: ["Đang làm", "s-preparing"],
+  served: ["Hoàn thành", "s-served"],
 };

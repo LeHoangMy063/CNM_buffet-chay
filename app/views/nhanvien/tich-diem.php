@@ -19,6 +19,8 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Tích Điểm - <?php echo APP_NAME; ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/nhanvien/dashboard.css?v=<?php echo filemtime(dirname(__FILE__) . '/../../../public/assets/css/nhanvien/dashboard.css'); ?>">
     <style>
@@ -111,8 +113,12 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
         }
 
         .result-ok::before {
-            content: "✓";
+            content: "";
             font-weight: 800;
+        }
+
+        .result-ok::before {
+            display: none;
         }
 
         .td-divider {
@@ -169,23 +175,17 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
 
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-mark">&#127807;</div>
+                <img class="brand-mark" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <div>
                     <h1><?php echo APP_NAME; ?></h1>
                     <span>Khu vực nhân viên</span>
                 </div>
             </div>
             <nav class="side-nav">
-                <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tong-quan">
-                    <span class="side-icon">&#8962;</span>
-                    <span>Trang chủ</span>
-                </a>
                 <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tong-quan?tab=dat-ban">
-                    <span class="side-icon">&#129681;</span>
                     <span>Quản lý bàn</span>
                 </a>
                 <a class="side-link active" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem">
-                    <span class="side-icon">&#11088;</span>
                     <span>Tích điểm</span>
                 </a>
             </nav>
@@ -207,7 +207,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                 <div class="welcome-panel">
                     <div>
                         <p class="eyebrow">Tích điểm thành viên</p>
-                        <h3>Tra cứu & cộng điểm &#11088;</h3>
+                        <h3>Tra cứu & cộng điểm</h3>
                         <p>Tìm theo số điện thoại để tra cứu và cộng điểm.</p>
                     </div>
                 </div>
@@ -217,7 +217,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                     <!-- CỘT TRÁI -->
                     <div class="panel">
                         <div class="panel-head">
-                            <h2>&#128269; Tìm khách hàng</h2>
+                            <h2>Tìm khách hàng</h2>
                         </div>
                         <div class="panel-body">
                             <form method="GET" action="" id="searchForm">
@@ -251,7 +251,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                         <?php if (isset($sdt) && $sdt !== '' && empty($khach)): ?>
                             <div class="panel" style="margin-bottom:16px">
                                 <div class="panel-head">
-                                    <h2>&#10060; Không tìm thấy khách hàng</h2>
+                                    <h2>Không tìm thấy khách hàng</h2>
                                 </div>
                                 <div class="panel-body">
                                     <p style="color:var(--muted); margin-bottom:16px">
@@ -277,7 +277,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                             <input type="hidden" name="diem" id="diemInput" value="<?php echo $diemHoaDon; ?>">
                                             <input type="hidden" id="amountInput" value="<?php echo $tongTienHoaDon; ?>">
                                             <div style="display:flex; align-items:center; gap:10px">
-                                                <button type="button" class="btn btnTichDiem">&#11088; Tạo tài khoản & cộng <?php echo $diemHoaDon; ?> điểm</button>
+                                                <button type="button" class="btn btnTichDiem">Tạo tài khoản & cộng <?php echo $diemHoaDon; ?> điểm</button>
                                                 <span id="resultMsg" class="result-ok" style="display:none"></span>
                                             </div>
                                         </form>
@@ -303,7 +303,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                                 </div>
                                             </div>
                                             <div style="display:flex; align-items:center; gap:10px">
-                                                <button type="button" class="btn btnTichDiem">&#11088; Tạo tài khoản & cộng điểm</button>
+                                                <button type="button" class="btn btnTichDiem">Tạo tài khoản & cộng điểm</button>
                                                 <span id="resultMsg" class="result-ok" style="display:none"></span>
                                             </div>
                                         </form>
@@ -313,14 +313,12 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
 
                         <?php elseif (empty($khach)): ?>
                             <div class="empty-state" style="padding:48px 20px">
-                                <div style="font-size:36px; margin-bottom:12px">&#128100;</div>
                                 <div style="font-weight:800; font-size:15px; margin-bottom:6px">Chưa có khách được chọn</div>
                                 <div>Nhập SĐT và bấm Tìm kiếm để bắt đầu.</div>
                             </div>
 
                         <?php else: ?>
                             <div class="customer-hero">
-                                <div class="customer-avatar">&#128100;</div>
                                 <div>
                                     <div style="font-weight:800; font-size:16px"><?php echo htmlspecialchars($khach['ho_ten'], ENT_QUOTES, 'UTF-8') ?></div>
                                     <div style="color:var(--muted); font-size:13px; margin-top:2px">
@@ -337,7 +335,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
 
                             <div class="panel">
                                 <div class="panel-head">
-                                    <h2>&#11088; Cộng điểm</h2>
+                                    <h2>Cộng điểm</h2>
                                 </div>
                                 <div class="panel-body">
                                     <?php if ($tongTienHoaDon > 0): ?>
@@ -381,7 +379,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                         </div>
 
                                         <div style="display:flex; align-items:center; gap:10px">
-                                            <button type="button" id="btnTichDiem" class="btn btnTichDiem">&#11088; Cộng điểm</button>
+                                            <button type="button" id="btnTichDiem" class="btn btnTichDiem">Cộng điểm</button>
                                             <button type="button" id="btnCancel" class="btn secondary">Huỷ</button>
                                             <span id="resultMsg" class="result-ok" style="display:none"></span>
                                         </div>
@@ -394,7 +392,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                             <div class="panel" style="margin-top:18px">
                                 <div class="panel-head">
                                     <div>
-                                        <h2>&#128221; Hóa đơn chưa có SĐT</h2>
+                                        <h2>Hóa đơn chưa có SĐT</h2>
                                         <span class="panel-sub">Nhập thông tin khách để tạo tài khoản và tích điểm</span>
                                     </div>
                                 </div>
@@ -440,7 +438,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                             </div>
 
                                             <div style="display:flex; align-items:center; gap:10px">
-                                                <button type="button" class="btn btnTichDiem">&#11088; Tạo tài khoản & cộng điểm</button>
+                                                <button type="button" class="btn btnTichDiem">Tạo tài khoản & cộng điểm</button>
                                                 <span class="result-ok resultMsg" style="display:none"></span>
                                             </div>
                                         </form>
@@ -543,7 +541,7 @@ $hoaDonChuaSdt = isset($hoaDonChuaSdt) && is_array($hoaDonChuaSdt) ? $hoaDonChua
                                 if (currentEl) currentEl.textContent = safeInt(currentEl.textContent) + diem;
                                 if (formVal(form, 'tu_hoa_don') === '1') {
                                     self.disabled = true;
-                                    self.textContent = '✓ Đã tích điểm';
+                                    self.textContent = 'Đã tích điểm';
                                 } else {
                                     if (diemInp) diemInp.value = '';
                                     if (amtInp && !amtInp.readOnly) amtInp.value = '';

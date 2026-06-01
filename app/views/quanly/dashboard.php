@@ -29,22 +29,18 @@ $khachMoiPhien = $soPhien > 0 ? round($tongKhach / $soPhien, 1) : 0;
 
 <section class="stats revenue-stats dashboard-stats">
     <div class="stat stat-visible">
-        <span class="stat-icon">&#128176;</span>
         <strong><?php echo managerMoney($tongDoanhThu); ?></strong>
         <span>Tổng doanh thu</span>
     </div>
     <div class="stat">
-        <span class="stat-icon">&#129534;</span>
         <strong><?php echo $soPhien; ?></strong>
         <span>Lượt thanh toán</span>
     </div>
     <div class="stat stat-featured">
-        <span class="stat-icon">&#128101;</span>
         <strong><?php echo $tongKhach; ?></strong>
         <span>Lượt khách</span>
     </div>
     <div class="stat stat-accent">
-        <span class="stat-icon">&#128200;</span>
         <strong><?php echo $khachMoiPhien; ?></strong>
         <span>Khách / phiên buffet</span>
     </div>

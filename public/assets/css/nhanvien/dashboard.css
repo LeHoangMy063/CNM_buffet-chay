@@ -107,14 +107,13 @@ select:focus-visible {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
   width: 40px;
   height: 40px;
   border-radius: 8px;
   background: #315f48;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  font-size: 18px;
+  object-fit: contain;
+  padding: 6px;
 }
 
 .sidebar-brand h1 {
@@ -172,10 +171,6 @@ select:focus-visible {
   color: #1c1710;
 }
 
-.side-link.active .side-icon {
-  background: rgba(28, 23, 16, 0.12);
-}
-
 .side-subnav {
   display: grid;
   gap: 5px;
@@ -205,16 +200,6 @@ select:focus-visible {
   border-color: rgba(240, 195, 75, 0.3);
   background: rgba(240, 195, 75, 0.14);
   color: #f8d76d;
-}
-
-.side-icon {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
 }
 
 .sidebar-footer {
@@ -397,17 +382,6 @@ select:focus-visible {
   background: var(--amber);
 }
 
-.stat-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  background: var(--surface-soft);
-  font-size: 16px;
-}
-
 .stat strong {
   display: block;
   margin-bottom: 4px;
@@ -445,18 +419,6 @@ select:focus-visible {
   border-color: var(--green);
   box-shadow: var(--shadow);
   transform: translateY(-1px);
-}
-
-.feature-icon {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  background: var(--green-soft);
-  color: var(--green);
-  font-size: 18px;
 }
 
 .feature-card strong {

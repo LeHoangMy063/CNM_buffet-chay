@@ -18,7 +18,7 @@ img { display:block; }
 .topbar-back:hover { color:var(--gold-light); }
 .topbar-divider { width:1px; height:22px; margin-right:16px; background:rgba(255,255,255,.16); flex-shrink:0; }
 .topbar-brand { gap:8px; }
-.leaf-icon { flex-shrink:0; font-size:20px; }
+.leaf-icon { flex-shrink:0; width:24px; height:24px; object-fit:contain; }
 .topbar-brand-name { overflow:hidden; color:#fff; font-family:"Lora",serif; font-size:17px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
 .topbar-brand-table { margin-left:2px; color:var(--gold-light); font-size:13px; font-weight:700; }
 
@@ -265,7 +265,6 @@ body.order-sidebar-collapsed .sidebar .panel-close-btn { width:38px; height:38px
 .cart-label { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); color:var(--sage); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .collapse-btn { border:0; background:none; color:var(--muted); font-size:14px; }
 .empty-note,.cart-empty { padding:28px 16px; color:var(--muted); font-size:13.5px; line-height:1.6; text-align:center; }
-.empty-icon { margin-bottom:8px; font-size:28px; }
 .sb-divider { height:1px; margin:14px 0; background:var(--border); }
 
 #cartList,.orders-list { display:flex; flex-direction:column; gap:8px; }

@@ -28,6 +28,8 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gọi Món — Bàn <?php echo htmlspecialchars($tableNumber) ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/customer/order.css?v=<?php echo $orderCssVersion ?>">
@@ -41,7 +43,7 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
             <a href="<?php echo BASE_URL ?>" class="topbar-back">← Trang chủ</a>
             <div class="topbar-divider"></div>
             <div class="topbar-brand">
-                <span class="leaf-icon">🌿</span>
+                <img class="leaf-icon" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <span class="topbar-brand-name">
                     Buffet Chay
                     <span class="topbar-brand-table">· Bàn <?php echo htmlspecialchars($tableNumber) ?></span>
@@ -49,7 +51,7 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
             </div>
         </div>
         <button class="cart-btn" onclick="toggleOrderPanel()">
-            🍽 Đã gọi <span class="badge" id="ordCnt"><?php echo count($currentOrders) ?></span>
+            Đã gọi <span class="badge" id="ordCnt"><?php echo count($currentOrders) ?></span>
         </button>
     </div>
 
@@ -102,32 +104,10 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
             </div>
 
             <?php
-            $catEmoji = array(
-                'Khai vị'     => '🍽️',
-                'Món chính'   => '🍜',
-                'Topping'     => '🍢',
-                'Rau'         => '🥬',
-                'Nước lẩu'    => '🍲',
-                'Đồ uống'     => '🍹',
-                'Tráng miệng' => '🍮',
-            );
             foreach ($menuByCategory as $cat => $items) {
-                $emojiTheoDanhMuc = array(
-                    'Khai vị' => '🍽️',
-                    'Món chính' => '🍜',
-                    'Nước lẩu' => '🍲',
-                    'Đồ uống' => '🍹',
-                    'Rau' => '🥬',
-                    'Topping' => '🍢'
-                );
-                $em = isset($catEmoji[$cat]) ? $catEmoji[$cat] : '🌿';
-                if (isset($emojiTheoDanhMuc[$cat])) {
-                    $em = $emojiTheoDanhMuc[$cat];
-                }
             ?>
                 <div class="cat-block" data-cat="<?php echo htmlspecialchars($cat) ?>">
                     <div class="cat-header">
-                        <div class="cat-emoji"><?php echo $em ?></div>
                         <div class="cat-label"><?php echo htmlspecialchars($cat) ?></div>
                         <div class="cat-line"></div>
                     </div>
@@ -165,7 +145,7 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
         <div class="orders-backdrop" id="ordersBackdrop" onclick="closeOrderPanel()"></div>
         <div class="sidebar" id="ordersPanel">
             <div class="sb-head">
-                <h3>🍽 Món Đã Gọi</h3>
+                <h3>Món Đã Gọi</h3>
                 <div class="sb-actions">
                     <button class="refresh-btn" onclick="refreshOrders()">↻ Làm mới</button>
                     <button class="panel-close-btn" onclick="toggleOrderPanel()" title="Thu gọn / mở rộng">×</button>
@@ -175,15 +155,14 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
             <div class="sb-body">
                 <!-- Giỏ tạm -->
                 <div id="cartSection">
-                    <div class="cart-label">🛒 Chờ xác nhận</div>
+                    <div class="cart-label">Chờ xác nhận</div>
                     <div id="cartList">
                         <div class="empty-note" id="cartEmpty">
-                            <div class="empty-icon">🛒</div>
                             Chưa chọn món nào.<br>Bấm "+ Gọi món" để thêm!
                         </div>
                     </div>
                     <button class="confirm-all-btn" id="confirmAllBtn" onclick="submitAllCart()" style="display:none">
-                        ✓ &nbsp;Xác Nhận Gọi Món
+                        Xác Nhận Gọi Món
                     </button>
                 </div>
 
@@ -203,7 +182,7 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
                 <!-- Đơn hoàn thành -->
                 <div id="preparingSection" style="display:none">
                     <div class="cart-label">
-                        <span>👨‍🍳 Đang làm</span>
+                        <span>Đang làm</span>
                         <button class="collapse-btn" onclick="togglePreparing()">∧</button>
                     </div>
                     <div class="orders-list" id="preparingList"></div>
@@ -213,7 +192,7 @@ $currentOrdersJson = json_encode($currentOrders, JSON_HEX_TAG | JSON_HEX_AMP | J
 
                 <div id="completedSection" style="display:none">
                     <div class="cart-label">
-                        <span>✓ Hoàn thành</span>
+                        <span>Hoàn thành</span>
                         <button class="collapse-btn" onclick="toggleCompleted()">∧</button>
                     </div>
                     <div class="orders-list" id="completedList"></div>

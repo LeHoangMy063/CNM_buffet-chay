@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Đăng Nhập Admin – <?php echo APP_NAME ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         *,
@@ -45,18 +47,6 @@
                 radial-gradient(ellipse 80% 60% at 20% 80%, rgba(74, 124, 89, .25) 0%, transparent 60%),
                 radial-gradient(ellipse 60% 50% at 80% 20%, rgba(201, 168, 76, .12) 0%, transparent 55%);
             pointer-events: none;
-        }
-
-        /* Leaf pattern */
-        body::after {
-            content: '🌿';
-            position: fixed;
-            font-size: 320px;
-            bottom: -80px;
-            right: -60px;
-            opacity: .04;
-            pointer-events: none;
-            user-select: none;
         }
 
         .card {
@@ -110,9 +100,10 @@
             height: 56px;
             background: linear-gradient(135deg, var(--green-mid), var(--green-accent));
             border-radius: 14px;
-            font-size: 26px;
             margin-bottom: 16px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+            object-fit: contain;
+            padding: 9px;
         }
 
         .logo h1 {
@@ -315,7 +306,7 @@
 
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">🌿</div>
+            <img class="logo-icon" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
             <h1><?php echo APP_NAME ?></h1>
             <p>Trang quản trị nội bộ</p>
         </div>
@@ -323,7 +314,6 @@
         <div class="divider"><span>Đăng nhập</span></div>
 
         <div class="err-box" id="errBox">
-            <span>⚠</span>
             <span id="errMsg"></span>
         </div>
 
@@ -368,7 +358,7 @@
                 btn.disabled = on;
                 btn.className = on ? 'btn loading' : 'btn';
                 spin.style.display = on ? 'block' : 'none';
-                btnTxt.textContent = on ? 'Đang đăng nhập' : 'Đăng Nhập →';
+                btnTxt.textContent = on ? 'Đang đăng nhập' : 'Đăng Nhập';
             }
 
             form.addEventListener('submit', function(e) {
@@ -385,7 +375,7 @@
                     try {
                         var res = JSON.parse(xhr.responseText);
                         if (res.success) {
-                            btnTxt.textContent = '✓ Thành công';
+                            btnTxt.textContent = 'Thành công';
                             btn.style.background = 'linear-gradient(135deg,#4a7c59,#2d4a2d)';
                             btn.style.color = '#fff';
                             setTimeout(function() {

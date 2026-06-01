@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo APP_NAME ?> — Tinh Tuý Ẩm Thực Chay</title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/base/trang-chu.css">
@@ -29,7 +31,7 @@
     <nav>
         <div class="nav-left">
             <a class="nav-brand" href="#">
-                <div class="nav-brand-icon">🌿</div>
+                <img class="nav-brand-icon" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <span class="nav-brand-text"><?php echo APP_NAME ?></span>
             </a>
             <?php if ($laKhachDangNhap): ?>
@@ -58,8 +60,8 @@
             <h1>Bữa Tiệc<br><em>Thuần Chay</em><br>Tinh Tuý Nhất</h1>
             <p class="hero-desc">Hơn 20 món chay đặc sắc từ nguyên liệu hữu cơ tươi sạch, không màu nhân tạo, không bột ngọt — trải nghiệm ẩm thực lành mạnh đích thực giữa lòng thành phố.</p>
             <div class="hero-actions">
-                <a class="btn-gold" href="#" onclick="openModal(); return false;">📅 Đặt Bàn Ngay</a>
-                <a class="btn-ghost" href="#order">🍜 Gọi Món Tại Bàn</a>
+                <a class="btn-gold" href="#" onclick="openModal(); return false;">Đặt Bàn Ngay</a>
+                <a class="btn-ghost" href="#order">Gọi Món Tại Bàn</a>
             </div>
         </div>
     </section>
@@ -163,7 +165,7 @@
 
     <!-- FOOTER -->
     <footer>
-        <div class="footer-brand">🌿 <?php echo APP_NAME ?></div>
+        <div class="footer-brand"><?php echo APP_NAME ?></div>
         <p style="margin-bottom:.5rem">Ẩm thực thuần chay tươi lành · Mở cửa 10:00–21:00 hàng ngày</p>
         <p><a href="<?php echo BASE_URL ?>/quanly/dang-nhap">Quản trị viên</a></p>
     </footer>
@@ -172,7 +174,7 @@
     <div class="overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-head">
-                <h3 class="modal-title">🌿 Đặt Bàn</h3>
+                <h3 class="modal-title">Đặt Bàn</h3>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div id="reservationConfirmation" class="reservation-confirmation" style="display:none">
@@ -243,7 +245,7 @@
                     <strong id="totalDisplay"><?php echo number_format(PRICE_ADULT * 2, 0, ',', '.') ?>đ</strong>
                     <span>Tạm tính (người lớn × <?php echo number_format(PRICE_ADULT, 0, ',', '.') ?>đ)</span>
                 </div>
-                <button type="submit" class="btn-gold" style="width:100%;justify-content:center">✓ Xác Nhận Đặt Bàn</button>
+                <button type="submit" class="btn-gold" style="width:100%;justify-content:center">Xác Nhận Đặt Bàn</button>
             </form>
         </div>
     </div>
@@ -412,12 +414,12 @@
                 } catch (x) {
                     toast('Lỗi phản hồi server: ' + xhr.responseText.substring(0, 100), 'err');
                 }
-                btn.textContent = '✓ Xác Nhận Đặt Bàn';
+                btn.textContent = 'Xác Nhận Đặt Bàn';
                 btn.disabled = false;
             };
             xhr.onerror = function() {
                 toast('Kết nối thất bại, vui lòng kiểm tra mạng', 'err');
-                btn.textContent = '✓ Xác Nhận Đặt Bàn';
+                btn.textContent = 'Xác Nhận Đặt Bàn';
                 btn.disabled = false;
             };
             xhr.send(fd);

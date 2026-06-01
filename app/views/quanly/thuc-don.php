@@ -135,6 +135,8 @@ $managerViewPath = dirname(__FILE__);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title><?php echo htmlspecialchars($tieuDeQuanLy, ENT_QUOTES, 'UTF-8'); ?> - <?php echo APP_NAME; ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/quanly/thuc-don.css">
 </head>
@@ -143,7 +145,7 @@ $managerViewPath = dirname(__FILE__);
     <div class="layout">
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-mark">&#127807;</div>
+                <img class="brand-mark" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <div>
                     <h1><?php echo APP_NAME; ?></h1>
                     <span>Khu vực quản lý</span>
@@ -152,15 +154,12 @@ $managerViewPath = dirname(__FILE__);
 
             <nav class="nav">
                 <a class="side-link <?php echo $laTrangBaoCao ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/bao-cao">
-                    <span class="side-icon">&#128200;</span>
                     <span>Báo cáo doanh thu</span>
                 </a>
                 <a class="nav-parent side-link <?php echo (!$laTrangNhanVien && !$laTrangBaoCao) ? 'active open' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/thuc-don">
-                    <span class="side-icon">&#127858;</span>
                     <span>Quản lý thực đơn</span>
                 </a>
                 <a class="side-link <?php echo $laTrangNhanVien ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/quan-ly/nhan-vien">
-                    <span class="side-icon">&#128101;</span>
                     <span>Quản lý nhân viên</span>
                 </a>
 

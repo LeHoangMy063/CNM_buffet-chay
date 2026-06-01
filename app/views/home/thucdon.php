@@ -71,6 +71,8 @@ $dangTimKiem = $tuKhoa !== '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thực Đơn - <?php echo APP_NAME ?></title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/assets/css/base/trang-chu.css">
@@ -336,7 +338,7 @@ $dangTimKiem = $tuKhoa !== '';
     <nav>
         <div class="nav-left">
             <a class="nav-brand" href="<?php echo BASE_URL ?>">
-                <div class="nav-brand-icon">&#127807;</div>
+                <img class="nav-brand-icon" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <span class="nav-brand-text"><?php echo APP_NAME ?></span>
             </a>
             <?php if ($laKhach): ?>
@@ -369,7 +371,7 @@ $dangTimKiem = $tuKhoa !== '';
     <div class="thuc-don-wrap">
 
         <div class="tro-ve">
-            <a href="<?php echo BASE_URL ?>">&#8592; Về trang chủ</a>
+            <a href="<?php echo BASE_URL ?>">Về trang chủ</a>
         </div>
 
         <!-- Ô TÌM KIẾM -->
@@ -380,7 +382,7 @@ $dangTimKiem = $tuKhoa !== '';
                 placeholder="Tìm kiếm món ăn..."
                 value="<?php echo htmlspecialchars($tuKhoa) ?>"
                 autocomplete="off">
-            <button type="submit">🔍 Tìm kiếm</button>
+            <button type="submit">Tìm kiếm</button>
             <?php if ($dangTimKiem): ?>
                 <a class="btn-xoa" href="<?php echo BASE_URL ?>/thuc-don">✕ Xóa</a>
             <?php endif; ?>
@@ -408,7 +410,7 @@ $dangTimKiem = $tuKhoa !== '';
             <?php if (!$dangTimKiem && count($danhSachDanhMuc) > 1): ?>
                 <!-- TABS DANH MỤC -->
                 <div class="danh-muc-tabs" id="danhMucTabs">
-                    <button class="danh-muc-tab active" onclick="cuonDenDanhMuc(0, this)">🍽 Tất cả</button>
+                    <button class="danh-muc-tab active" onclick="cuonDenDanhMuc(0, this)">Tất cả</button>
                     <?php foreach ($danhSachDanhMuc as $i => $dm): ?>
                         <button
                             class="danh-muc-tab"
@@ -460,7 +462,7 @@ $dangTimKiem = $tuKhoa !== '';
     </div>
 
     <footer>
-        <div class="footer-brand">&#127807; <?php echo APP_NAME ?></div>
+        <div class="footer-brand"><?php echo APP_NAME ?></div>
         <p style="margin-bottom:.5rem">Ẩm thực thuần chay tươi lành - Mở cửa 10:00-21:00 hằng ngày</p>
         <p><a href="<?php echo BASE_URL ?>/dang-nhap">Quản trị viên</a></p>
     </footer>

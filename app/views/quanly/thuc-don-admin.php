@@ -41,7 +41,7 @@ require dirname(__FILE__) . '/_dau-trang.php'; ?>
                         <td><strong><?php echo htmlspecialchars($item['name']) ?></strong></td>
                         <td><?php echo htmlspecialchars($item['category']) ?></td>
                         <td style="color:#6b7280;font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?php echo htmlspecialchars($item['description'] ? $item['description'] : '-') ?></td>
-                        <td><?php echo $item['is_featured'] ? '&#11088;' : '-' ?></td>
+                        <td><?php echo $item['is_featured'] ? 'Có' : '-' ?></td>
                         <td>
                             <select class="inline" onchange="toggleAvailable(<?php echo $item['id'] ?>, this.value)">
                                 <option value="1" <?php echo $item['is_available'] ? 'selected' : '' ?>>Co</option>

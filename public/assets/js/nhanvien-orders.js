@@ -256,7 +256,7 @@
 
       if (!n) {
         el("orders").innerHTML =
-          '<div class="empty-state"><div style="font-size:32px;margin-bottom:8px">&#127860;</div><div>Bàn này không có đơn nào đang chờ phục vụ.</div></div>';
+          '<div class="empty-state"><div>Bàn này không có đơn nào đang chờ phục vụ.</div></div>';
         return;
       }
 
@@ -290,7 +290,7 @@
         if (served) {
           if (!isKitchen) {
             html +=
-              '<button class="btn btn-sm" type="button" disabled aria-disabled="true">&#10003; Đã phục vụ</button>';
+              '<button class="btn btn-sm" type="button" disabled aria-disabled="true">Đã phục vụ</button>';
           }
           html += "</div>";
           continue;
@@ -298,7 +298,7 @@
         html +=
           '<button class="btn btn-sm" type="button" onclick="StaffOrders.confirmDish(' +
           jsArg(item.id) +
-          ')">&#10003; Đã phục vụ</button>';
+          ')">Đã phục vụ</button>';
         html += "</div>";
       }
       if (isKitchen) {

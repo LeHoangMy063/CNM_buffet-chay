@@ -10,7 +10,7 @@
                     : 'Chọn bàn để xem đơn đang chờ phục vụ, quản lý từng đơn hoặc toàn bộ bàn sau khi đã mang món ra.'; ?>
             </span>
         </div>
-        <button class="btn btn-icon" type="button" onclick="StaffOrders.loadTables()">&#8635; Làm mới</button>
+        <button class="btn btn-icon" type="button" onclick="StaffOrders.loadTables()">Làm mới</button>
     </div>
 
     <div class="gm-stats">
@@ -63,7 +63,7 @@
                     <div class="order-head-actions">
                         <span id="lastUpdated" class="badge muted">Chưa tải</span>
                         <button id="refreshOrderBtn" class="btn secondary btn-sm" type="button"
-                                onclick="StaffOrders.loadOrders()" disabled>&#8635;</button>
+                                onclick="StaffOrders.loadOrders()" disabled>Làm mới</button>
                     </div>
                 </div>
 
@@ -76,7 +76,7 @@
                             <div class="order-action-right">
                                 <button id="confirmAllBtn" class="btn btn-sm" type="button"
                                         onclick="StaffOrders.confirmAll()" style="display:none">
-                                    &#10003; Xác nhận tất cả
+                                    Xác nhận tất cả
                                 </button>
                                 <button id="clearTableBtn" class="btn danger btn-sm" type="button"
                                         onclick="StaffOrders.markTableEmpty()" disabled>
@@ -88,7 +88,6 @@
 
                     <div id="orders" class="orders">
                         <div class="empty-state">
-                            <div style="font-size:32px;margin-bottom:8px">&#127860;</div>
                             <div>Chọn bàn để xem danh sách đơn.</div>
                         </div>
                     </div>

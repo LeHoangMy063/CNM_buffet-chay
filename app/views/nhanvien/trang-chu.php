@@ -29,7 +29,7 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
     <div class="app-shell">
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-mark">&#127807;</div>
+                <img class="brand-mark" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <div>
                     <h1><?php echo APP_NAME; ?></h1>
                     <span><?php echo $laBep ? 'Khu vực bếp' : 'Khu vực nhân viên'; ?></span>
@@ -39,13 +39,11 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
             <nav class="side-nav">
                 <?php if ($laBep): ?>
                     <button type="button" class="side-link active" data-section="dat-ban" onclick="StaffTableManager.showPane('xac-nhan-mon')">
-                        <span class="side-icon">&#127860;</span>
                         <span>Xem đơn món</span>
                     </button>
                 <?php else: ?>
 
                     <button type="button" class="side-link" data-section="dat-ban" onclick="StaffTabs.show('dat-ban')">
-                        <span class="side-icon">&#129681;</span>
                         <span>Quản lý bàn</span>
                     </button>
                     <div class="side-subnav" id="tableSubnav" style="display:none">
@@ -59,15 +57,13 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                             Quản lý gọi món
                         </button>
                     </div>
-                    <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem" onclick="window.location.href='<?php echo BASE_URL; ?>/nhan-vien/tich-diem'; return false;">
-                        <span class="side-icon">&#11088;</span>
+                    <a class="side-link" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem">
                         <span>Tích điểm</span>
                     </a>
                 <?php endif; ?>
 
                 <?php if ($vaiTro === 'quanly'): ?>
                     <a class="side-link" href="<?php echo BASE_URL; ?>/quan-tri/tong-quan">
-                        <span class="side-icon">&#9881;</span>
                         <span>Quản trị</span>
                     </a>
                 <?php endif; ?>
@@ -93,7 +89,7 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
                     <div class="welcome-panel">
                         <div>
                             <p class="eyebrow">Xin chào</p>
-                            <h3><?php echo htmlspecialchars($tenNhanVien, ENT_QUOTES, 'UTF-8'); ?> &#128075;</h3>
+                            <h3><?php echo htmlspecialchars($tenNhanVien, ENT_QUOTES, 'UTF-8'); ?></h3>
                             <p>Chào mừng trở lại. Hôm nay là <?php echo date('d-m-y'); ?>.</p>
                         </div>
                     </div>
@@ -102,12 +98,10 @@ $jsonDanhSachMon = json_encode($danhSachMon, JSON_HEX_TAG | JSON_HEX_AMP | JSON_
 
                     <div class="home-grid">
                         <button type="button" class="feature-card" onclick="StaffTabs.show('dat-ban')">
-                            <div class="feature-icon">&#129681;</div>
                             <strong>Quản lý bàn</strong>
                             <small>Duyệt đặt bàn, điều phối bàn và quản lý gọi món trong cùng một màn hình.</small>
                         </button>
-                        <a class="feature-card" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem" onclick="window.location.href='<?php echo BASE_URL; ?>/nhan-vien/tich-diem'; return false;">
-                            <div class="feature-icon">&#11088;</div>
+                        <a class="feature-card" href="<?php echo BASE_URL; ?>/nhan-vien/tich-diem">
                             <strong>Tích điểm</strong>
                             <small>Tra cứu và cộng điểm thành viên cho khách sau khi dùng bữa.</small>
                         </a>

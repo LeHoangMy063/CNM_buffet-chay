@@ -19,9 +19,9 @@
             <div class="panel-body">
                 <div class="reservation-calendar-panel">
                     <div class="reservation-calendar-head">
-                        <button type="button" class="calendar-nav-btn" onclick="StaffReservations.changeMonth(-1)">&#8249;</button>
+                        <button type="button" class="calendar-nav-btn" onclick="StaffReservations.changeMonth(-1)">Trước</button>
                         <strong id="reservationCalendarTitle">Lịch đặt bàn</strong>
-                        <button type="button" class="calendar-nav-btn" onclick="StaffReservations.changeMonth(1)">&#8250;</button>
+                        <button type="button" class="calendar-nav-btn" onclick="StaffReservations.changeMonth(1)">Sau</button>
                     </div>
                     <div class="reservation-calendar-week">
                         <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
@@ -33,7 +33,7 @@
 
                 <div class="db-filter-row">
                     <input id="reservationSearch" class="search db-search" type="search"
-                        placeholder="&#128269; Tìm tên, SĐT, mã đặt bàn..." autocomplete="off">
+                        placeholder="Tìm tên, SĐT, mã đặt bàn..." autocomplete="off">
                     <select id="reservationStatus" class="select db-select">
                         <option value="">Tất cả trạng thái</option>
                         <option value="cho_xac_nhan">Chờ duyệt bàn</option>
@@ -44,9 +44,9 @@
 
                 <div class="reservation-tabs">
                     <button type="button" class="chip active" data-status="" data-duyet="">Tất cả</button>
-                    <button type="button" class="chip chip-alert" data-status="cho_xac_nhan" data-duyet="">&#9888; Chờ duyệt bàn</button>
-                    <button type="button" class="chip chip-ok" data-status="da_xac_nhan" data-duyet="">&#9679; Đã xác nhận</button>
-                    <button type="button" class="chip chip-danger" data-status="cancelled" data-duyet="">&#9679; Đã hủy</button>
+                    <button type="button" class="chip chip-alert" data-status="cho_xac_nhan" data-duyet="">Chờ duyệt bàn</button>
+                    <button type="button" class="chip chip-ok" data-status="da_xac_nhan" data-duyet="">Đã xác nhận</button>
+                    <button type="button" class="chip chip-danger" data-status="cancelled" data-duyet="">Đã hủy</button>
                 </div>
 
                 <div id="reservationList" class="reservation-list">
@@ -63,7 +63,7 @@
                     <h2>Điều phối bàn</h2>
                     <p class="panel-sub">Theo dõi bàn trống, sức chứa, mã bàn và xử lý thanh toán để trả bàn.</p>
                 </div>
-                <button class="btn secondary btn-sm" type="button" onclick="StaffTableStatus.load()">&#8635; Làm mới</button>
+                <button class="btn secondary btn-sm" type="button" onclick="StaffTableStatus.load()">Làm mới</button>
             </div>
             <div class="panel-body">
                 <div class="db-filter-row table-status-filter">

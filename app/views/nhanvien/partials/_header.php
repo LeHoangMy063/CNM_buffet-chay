@@ -6,7 +6,7 @@ $vaiTro = isset($vaiTro) ? $vaiTro : '';
 
 <header class="topbar">
     <div class="brand">
-        <div class="brand-mark">&#127807;</div>
+        <img class="brand-mark" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(defined('APP_NAME') ? APP_NAME : '', ENT_QUOTES, 'UTF-8'); ?>">
         <div>
             <h1>Màn hình nhân viên</h1>
             <span><?php echo htmlspecialchars(defined('APP_NAME') ? APP_NAME : '', ENT_QUOTES, 'UTF-8'); ?></span>

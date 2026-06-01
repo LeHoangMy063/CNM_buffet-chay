@@ -9,6 +9,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập — Buffet Chay</title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *,
@@ -68,9 +70,13 @@
         }
 
         .brand-icon {
-            font-size: 46px;
             display: block;
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
             margin-bottom: 12px;
+            margin-left: auto;
+            margin-right: auto;
             position: relative;
         }
 
@@ -200,7 +206,7 @@
 
     <div class="card">
         <div class="card-header">
-            <span class="brand-icon">🌿</span>
+            <img class="brand-icon" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
             <div class="brand-name">Buffet Chay An Lạc</div>
             <div class="brand-sub">Hệ thống quản lý nội bộ</div>
         </div>
@@ -209,14 +215,14 @@
 
             <?php if (!empty($_SESSION['error'])): ?>
                 <div class="alert alert-error">
-                    ⚠️ <?php echo htmlspecialchars($_SESSION['error']);
+                    <?php echo htmlspecialchars($_SESSION['error']);
                         unset($_SESSION['error']); ?>
                 </div>
             <?php endif; ?>
 
             <?php if (!empty($_SESSION['message'])): ?>
                 <div class="alert alert-success">
-                    ✅ <?php echo htmlspecialchars($_SESSION['message']);
+                    <?php echo htmlspecialchars($_SESSION['message']);
                         unset($_SESSION['message']); ?>
                 </div>
             <?php endif; ?>

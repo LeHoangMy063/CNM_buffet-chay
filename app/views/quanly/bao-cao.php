@@ -29,17 +29,14 @@ $tongKhach = isset($tongQuanDoanhThu['tong_khach']) ? (int)$tongQuanDoanhThu['to
 
 <section class="stats revenue-stats">
     <div class="stat stat-visible">
-        <span class="stat-icon">&#128176;</span>
         <strong><?php echo managerMoney($tongDoanhThu); ?></strong>
         <span>Tổng doanh thu</span>
     </div>
     <div class="stat">
-        <span class="stat-icon">&#129534;</span>
         <strong><?php echo $soPhien; ?></strong>
         <span>Lượt thanh toán</span>
     </div>
     <div class="stat stat-featured">
-        <span class="stat-icon">&#128101;</span>
         <strong><?php echo $tongKhach; ?></strong>
         <span>Lượt khách</span>
     </div>

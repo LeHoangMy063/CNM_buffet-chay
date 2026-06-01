@@ -9,6 +9,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dang nhap - Buffet Chay An Lac</title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <style>
         * {
             box-sizing: border-box;
@@ -151,7 +153,7 @@
 
     <div class="hop-dang-nhap">
         <div class="logo-khu">
-            <img src="<?php echo BASE_URL; ?>/assets/images/logo.png" alt="Logo" onerror="this.style.display='none'">
+            <img src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="Logo">
             <h1>Buffet Chay An Lac</h1>
             <p>Dang nhap tai khoan khach hang</p>
         </div>

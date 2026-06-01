@@ -110,7 +110,7 @@ function submitAllCart() {
 
         cart = [];
         renderCart();
-        toast("✓ Gọi món thành công!");
+        toast("Gọi món thành công!");
         refreshOrders();
         taiGoiYHybrid(0);
       } else {
@@ -125,6 +125,6 @@ function submitAllCart() {
     })
     .then(function () {
       btn.disabled = false;
-      btn.textContent = "✓  Xác Nhận Gọi Món";
+      btn.textContent = "Xác Nhận Gọi Món";
     });
 }

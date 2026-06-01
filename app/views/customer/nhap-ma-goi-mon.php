@@ -9,6 +9,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhập Mã Gọi Món - Dặt Bàn</title>
+    <link rel="manifest" href="<?php echo BASE_URL; ?>/public/manifest.webmanifest">
+    <link rel="icon" href="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/base/style.css">
     <style>
         * {
@@ -58,8 +60,12 @@
         }
 
         .logo {
-            font-size: 48px;
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
             margin-bottom: 15px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .title {
@@ -248,7 +254,7 @@
     <div class="container">
         <div class="card">
             <div class="header">
-                <div class="logo">🍽️</div>
+                <img class="logo" src="<?php echo BASE_URL; ?>/public/assets/icons/pwa-icon.svg" alt="<?php echo htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
                 <h1 class="title">Bắt Đầu Gọi Món</h1>
                 <p class="subtitle">Vui lòng nhập mã đặt bàn hoặc mã bàn</p>
             </div>
@@ -284,7 +290,7 @@
 
             <div class="footer-links">
                 <a href="<?php echo BASE_URL; ?>">← Quay Lại Trang Chủ</a>
-                <a href="<?php echo BASE_URL; ?>/khach-hang/trang-dat-ban">📅 Đặt Bàn Mới</a>
+                <a href="<?php echo BASE_URL; ?>/khach-hang/trang-dat-ban">Đặt Bàn Mới</a>
             </div>
         </div>
     </div>

@@ -59,7 +59,7 @@
         html += '<div class="' + cardCls + '">';
         var rid = this.jsArg(r.id);
         html += '<button type="button" class="reservation-summary" onclick="StaffReservations.toggle(' + rid + ')">';
-        html += '<span class="reservation-caret">' + (expanded ? "&#9662;" : "&#9656;") + "</span>";
+        html += '<span class="reservation-caret">' + (expanded ? "Thu gọn" : "Mở") + "</span>";
         html += '<span class="reservation-status-dot-mini ' + dotCls + '"></span>';
         html += '<span class="reservation-summary-name">' + esc(r.ten_khach || "-") + "</span>";
         html += '<span class="reservation-summary-table">' + tablePill + "</span>";
@@ -71,15 +71,15 @@
         html += '<div class="reservation-detail-block">';
         html += '<span class="detail-label">Thông tin khách</span>';
         html += '<strong>' + esc(r.ten_khach || "-") + "</strong>";
-        html += '<p>&#128222; ' + esc(r.sdt_khach || "-") + "</p>";
-        html += '<p>&#128101; ' + esc(totalGuest) + " khách</p>";
-        if (r.ghi_chu) html += '<p class="reservation-note">&#128221; ' + esc(r.ghi_chu) + "</p>";
+        html += '<p>SĐT: ' + esc(r.sdt_khach || "-") + "</p>";
+        html += '<p>Số khách: ' + esc(totalGuest) + " khách</p>";
+        if (r.ghi_chu) html += '<p class="reservation-note">Ghi chú: ' + esc(r.ghi_chu) + "</p>";
         html += "</div>";
 
         html += '<div class="reservation-detail-block">';
         html += '<span class="detail-label">Thời gian & mã</span>';
-        html += '<strong>&#128197; ' + esc(fmtDate(r.ngay_dat) || "-") + "</strong>";
-        html += '<p>&#128336; ' + esc(String(r.gio_dat || "").substring(0, 5)) + "</p>";
+        html += '<strong>Ngày: ' + esc(fmtDate(r.ngay_dat) || "-") + "</strong>";
+        html += '<p>Giờ: ' + esc(String(r.gio_dat || "").substring(0, 5)) + "</p>";
         html += '<p class="reservation-code-chip">' + esc(r.ma_dat_ban || "-") + "</p>";
         html += "</div>";
 
@@ -94,13 +94,13 @@
 
         html += '<div class="reservation-detail-actions">';
         if (!isDone) {
-          html += '<button type="button" class="btn secondary" onclick="StaffReservations.doiBan(' + rid + ')">&#8644; Đổi bàn</button>';
+          html += '<button type="button" class="btn secondary" onclick="StaffReservations.doiBan(' + rid + ')">Đổi bàn</button>';
           if (choDuyetBan) {
-            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + rid + ')">&#10003; Duyệt đặt bàn</button>';
+            html += '<button type="button" class="btn" onclick="StaffReservations.xacNhanBan(' + rid + ')">Duyệt đặt bàn</button>';
           } else {
-            html += this.actionBtn(r.id, "da_xac_nhan", "&#10003; Xác nhận ĐB", r.trang_thai, "");
+            html += this.actionBtn(r.id, "da_xac_nhan", "Xác nhận ĐB", r.trang_thai, "");
           }
-          html += '<button type="button" class="btn danger" onclick="StaffReservations.toggleCancelChoices(' + rid + ')">&#10007; Hủy đặt bàn</button>';
+          html += '<button type="button" class="btn danger" onclick="StaffReservations.toggleCancelChoices(' + rid + ')">Hủy đặt bàn</button>';
         }
         html += "</div>";
         html += '<div class="reservation-cancel-choices" style="display:' + (String(this.cancelChoiceId) === String(r.id) ? "flex" : "none") + '">';
@@ -126,7 +126,7 @@
       var html = "";
       var banArr = String(tableText || "").split(",");
       for (var bi = 0; bi < banArr.length; bi++) {
-        html += '<span class="' + (banDaXacNhan ? "ban-pill confirmed-pill" : "ban-pill") + '">&#8862; Bàn ' + esc(banArr[bi].replace(/^\s+|\s+$/g, "")) + "</span>";
+        html += '<span class="' + (banDaXacNhan ? "ban-pill confirmed-pill" : "ban-pill") + '">Bàn ' + esc(banArr[bi].replace(/^\s+|\s+$/g, "")) + "</span>";
       }
       return html;
     };
@@ -136,8 +136,8 @@
       html += '<div class="' + boxCls + '">';
       html += '<div class="ban-gan-header">';
       html += banDaXacNhan
-        ? '<span class="ban-gan-label" style="color:#166534">&#10003; Bàn đã được xác nhận</span>'
-        : '<span class="ban-gan-label">&#9881; Hệ thống tự gán - chờ xác nhận</span>';
+        ? '<span class="ban-gan-label" style="color:#166534">Bàn đã được xác nhận</span>'
+        : '<span class="ban-gan-label">Hệ thống tự gán - chờ xác nhận</span>';
       html += "</div>";
 
       html += '<div class="ban-gan-tables">';
@@ -151,7 +151,7 @@
     R.renderManualAssign = function (r, items, totalGuest) {
       var html = "";
       html += '<div class="ban-gan-box">';
-      html += '<div class="ban-gan-header"><span class="ban-gan-label">&#9888; Chưa có bàn - cần gán thủ công</span></div>';
+      html += '<div class="ban-gan-header"><span class="ban-gan-label">Chưa có bàn - cần gán thủ công</span></div>';
       html += this.renderTableSelect(r, items, totalGuest, "display:block", "Gán bàn");
       html += "</div>";
       return html;
@@ -178,7 +178,7 @@
       html += "</select>";
       var rid = this.jsArg(r.id);
       html += '<button type="button" class="btn btn-sm" onclick="StaffReservations.doiBanTheoSelect(' + rid + ')">' + buttonText + "</button>";
-      html += '<button type="button" class="btn-auto-assign" onclick="StaffReservations.assignTable(' + rid + ', 0)">&#9881; Tự động</button>';
+      html += '<button type="button" class="btn-auto-assign" onclick="StaffReservations.assignTable(' + rid + ', 0)">Tự động</button>';
       html += "</div></div>";
       return html;
     };})();
